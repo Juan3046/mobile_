@@ -18,7 +18,7 @@ Full requirements live in `docs/`. That documentation is the source of truth.
 ## 2. Tech Stack
 
 - **Android Studio + Kotlin** (native Android, portrait only).
-- **GitHub** for version control (repo to be connected later).
+- **GitHub** for version control (repo: `https://github.com/Juan3046/mobile_.git`, branch `main`).
 - **Entire project in English**, including code, comments, branch names, and docs.
 
 See `docs/04-tech-stack.md`.

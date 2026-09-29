@@ -5,8 +5,8 @@
 - Requirements phase first; **no implementation until requirements are frozen**.
 
 ## Version Control (GitHub)
-- Repo connection pending.
-- Once connected: feature-per-module branches, small PRs, English names (e.g., `feature/daily-game-screen`).
+- Repo: `https://github.com/Juan3046/mobile_.git` (connected, branch `main`).
+- Flow: feature-per-module branches, small PRs, English names (e.g., `feature/daily-game-screen`).
 - No direct pushes to `main` (rule to enforce once repo exists).
 
 ## Parallel Development Plan
