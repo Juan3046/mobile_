@@ -8,8 +8,9 @@ and always take precedence unless a game doc explicitly documents an approved ex
 |---|------|------|--------|
 | 01 | `01-escape-poruba.md` | Escape Poruba (2D arcade runner) | Defined |
 | 02 | `02-onion-roll.md` | Onion Roll (gyroscope, checkout belt) | Defined |
+| 03 | `03-blink-sniper.md` | Blink Sniper (front camera, blink detection) | Defined |
 
-Season 1 needs 7 defined games: **2 / 7 done**.
+Season 1 needs 7 defined games: **3 / 7 done**.
 
 ## Conventions
 
