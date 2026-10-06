@@ -19,4 +19,4 @@ Mobile app called **RM Games** that offers a short daily game.
 
 ## Open Questions
 - [x] Decided: daily rotation (same-for-all, no-repeat-in-season, least-recent first); scoring (sum of daily bests); identity (anonymous device ID); storage (local-only).
-- [ ] Minigame library: #1 Escape Poruba defined (see `07-minigame-escape-poruba.md`); 6 more needed for season 1.
+- [ ] Minigame library: #1 Escape Poruba + #2 Onion Roll defined (see `games/`); 5 more needed for season 1 (see `games/README.md`).

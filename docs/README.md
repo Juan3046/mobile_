@@ -10,7 +10,7 @@ Single source of truth for requirements. No implementation yet (requirements pha
 | `04-tech-stack.md` | Android Studio, Kotlin, GitHub |
 | `05-team-workflow.md` | 4-person team + AI agents, parallel plan (pending) |
 | `06-out-of-scope-roadmap.md` | Explicit non-MVP: multiplayer, music |
-| `07-minigame-escape-poruba.md` | Minigame 01 spec: Escape Poruba runner |
+| `games/` | One `.md` per minigame (index + template: `games/README.md`) |
 
 Conventions:
 - All content in English.

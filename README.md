@@ -4,13 +4,14 @@ Short daily sensor-driven mobile games (Android native, Kotlin, portrait only).
 
 - 1 daily game, 30–90s, 2 attempts/day (best counts).
 - 7-day seasons + historical leaderboard + Seasons History.
-- Minigame 01: Escape Poruba.
+- Minigames 01–02: Escape Poruba, Onion Roll (see `docs/games/`).
 
 ## Docs (source of truth)
 
 - `AGENTS.md` — project context + mandatory docs-sync rule.
 - `docs/README.md` — docs index.
-- `docs/01-product-overview.md` … `docs/07-minigame-escape-poruba.md`.
+- `docs/01-product-overview.md` … `docs/06-out-of-scope-roadmap.md`.
+- `docs/games/` — one `.md` per minigame (index: `docs/games/README.md`).
 
 Update the relevant `.md` in the same change whenever behavior, screens,
 rules, stack, or workflow changes. English everywhere.
