@@ -3,6 +3,7 @@
 - **IDE**: Android Studio.
 - **Language**: Kotlin (native Android).
 - **Version control**: GitHub (`https://github.com/Juan3046/mobile_.git`, branch `main`).
+- **GitHub tooling**: GitHub CLI (`gh`) for branch/PR workflow — create branches, open and merge PRs from the terminal.
 - **Language of project**: English for code, comments, branches, and docs.
 - **Storage (MVP)**: local-only — Room/DataStore on device for attempts, daily bests, seasons, history. No server; offline works by default.
 

@@ -7,6 +7,7 @@
 ## Version Control (GitHub)
 - Repo: `https://github.com/Juan3046/mobile_.git` (connected, branch `main`).
 - Flow: feature-per-module branches, small PRs, English names (e.g., `feature/daily-game-screen`).
+- Tooling: GitHub CLI (`gh`) is installed and authenticated; use it to push branches and create/merge PRs (no direct pushes to `main`).
 - No direct pushes to `main` (rule to enforce once repo exists).
 
 ## Parallel Development Plan
