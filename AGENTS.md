@@ -32,7 +32,6 @@ See `docs/04-tech-stack.md`.
 - **Do not implement code yet.** Current phase is requirements gathering only.
 
 ## 4. Mandatory Rule: Keep Docs in Sync
-
 **In every development phase, constantly align any change with the app documentation:**
 
 1. Before coding, read the relevant file(s) in `docs/` + this file.
@@ -40,5 +39,14 @@ See `docs/04-tech-stack.md`.
 3. Keep changes small and traceable: one logical doc update per change.
 4. Never leave docs stale: if code and docs disagree, treat it as a bug and fix the docs (or flag it to the user).
 5. Use English in all docs and code.
+
+## 5. Mandatory Rule: TDD — Test Every Change
+
+**Every code change ships with tests. No untested logic is merged.**
+
+- Red → green → refactor for all new logic (repos, selectors, scoring, difficulty ramps, sensor wrappers).
+- Unit tests mandatory (JUnit + MockK); UI/instrumented tests where the module needs them (Espresso).
+- CI runs the full test suite on every PR; red CI blocks merge.
+- Bug fixes include a failing-then-passing regression test.
 
 Docs index: `docs/README.md`.

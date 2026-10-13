@@ -78,5 +78,6 @@ for local-only MVP, normalize post-MVP.
 
 ## Definition of Done (per module)
 
-Compiles via `:module:assembleDebug` · portrait locked · attempts/timer rules
+Compiles via `:module:assembleDebug` · **tests written first (TDD) and green
+(`:module:testDebugUnitTest`)** · portrait locked · attempts/timer rules
 respected · missing-sensor blocks with message, no fake scores · docs updated.

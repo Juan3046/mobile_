@@ -6,6 +6,7 @@
 - **GitHub tooling**: GitHub CLI (`gh`) for branch/PR workflow — create branches, open and merge PRs from the terminal.
 - **Language of project**: English for code, comments, branches, and docs.
 - **Storage (MVP)**: local-only — Room/DataStore on device for attempts, daily bests, seasons, history. No server; offline works by default.
+- **Testing (TDD mandatory)**: JUnit + MockK for unit tests, Espresso for UI tests. CI runs tests on every PR and blocks merge on failure.
 
 ## Constraints
 - Native Android only (no cross-platform in MVP).
