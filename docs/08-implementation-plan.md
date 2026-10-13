@@ -76,6 +76,7 @@ days, always live, no locks) — raw game scores (cs vs points) are never mixed 
 - One module per PR, small PRs, English. Rebase onto `main` before opening.
 - No cross-module edits without the owner's OK in the PR.
 - Squash-merge, one reviewer, CI green required.
+- CI (`.github/workflows/android.yml`, created with the Android skeleton): on every PR runs `./gradlew testDebugUnitTest` + lint and **blocks merge on red**. Unit tests only for now (fast, free minutes); emulator instrumented tests come later for critical flows only.
 - Each PR that changes behavior updates the matching `docs/` file in the same PR.
 
 ## AI Agent Rules
