@@ -5,9 +5,14 @@
 ```text
 :app                        P1 — shell: MainActivity, NavHost, Hilt DI, navigation routes
 :core:common                P1 — theme, reusable UI, utils, Game/GameResult contracts
-:core:data                  P1 — Room + DataStore: attempts, daily bests, seasons,
-                             history, DailyGameSelector (least-recently-played),
-                             anonymous device ID
+:core:data                  P1 — Room + DataStore (local-first cache, offline) + Firestore
+                             (shared scoreboard, Spark free plan): attempts (local),
+                             daily bests (upload 1 write/day/UID), seasons
+                             (deterministic 7-day windows, auto-archive), history,
+                             DailyGameSelector (deterministic by date),
+                             identity (Anonymous Auth UID + chosen nick).
+                             Security rules: each UID writes only its own score
+                             doc; ranking reads paginated (top 50).
 :core:sensors               P4 — wrappers: gyro, accelerometer shake, magnetometer
                              compass, camera blink (CameraX + ML Kit),
                              common SensorAvailability API

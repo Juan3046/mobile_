@@ -13,10 +13,10 @@ Mobile app called **RM Games** that offers a short daily game.
 - **Seasons**: each season lasts **7 days**.
 - **Season score = sum of daily bests** (max 7 entries, one best per day). Missed days count as 0.
 - **Seasons History screen** (opened from main-menu button) shows: past seasons list + current season progress + all-time total.
-- **Player identity (MVP)**: anonymous device ID (random UUID stored on device, no login).
-- **Daily game selection**: same game for all devices each day. Random without repetition within a season; prioritize games not played for the longest time (least-recently-played first).
+- **Player identity (MVP)**: Firebase Anonymous Auth UID + user-chosen nick at first launch. The nick is what appears on the shared ranking. No login, no personal data.
+- **Daily game selection**: deterministic by date (rotating index over the game list) — same game on all devices, no server needed. Within-season no-repeat follows from rotation; least-recently-played kept as tiebreak rule for future seasons.
 - **Season rollover: auto-archive.** After day 7, the season closes, its score is archived to Seasons History, and a new empty season starts automatically.
 
 ## Open Questions
-- [x] Decided: daily rotation (same-for-all, no-repeat-in-season, least-recent first); scoring (sum of daily bests); identity (anonymous device ID); storage (local-only).
+- [x] Decided: daily rotation (deterministic by date, same-for-all); scoring (sum of daily bests); identity (Anonymous Auth UID + chosen nick); backend (Firebase Spark free + local-first cache).
 - [ ] Minigame library: 5 drafted (01–05, see `games/`); 2 more needed for season 1; 04–05 still draft.

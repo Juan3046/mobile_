@@ -5,6 +5,7 @@
 - **Daily reset: local midnight (00:00 / 12am device time).** New daily game + 2 fresh attempts.
 - **Max 2 attempts per day per player.**
 - **Score rule: best of 2 counts.** Only the highest of the 2 daily attempts counts for season + history.
+- **Shared ranking upload:** the daily best is written to Firestore once per day per player (each UID writes only its own doc); attempts enforcement stays local.
 - UI must give **feedback on remaining attempts** (e.g., "1 attempt left").
 - **Exhausted state: lock + countdown.** When attempts are used up, Play is disabled; show last/best score + countdown to next daily game.
 - **Reset attempts button**: debug-only, resets today's attempt counter only. Past scores and seasons are untouched. Lives on the main screen as a small `Reset attempts (debug)` control; easy to remove/disable for release.
