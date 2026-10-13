@@ -37,8 +37,7 @@ fall ends the run. There is no win state — score is pure survival time.
   design the run is passive: the belt ramp alone determines survival time
   (see Open Questions for the playtest caveat).
 - **Score = survived time in centiseconds** (win-equivalent max ≈ 8500, hard
-  ceiling 9000 at 90s). Daily best of the 2 attempts; season = sum of daily bests
-  (same mapping as `01-escape-poruba.md`).
+  ceiling 9000 at 90s). Daily best of the 2 attempts; the daily best ranks the day for position points (same mapping as `01-escape-poruba.md`).
 - **No win state**: reaching 90s without falling is not expected; the run always
   ends in a fall.
 

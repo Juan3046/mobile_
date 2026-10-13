@@ -69,7 +69,7 @@ complex-pattern probability, tram frequency, time between patterns. Tune by play
 
 ## Score & Persistence (local-only MVP)
 - Save locally: best time, max distance, attempt count, whether ever escaped (`ESCAPES: X` on win).
-- Score mapping to season (to confirm): score = survived centiseconds (win = 9000); daily best = max of up to 2 attempts; season = sum of daily bests.
+- Score mapping: score = survived centiseconds (win = 9000); daily best = max of up to 2 attempts — the daily best ranks the day for position points (never summed).
 - Distance: fictitious distance derived from time × speed; shown discreetly during run (e.g. `624 m`).
 
 ## HUD (minimal)
@@ -126,5 +126,5 @@ Czech beer on a poster, trams, dorm blocks. Never all at once.
 - Never obscure obstacles with effects.
 
 ## Open Questions
-- [x] Decided: touch allowed for Escape Poruba (sensor-first is a guideline); 1 run = 1 attempt (ESCAPE AGAIN only with attempts left, else lock + countdown); score = survived centiseconds (win = 9000), daily best = max, season = sum.
+- [x] Decided: touch allowed for Escape Poruba (sensor-first is a guideline); 1 run = 1 attempt (ESCAPE AGAIN only with attempts left, else lock + countdown); score = survived centiseconds (win = 9000), daily best = max and ranks the day for position points.
 - [ ] Desktop A/D keys: debug-only and stripped from release? (assumed yes, to confirm at implementation).

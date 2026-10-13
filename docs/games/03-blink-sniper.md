@@ -39,7 +39,7 @@ A stationary crosshair is fixed in the center of the screen. Targets ("dianas") 
 - **Target Movement**: All targets travel horizontally from left to right across multiple height lanes at varying speeds.
 - **Target Expiration**: Targets crossing off-screen without being shot simply exit without penalty.
 - **Win / Finish State**: Timer reaches 0.0s without hitting a bomb target (`TIME'S UP!`).
-- **Score Mapping**: Score = Total Points accumulated during the run. Daily best = max of up to 2 attempts; season score = sum of daily bests.
+- **Score Mapping**: Score = Total Points accumulated during the run. Daily best = max of up to 2 attempts; the daily best ranks the day for position points (never summed).
 
 ## Target Types
 1. **Standard Target**: Classic red and white concentric rings. Outer ring = +1 pt, Center bullseye = +2 pts.

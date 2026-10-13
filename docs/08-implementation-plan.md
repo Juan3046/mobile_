@@ -42,7 +42,8 @@ interface Game {
   fun stop()
 }
 interface GameScope {
-  fun onScore(value: Long)  // centiseconds or points — daily best = max
+  fun onScore(value: Long)  // raw game score (centiseconds or points) — daily best = max;
+                            // it ranks the day only, season points come from position
   fun onFinished(win: Boolean)
 }
 ```
@@ -50,8 +51,8 @@ interface GameScope {
 Repositories in `:core:data`: `AttemptRepository` (2/day, local-midnight reset),
 `SeasonRepository` (7-day sum of daily bests, auto-archive), `HistoryRepository`.
 Navigation: `home → session(gameId) → result`; exhausted attempts → lock + countdown.
-Known simplification: season sums mix units across games (cs vs points) — accepted
-for local-only MVP, normalize post-MVP.
+Season points come only from daily positions (`(N−p+1)×25`, ties share, close at
+local midnight) — raw game scores (cs vs points) are never mixed or summed.
 
 ## Phases & Order
 
