@@ -56,3 +56,6 @@ captures/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Obsidian notes (local editor)
+.obsidian/
