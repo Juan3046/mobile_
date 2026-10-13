@@ -9,7 +9,7 @@
                              (shared scoreboard, Spark free plan): attempts (local),
                              daily bests (upload 1 write/day/UID), seasons
                              (deterministic 7-day windows, auto-archive), history,
-                             DailyGameSelector (deterministic by date),
+                             DailyGameSelector (`daysSinceEpoch % gameCount`),
                              identity (Anonymous Auth UID + chosen nick).
                              Security rules: each UID writes only its own score
                              doc; ranking reads paginated (top 50).

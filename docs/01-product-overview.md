@@ -19,7 +19,7 @@ Mobile app called **RM Games** that offers a short daily game.
 - **Seasons History screen** (opened from main-menu button) shows: past seasons list + current season progress + all-time total.
 - **Player identity (MVP)**: Firebase Anonymous Auth UID + user-chosen nick at first launch. The nick is what appears on the shared ranking. No login, no personal data.
 - **Nick rules:** unique across players (no repeats), set once before playing, never editable afterwards. Every result is stored under the UID bound to that nick. First launch requires connection (one-time uniqueness check via a `nicks/{nick}` reservation); afterwards the app works offline-first.
-- **Daily game selection**: deterministic by date (rotating index over the game list) — same game on all devices, no server needed. Within-season no-repeat follows from rotation; least-recently-played kept as tiebreak rule for future seasons.
+- **Daily game selection**: deterministic by date — `index = daysSinceEpoch % gameCount` (currently 5), same game on all devices, no server needed. Repetition within a 7-day season is accepted until 7 games exist.
 - **Season rollover: auto-archive.** After day 7, the season closes, its score is archived to Seasons History, and a new empty season starts automatically.
 
 ## Open Questions
