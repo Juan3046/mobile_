@@ -6,7 +6,7 @@ Single source of truth for requirements. No implementation yet (requirements pha
 |------|---------|
 | `01-product-overview.md` | App concept, goals, seasons, leaderboard |
 | `02-gameplay-rules.md` | Daily game, duration, sensors, attempts, reset |
-| `03-screens.md` | Defined screens (currently: main screen only) |
+| `03-screens.md` | App screens: main, nick onboarding, result, ranking/history, lock |
 | `04-tech-stack.md` | Android Studio, Kotlin, GitHub |
 | `05-team-workflow.md` | 4-person team + AI agents, parallel plan (pending) |
 | `06-out-of-scope-roadmap.md` | Explicit non-MVP: multiplayer, music |
