@@ -38,6 +38,7 @@ interface Game {
   val title: String
   val description: String // how-to-play
   val durationMs: Long    // standard 30_000–90_000 (documented exceptions only)
+  val higherWins: Boolean // false for lowest-wins games (e.g. 05 soda time-to-pop)
   fun start(scope: GameScope)
   fun stop()
 }

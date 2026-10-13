@@ -1,9 +1,9 @@
 # 05 — Minigame 05: SODA SHAKE
 
 ## Concept
-A physical endurance and speed test. The player must physically shake the phone as fast as possible to build pressure inside a virtual soda can until it pops.
+A physical speed test. The player shakes the phone as fast as possible to build pressure inside a virtual soda can. **The can pops at 20 shakes.** There is no time limit — every run ends in a pop.
 
-> **Approved duration exception:** this game runs a single ~5s round, outside the standard 30–90s rule (see `docs/02-gameplay-rules.md`).
+> **Approved duration exception:** short variable-length single round (ends at 20 shakes, typically seconds), outside the standard 30–90s rule (see `docs/02-gameplay-rules.md`).
 
 ## Format & Camera
 - Portrait only, 2D cartoon UI.
@@ -14,16 +14,21 @@ A physical endurance and speed test. The player must physically shake the phone 
 - Device shaking (detecting high-force peaks on X, Y, and Z axes).
 
 ## Rules
-- The player must reach 100% pressure within a strict 5-second time limit.
-- If the timer hits zero before the pressure reaches 100% = Game Over.
+- Shake detection counts high-force peaks on X, Y, Z axes; each valid peak = 1 shake.
+- The can pops at **20 shakes**, ending the run. No time limit, no fail state (giving up forfeits the attempt per global no-pause rule).
+- Cheat guard (implementation): peaks must alternate direction / exceed a dead time so tiny vibrations don't count (tune in playtest).
+
+## Scoring
+- **Score = time to pop in centiseconds — lower wins** (`higherWins = false`). One run = one attempt (global 2-attempts/day, best = fastest); the daily best ranks the day for position points (never summed).
+
+## Fallback (missing sensor / permission denied)
+- Per global rule: **disable Play with a clear message** ("Soda Shake requires an accelerometer") and never record fake scores.
+
+## Persistence (local-first MVP)
+- Best (fastest) pop time, attempts used today; daily best uploads once for the shared ranking.
 
 ## Difficulty Curve
-- Round 1: Requires low shake intensity to fill the gauge.
-- Round 2-3: The pressure gauge drains if the player stops shaking for even 0.5 seconds.
-- Round 4+: The total physical force required to reach 100% increases significantly, demanding aggressive and continuous shaking.
+- Flat by design: every run needs the same 20 valid shakes. Difficulty is pure physical speed — no rounds, no drain, no scaling. The pressure gauge fills 5% per valid shake.
 
 ## Open Questions
-- [x] Decided: ~5s single-round duration approved as exception to the 30–90s rule.
-- [ ] Scoring mapping: binary win/lose, pressure %, or time-to-pop? How does it feed daily best / season sum?
-- [ ] Fallback: block + message if no accelerometer (per global rule)?
-- [ ] Persistence: what is saved locally?
+- [x] Decided: single short round ending at 20 shakes (duration exception); score = time-to-pop cs, lower wins; block + message fallback; local-first persistence.
