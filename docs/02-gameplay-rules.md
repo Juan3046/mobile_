@@ -13,7 +13,8 @@
 
 ## Duration & Format
 - **Standard games last 30–90 seconds.**
-- **Approved exception: Soda Shake (05) runs ~5s** (single shake-to-100% round). Documented in `games/05-soda-shake.md`.
+- **Approved exception: Soda Shake (05)** — short variable-length single round (ends at 20 shakes).
+- **Approved exception: Compass Chaos (04)** — fixed 20s round.
 - **Portrait orientation only.**
 - **No pause.** Timer keeps running; leaving the game forfeits the attempt.
 - Short rules, intuitive gameplay; each game shows a brief how-to-play.
