@@ -51,8 +51,8 @@ interface GameScope {
 Repositories in `:core:data`: `AttemptRepository` (2/day, local-midnight reset),
 `SeasonRepository` (7-day sum of daily bests, auto-archive), `HistoryRepository`.
 Navigation: `home → session(gameId) → result`; exhausted attempts → lock + countdown.
-Season points come only from daily positions (`(N−p+1)×25`, ties share, standings
-lock at 12:00 noon local next day) — raw game scores (cs vs points) are never mixed or summed.
+Season points come only from daily positions (`(N−p+1)×25`, ties share, noon-to-noon
+days, always live, no locks) — raw game scores (cs vs points) are never mixed or summed.
 
 ## Phases & Order
 

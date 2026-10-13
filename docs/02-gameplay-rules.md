@@ -2,7 +2,7 @@
 
 ## Session Model
 - One playable game per day.
-- **Daily reset: local midnight (00:00 / 12am device time).** New daily game + 2 fresh attempts.
+- **Daily reset: 12:00 noon local time.** New daily game + 2 fresh attempts. Playable at any moment of the day.
 - **Max 2 attempts per day per player.**
 - **Score rule: best of 2 counts.** Only the highest of the 2 daily attempts counts for season + history.
 - **Daily best ranks the day:** the best attempt's raw game score determines the day's position among all players; the position converts to season points via `(N−p+1)×25` (see `01-product-overview.md`). Raw scores are never summed across games.
