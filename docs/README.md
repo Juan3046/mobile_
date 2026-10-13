@@ -11,6 +11,7 @@ Single source of truth for requirements. No implementation yet (requirements pha
 | `05-team-workflow.md` | 4-person team + AI agents, parallel plan (pending) |
 | `06-out-of-scope-roadmap.md` | Explicit non-MVP: multiplayer, music |
 | `games/` | One `.md` per minigame (index + template: `games/README.md`) |
+| `08-implementation-plan.md` | Multi-module parallel plan: ownership, contracts, phases, PR rules |
 
 Conventions:
 - All content in English.

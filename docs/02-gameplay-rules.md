@@ -10,7 +10,8 @@
 - **Reset attempts button**: debug-only, resets today's attempt counter only. Past scores and seasons are untouched. Lives on the main screen as a small `Reset attempts (debug)` control; easy to remove/disable for release.
 
 ## Duration & Format
-- **All games last 30–90 seconds.**
+- **Standard games last 30–90 seconds.**
+- **Approved exception: Soda Shake (05) runs ~5s** (single shake-to-100% round). Documented in `games/05-soda-shake.md`.
 - **Portrait orientation only.**
 - **No pause.** Timer keeps running; leaving the game forfeits the attempt.
 - Short rules, intuitive gameplay; each game shows a brief how-to-play.
@@ -21,10 +22,10 @@
 - **Missing sensor / permission denied: block + message.** Disable Play for that game with a clear explanation; never record fake scores.
 
 ## Minigames
-- Library of minigames TBD. Each minigame must define:
+- Library of minigames in `games/`. Each minigame must define:
   - Title, thumbnail, short description.
   - Sensor(s) used + permissions required.
-  - Duration (30–90s), scoring, win/lose conditions.
+  - Duration (standard 30–90s; exceptions only if documented and approved), scoring, win/lose conditions.
   - Fallback behavior if sensor unavailable/permission denied.
 
 ## Open Questions

@@ -20,3 +20,9 @@ A fast-paced directional challenge. The player must physically spin their body a
 - 0-3 successful turns: 3.0 seconds per turn. 90-degree turns.
 - 4-7 successful turns: 2.0 seconds per turn. 180-degree turns introduced.
 - 8+ successful turns (Hell Mode): 1.2 seconds per turn. Rapid, unpredictable direction changes.
+
+## Open Questions
+- [ ] Run duration: total run length undefined — needs a fixed duration (standard 30–90s) or approved exception.
+- [ ] Scoring mapping: turns survived? Points? How does it feed daily best / season sum?
+- [ ] Fallback: block + message if no magnetometer (per global rule)?
+- [ ] Persistence: what is saved locally?

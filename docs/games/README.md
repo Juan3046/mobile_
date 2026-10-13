@@ -9,15 +9,17 @@ and always take precedence unless a game doc explicitly documents an approved ex
 | 01 | `01-escape-poruba.md` | Escape Poruba (2D arcade runner) | Defined |
 | 02 | `02-onion-roll.md` | Onion Roll (gyroscope, checkout belt) | Defined |
 | 03 | `03-blink-sniper.md` | Blink Sniper (front camera, blink detection) | Defined |
+| 04 | `04-compass-chaos.md` | Compass Chaos (magnetometer, face direction) | Draft — needs duration, scoring, fallback |
+| 05 | `05-soda-shake.md` | Soda Shake (accelerometer, shake to 100%) | Draft — duration exception granted, needs scoring |
 
-Season 1 needs 7 defined games: **3 / 7 done**.
+Season 1 needs 7 defined games: **5 / 7 drafted (3 defined, 2 draft)**.
 
 ## Conventions
 
 - File name: game number + lowercase kebab-case (e.g. `02-onion-roll.md`).
 - Games are referred to by their number (Game 01, Game 02, …) matching the index table.
 - All content in English.
-- Portrait orientation only; 30–90 seconds per run.
+- Portrait orientation only; 30–90 seconds per run (documented exceptions allowed, e.g. `05-soda-shake.md`).
 - Sensor-first controls; touch allowed only as a documented exception.
 - Keep the global 2-attempts/day rule (document any exception as open question).
 

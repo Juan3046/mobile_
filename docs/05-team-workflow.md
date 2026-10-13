@@ -11,9 +11,7 @@
 - No direct pushes to `main` (rule to enforce once repo exists).
 
 ## Parallel Development Plan
-- **Status: PENDING** — to be written when the user requests the implementation plan.
-- Intent: split work into **independent modules** so each person can ship and merge without blocking on others (user's preferred approach; final structure to be proposed by the agent).
-- The plan will include chronology, module boundaries, and merge strategy.
+- **Status: DECIDED** — see `08-implementation-plan.md` (multi-module Gradle, ownership P1–P4, Phase 0 contracts first, branch/PR rules).
 
 ## Agent Rules
 - Keep `docs/` and `AGENTS.md` in sync with every change (see `AGENTS.md` §4).
