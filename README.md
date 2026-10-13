@@ -36,4 +36,4 @@ git push -u origin feature/my-module
 
 ## Status
 
-Requirements phase — no app implementation yet. Parallel implementation plan: pending.
+Requirements phase — no app implementation yet. Parallel implementation plan: pending.;
