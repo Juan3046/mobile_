@@ -67,7 +67,7 @@ of them once:
 ```kotlin
 class GameEntry(                    // Adapter: logic + UI behind one stable type
   val game: Game,
-  val screen: @Composable (GameScope) -> Unit, // same scope the host passed to start()
+  val screen: @Composable () -> Unit, // renders the game's state — no params by design
 )
 class GameRegistry(entries: List<GameEntry>) {  // Registry, built once in :app
   val all: List<GameEntry>
@@ -96,7 +96,9 @@ fun sodaShakeEntry(accelerometer: AccelerometerSensor): GameEntry
   the **first** `onFinished` wins — the game is stopped once and `hostScope` is
   cancelled (sensor/camera listeners cannot leak); leaving the screen does the same
   cleanup. Games must not suspend after calling `onFinished`. The host renders
-  `entry.screen(scope)`; timer/attempts/result UI is Phase 2.
+  `entry.screen()`; screens take no parameters — the `Game` object owns the
+  `GameScope` it received in `start()`, so scoring/finishing rules stay out of the UI
+  (and on the JVM, where they are unit-tested). Timer/attempts/result UI is Phase 2.
 - Game authors edit only their own module (game impl + screen + entry factory);
   `:app` and `:feature:session` are stable during Phase 1b.
 

@@ -33,4 +33,4 @@ fun SodaShakeScreen() {
  * `FakeAccelerometerSensor` in tests); the placeholder ignores it until gameplay lands.
  */
 fun sodaShakeEntry(accelerometer: AccelerometerSensor): GameEntry =
-    GameEntry(SodaShakeGame) { _ -> SodaShakeScreen() }
+    GameEntry(SodaShakeGame) { SodaShakeScreen() }

@@ -49,7 +49,7 @@ fun SessionScreen(entry: GameEntry?) {
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        entry.screen(run)
+        entry.screen()
         if (finished == null) {
             Text(
                 text = "score: $score",

@@ -27,4 +27,4 @@ fun EscapePorubaScreen() {
  * Contract): `:app` wires this once into the `GameRegistry`, so gameplay work never
  * touches shared navigation. Escape is touch-only — no sensor injected.
  */
-fun escapePorubaEntry(): GameEntry = GameEntry(EscapePorubaGame) { _ -> EscapePorubaScreen() }
+fun escapePorubaEntry(): GameEntry = GameEntry(EscapePorubaGame) { EscapePorubaScreen() }
