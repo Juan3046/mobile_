@@ -1,6 +1,6 @@
 package com.rmgames.core.sensors
 
-/** Sensors used across minigames. Wrappers land in Phase 1 (owner: P4). */
+/** Sensors used across minigames. Contracts + Android adapters frozen in Phase 1a (docs/08-implementation-plan.md). */
 enum class SensorType {
     GYROSCOPE,
     ACCELEROMETER,

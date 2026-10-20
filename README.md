@@ -36,6 +36,9 @@ git push -u origin feature/my-module
 
 ## Status
 
-Phase 0 done: multi-module skeleton (11 modules), frozen `Game` contract, 33 unit
-tests. Next: Phase 1 (parallel module build) per `docs/08-implementation-plan.md`.
+Phase 0 + Phase 1a done: multi-module skeleton (12 modules), frozen contracts
+(`Game`/`GameScope`, `:core:sensors`, `:core:vision`) and the game hosting scaffolding
+(`GameEntry`/`GameRegistry`, session host, registry-driven nav), 64 unit tests.
+Next: Phase 1b (parallel game build) — games are unblocked, per
+`docs/08-implementation-plan.md`.
 No CI — run `./gradlew testDebugUnitTest` locally before opening a PR.

@@ -29,11 +29,15 @@ See `docs/04-tech-stack.md`.
 - Work in **independent modules** to avoid merge conflicts; the parallel development
   plan lives in `docs/08-implementation-plan.md` (module map, ownership P1–P4, phases).
 - GitHub flow: small PRs per module, English names, no direct pushes to `main` once the repo exists.
-- **Current phase: Phase 1a** (freeze shared hardware contracts in `:core:sensors`
-  and `:core:vision`); **Phase 1b (parallel game build) is next.** Each developer
-  owns one game module (see ownership map in `docs/08-implementation-plan.md`),
-  tests first (§5), placeholders until real gameplay lands. Re-read the plan
-  before coding.
+- **Current phase: Phase 1b (parallel game build)** — Phase 0 (frozen `Game`/`GameScope`)
+  and Phase 1a (shared hardware in `:core:sensors` + `:core:vision`) are merged, plus the
+  hosting scaffolding: `GameEntry`/`GameRegistry` contracts in `:core:common`, the
+  `SessionGameScope` host in `:feature:session`, and registry-driven nav in `:app`
+  (see "Game Hosting Contract" in `docs/08-implementation-plan.md`). Each developer
+  owns one game module (ownership map in `docs/08-implementation-plan.md`), tests first
+  (§5), placeholders until real gameplay lands. Game work happens **only inside your own
+  module** — never edit `:app`, `:feature:session` or shared navigation. Re-read the
+  plan before coding.
 
 ## 4. Mandatory Rule: Keep Docs in Sync
 **In every development phase, constantly align any change with the app documentation:**
