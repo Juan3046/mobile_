@@ -46,7 +46,7 @@ See `docs/04-tech-stack.md`.
 
 - Red → green → refactor for all new logic (repos, selectors, scoring, difficulty ramps, sensor wrappers).
 - Unit tests mandatory (JUnit + MockK); UI/instrumented tests where the module needs them (Espresso).
-- CI runs the full test suite on every PR; red CI blocks merge.
+- Run the full test suite locally (`./gradlew testDebugUnitTest`) before opening a PR; red tests block the PR.
 - Bug fixes include a failing-then-passing regression test.
 
 Docs index: `docs/README.md`.

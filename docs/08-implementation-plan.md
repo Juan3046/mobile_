@@ -58,8 +58,9 @@ days, always live, no locks) — raw game scores (cs vs points) are never mixed 
 ## Phases & Order
 
 - **Phase 0 — Contracts (together, short).** Freeze the `Game` interface, repos,
-  nav routes, minSdk 31, CI (build + lint on PR). No game logic. Exit: contracts
-  merged to `main`, everyone rebased.
+  nav routes, minSdk 31. No game logic. Exit: contracts
+  merged to `main`, everyone rebased. (A build+lint CI was created here, later
+  removed by decision — see `04-tech-stack.md`.)
 - **Phase 1 — Parallel build.** Each person builds only their modules against the
   contracts, using fakes for the rest. Games ship with procedural placeholders
   (no external assets). Exit: each module compiles standalone + own screen runs.
@@ -75,8 +76,11 @@ days, always live, no locks) — raw game scores (cs vs points) are never mixed 
   (e.g. `feature/game-onion-ramp`).
 - One module per PR, small PRs, English. Rebase onto `main` before opening.
 - No cross-module edits without the owner's OK in the PR.
-- Squash-merge, one reviewer, CI green required.
-- CI (`.github/workflows/android.yml`, created with the Android skeleton): on every PR runs `./gradlew testDebugUnitTest` + lint and **blocks merge on red**. Unit tests only for now (fast, free minutes); emulator instrumented tests come later for critical flows only.
+- Squash-merge, one reviewer. No CI (workflow removed) — the PR author runs
+  `./gradlew testDebugUnitTest lintDebug` locally and confirms green in the PR
+  description before requesting review.
+- Unit tests only for now (fast); emulator instrumented tests come later for
+  critical flows only. TDD stays mandatory (AGENTS.md §5) — just no automation.
 - Each PR that changes behavior updates the matching `docs/` file in the same PR.
 
 ## AI Agent Rules
