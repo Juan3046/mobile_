@@ -1,8 +1,10 @@
 package com.rmgames.core.common
 
+import kotlinx.coroutines.CoroutineScope
+
 /**
- * Contract every minigame implements (frozen in Phase 0).
- * See docs/08-implementation-plan.md.
+ * Contract every minigame implements (frozen in Phase 0; extended in Phase 1a
+ * with [hostScope]). See docs/08-implementation-plan.md.
  */
 interface Game {
     val id: String
@@ -17,6 +19,13 @@ interface Game {
 }
 
 interface GameScope {
+    /**
+     * Scope owned by the session host. Games launch their loops/sensor collection
+     * here (e.g. colecting [com.rmgames.core.sensors.GyroscopeSensor] readings);
+     * the host cancels it when the run ends, so games never manage their own
+     * scopes and cannot leak listeners.
+     */
+    val hostScope: CoroutineScope
     /** Raw game score (centiseconds or points). Daily best = max (or min). */
     fun onScore(value: Long)
     fun onFinished(win: Boolean)
