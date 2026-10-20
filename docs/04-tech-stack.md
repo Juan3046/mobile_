@@ -7,7 +7,7 @@
 - **Language of project**: English for code, comments, branches, and docs.
 - **Storage (MVP)**: local-first (Room/DataStore cache, offline by default) + **Firebase Spark plan (free, no billing)** for the shared scoreboard.
 - **Backend (free only)**: Firestore (50K reads / 20K writes per day quota) + Anonymous Auth. No Cloud Functions, no phone auth (both require Blaze) — seasons and daily game are resolved deterministically on-device.
-- **Testing (TDD mandatory)**: JUnit + MockK for unit tests, Espresso for UI tests. CI runs tests on every PR and blocks merge on failure.
+- **Testing (TDD mandatory)**: JUnit + MockK for unit tests, Espresso for UI tests. No CI — tests run locally (`:module:testDebugUnitTest`) and must be green before opening a PR.
 
 ## Constraints
 - Native Android only (no cross-platform in MVP).
@@ -16,5 +16,5 @@
 - Min SDK / target SDK: minSdk API 31 (Android 12) per user decision; targetSdk TBD (latest stable at implementation time).
 
 ## Open Questions
-- [x] Decided: local-only storage (Room/DataStore); minSdk API 31 (Android 12); basic GitHub Actions CI (build + lint on PR).
+- [x] Decided: local-only storage (Room/DataStore); minSdk API 31 (Android 12); **no CI** — GitHub Actions workflow removed (user decision); tests are run manually before each PR.
 - [ ] Target SDK / compile SDK at implementation time?
