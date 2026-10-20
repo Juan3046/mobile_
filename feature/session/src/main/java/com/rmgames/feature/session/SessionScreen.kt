@@ -16,15 +16,6 @@ import androidx.compose.ui.unit.dp
 import com.rmgames.core.common.GameEntry
 
 /**
- * Phase 0 placeholder kept only until `:app` is switched to the [GameEntry] overload
- * in the registry wiring change; removed there.
- */
-@Composable
-fun SessionScreen(gameId: String) {
-    Text("Session: $gameId (Phase 1)")
-}
-
-/**
  * Session host: runs one [GameEntry] (frozen before Phase 1b). See
  * docs/08-implementation-plan.md.
  *

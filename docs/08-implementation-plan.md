@@ -78,6 +78,19 @@ class GameRegistry(entries: List<GameEntry>) {  // Registry, built once in :app
 
 - `:app` builds the `GameRegistry` from the five entries and the NavHost resolves
   `session/{gameId}` through `find(...)` — **no route hardcoded per game**.
+- The per-game entry factories are **frozen** (each module owns its own):
+
+```kotlin
+fun escapePorubaEntry(): GameEntry                                  // touch-only
+fun onionRollEntry(gyroscope: GyroscopeSensor): GameEntry
+fun blinkSniperEntry(detector: BlinkDetector): GameEntry
+fun compassChaosEntry(compass: CompassSensor): GameEntry
+fun sodaShakeEntry(accelerometer: AccelerometerSensor): GameEntry
+```
+
+- `:feature:home` launcher (Phase 1b placeholder): `HomeScreen(games, onPlay)` lists the
+  registered games and emits `onPlay(gameId)` — data down / events up, no NavHost inside
+  home. The real daily home replaces the list in Phase 2.
 - `:feature:session` provides `SessionGameScope`, the concrete `GameScope` for one run:
   `startRun()` starts the game once; `onScore` is forwarded only while the run is live;
   the **first** `onFinished` wins — the game is stopped once and `hostScope` is
