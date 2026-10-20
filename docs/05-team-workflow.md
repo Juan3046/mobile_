@@ -11,7 +11,7 @@
 - No direct pushes to `main` (rule to enforce once repo exists).
 
 ## Parallel Development Plan
-- **Status: Phase 0 DONE** — Android skeleton (11 modules), frozen `Game` contract, local repos, 33 unit tests green (CI workflow created then later removed by decision). See `08-implementation-plan.md`. Team can now build Phase 1 in parallel.
+- **Status: Phase 1a** — new ownership: P1 Escape · P2 Onion · P3 Blink · P4 Compass + Soda. Shared hardware layers (`:core:sensors`, `:core:vision`) are frozen together, then games run in parallel (Phase 1b). See `08-implementation-plan.md`.
 
 ## Agent Rules
 - Keep `docs/` and `AGENTS.md` in sync with every change (see `AGENTS.md` §4).

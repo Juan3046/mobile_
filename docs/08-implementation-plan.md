@@ -3,9 +3,18 @@
 ## Module Map (each person owns whole modules — no shared files)
 
 ```text
-:app                        P1 — shell: MainActivity, NavHost, Hilt DI, navigation routes
-:core:common                P1 — theme, reusable UI, utils, Game/GameResult contracts
-:core:data                  P1 — Room + DataStore (local-first cache, offline) + Firestore
+Games (one owner each — Phase 1b):
+:feature:game:escape        P1 — Game 01 (touch drag, no sensors)
+:feature:game:onion         P2 — Game 02 (gyroscope)
+:feature:game:blink         P3 — Game 03 (front camera → :core:vision)
+:feature:game:compass       P4 — Game 04 (magnetometer)
+:feature:game:soda          P4 — Game 05 (accelerometer)
+
+Shared (frozen in Phase 1a — built together, no cross-module edits afterwards):
+:app                        shell: MainActivity, NavHost, DI, navigation routes,
+                             camera-permission UX
+:core:common                Game/GameScope contracts, theme, reusable UI, utils
+:core:data                  Room + DataStore (local-first cache, offline) + Firestore
                              (shared scoreboard, Spark free plan): attempts (local),
                              daily bests (upload 1 write/day/UID), seasons
                              (deterministic 7-day windows, auto-archive), history,
@@ -13,22 +22,21 @@
                              identity (Anonymous Auth UID + chosen nick).
                              Security rules: each UID writes only its own score
                              doc; ranking reads paginated (top 50).
-:core:sensors               P4 — wrappers: gyro, accelerometer shake, magnetometer
-                             compass, camera blink (CameraX + ML Kit),
-                             common SensorAvailability API
-:feature:home               P2 — main screen (title, thumbnail, how-to, Play,
+:core:sensors               sensor interfaces (gyro, accelerometer, compass),
+                             Android adapters, fakes, pure logic (shake detection,
+                             heading filter), SensorAvailability
+:core:vision                blink contract (EyeState/BlinkDetector) + fakes +
+                             ML Kit adapter (CameraX + ML Kit face detection)
+:feature:home               main screen (title, thumbnail, how-to, Play,
                              Seasons History button, attempts indicator, debug reset)
-:feature:session            P2 — game host: timer, 1 run = 1 attempt, best-of-2,
+:feature:session            game host: timer, 1 run = 1 attempt, best-of-2,
                              lock + countdown, result screen
-:feature:game:escape        P3 — Game 01 (touch drag)
-:feature:game:onion         P3 — Game 02 (gyroscope)
-:feature:game:blink         P4 — Game 03 (front camera)
-:feature:game:compass       P4 — Game 04 (magnetometer)
-:feature:game:soda          P4 — Game 05 (accelerometer)
 ```
 
-Ownership: P1 core · P2 flows · P3 games 01–02 · P4 sensors + games 03–05.
-Games 06–07 (still undefined) go to whoever finishes first. One reviewer per PR.
+Ownership: **P1 Escape · P2 Onion · P3 Blink · P4 Compass + Soda.** Shared modules
+are frozen after Phase 1a (built together); Phase 2 integration owners are assigned
+when Phase 2 starts. Games 06–07 (still undefined) go to whoever finishes first.
+One reviewer per PR.
 
 ## Contract (frozen in Phase 0, lives in `:core:common`)
 
@@ -43,10 +51,34 @@ interface Game {
   fun stop()
 }
 interface GameScope {
+  val hostScope: CoroutineScope // owned by :feature:session; cancelled on stop
   fun onScore(value: Long)  // raw game score (centiseconds or points) — daily best = max;
                             // it ranks the day only, season points come from position
   fun onFinished(win: Boolean)
 }
+```
+
+## Shared Hardware Contracts (frozen in Phase 1a)
+
+`:core:sensors` — games see Flows, never `SensorManager`. Adapter (Android impl),
+Observer (Flow), Strategy (pure logic), DI (interfaces + fakes):
+
+```kotlin
+data class Vector3(val x: Float, val y: Float, val z: Float)
+interface GyroscopeSensor     { fun readings(): Flow<Vector3> }  // rad/s
+interface AccelerometerSensor { fun readings(): Flow<Vector3> }  // m/s²
+interface CompassSensor       { fun headings(): Flow<Float> }    // degrees 0–360, smoothed
+// Pure logic (JUnit-testable, no Android): ShakeDetector, HeadingFilter
+// Fakes in the module for game tests; Android adapters via callbackFlow + awaitClose
+```
+
+`:core:vision` — camera pipeline behind one interface; ML Kit never leaks out:
+
+```kotlin
+enum class EyeState { OPEN, CLOSED }
+interface BlinkDetector { fun eyeState(): Flow<EyeState> }
+// MlKitBlinkDetector (CameraX + ML Kit face detection) is the only ML Kit consumer.
+// Camera permission UX lives in :app, not here.
 ```
 
 Repositories in `:core:data`: `AttemptRepository` (2/day, local-midnight reset),
@@ -61,9 +93,14 @@ days, always live, no locks) — raw game scores (cs vs points) are never mixed 
   nav routes, minSdk 31. No game logic. Exit: contracts
   merged to `main`, everyone rebased. (A build+lint CI was created here, later
   removed by decision — see `04-tech-stack.md`.)
-- **Phase 1 — Parallel build.** Each person builds only their modules against the
-  contracts, using fakes for the rest. Games ship with procedural placeholders
-  (no external assets). Exit: each module compiles standalone + own screen runs.
+- **Phase 1a — Shared hardware contracts (together, short).** Freeze
+  `:core:sensors` interfaces + fakes + pure logic, create `:core:vision` with the
+  blink contract, extend `GameScope` with `hostScope`. No game logic. Exit:
+  contracts merged to `main`, everyone rebased — games are unblocked.
+- **Phase 1b — Parallel build.** Each person builds only their game module against
+  the frozen contracts (sensors/vision via interfaces + fakes). Games ship with
+  procedural placeholders (no external assets). Exit: each game compiles standalone
+  + own screen runs.
 - **Phase 2 — Integration.** Wire daily selector → session → results → seasons
   rollover → history. Playtest tuning (ramps, thresholds, fairness check for 01).
   Exit: full daily loop works offline, 2 attempts enforced.
