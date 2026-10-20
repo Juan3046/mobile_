@@ -1,6 +1,6 @@
 # Docs Index — RM Games
 
-Single source of truth for requirements. No implementation yet (requirements phase).
+Single source of truth for requirements + the implementation plan. Status: Phase 0 done (skeleton + frozen contracts), Phase 1 (parallel build) not started yet.
 
 | File | Content |
 |------|---------|
@@ -8,7 +8,7 @@ Single source of truth for requirements. No implementation yet (requirements pha
 | `02-gameplay-rules.md` | Daily game, duration, sensors, attempts, reset |
 | `03-screens.md` | App screens: main, nick onboarding, result, ranking/history, lock |
 | `04-tech-stack.md` | Android Studio, Kotlin, GitHub |
-| `05-team-workflow.md` | 4-person team + AI agents, parallel plan (pending) |
+| `05-team-workflow.md` | 4-person team + AI agents, workflow, Phase 0 status |
 | `06-out-of-scope-roadmap.md` | Explicit non-MVP: multiplayer, music |
 | `games/` | One `.md` per minigame (index + template: `games/README.md`) |
 | `08-implementation-plan.md` | Multi-module parallel plan: ownership, contracts, phases, PR rules |
