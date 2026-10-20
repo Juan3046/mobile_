@@ -32,4 +32,4 @@ fun BlinkSniperScreen() {
  * `FakeBlinkDetector` in tests); the placeholder ignores it until gameplay lands.
  */
 fun blinkSniperEntry(detector: BlinkDetector): GameEntry =
-    GameEntry(BlinkSniperGame) { _ -> BlinkSniperScreen() }
+    GameEntry(BlinkSniperGame) { BlinkSniperScreen() }

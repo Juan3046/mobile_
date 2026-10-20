@@ -32,4 +32,4 @@ fun CompassChaosScreen() {
  * in tests); the placeholder ignores it until gameplay lands.
  */
 fun compassChaosEntry(compass: CompassSensor): GameEntry =
-    GameEntry(CompassChaosGame) { _ -> CompassChaosScreen() }
+    GameEntry(CompassChaosGame) { CompassChaosScreen() }

@@ -32,4 +32,4 @@ fun OnionRollScreen() {
  * in tests); the placeholder ignores it until gameplay lands.
  */
 fun onionRollEntry(gyroscope: GyroscopeSensor): GameEntry =
-    GameEntry(OnionRollGame) { _ -> OnionRollScreen() }
+    GameEntry(OnionRollGame) { OnionRollScreen() }
