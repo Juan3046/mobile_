@@ -78,8 +78,12 @@ class GameRegistry(entries: List<GameEntry>) {  // Registry, built once in :app
 
 - `:app` builds the `GameRegistry` from the five entries and the NavHost resolves
   `session/{gameId}` through `find(...)` — **no route hardcoded per game**.
-- `:feature:session` creates the real `GameScope`, calls `start()`/`stop()` around a
-  run and renders `entry.screen(scope)`; timer/attempts/result UI is Phase 2.
+- `:feature:session` provides `SessionGameScope`, the concrete `GameScope` for one run:
+  `startRun()` starts the game once; `onScore` is forwarded only while the run is live;
+  the **first** `onFinished` wins — the game is stopped once and `hostScope` is
+  cancelled (sensor/camera listeners cannot leak); leaving the screen does the same
+  cleanup. Games must not suspend after calling `onFinished`. The host renders
+  `entry.screen(scope)`; timer/attempts/result UI is Phase 2.
 - Game authors edit only their own module (game impl + screen + entry factory);
   `:app` and `:feature:session` are stable during Phase 1b.
 
