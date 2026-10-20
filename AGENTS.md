@@ -26,10 +26,13 @@ See `docs/04-tech-stack.md`.
 ## 3. Team & Workflow Context
 
 - Team of **4 developers + AI coding agents**.
-- Work in **independent modules** to avoid merge conflicts; a parallel development plan
-  will be defined once requirements are frozen (see `docs/05-team-workflow.md`).
+- Work in **independent modules** to avoid merge conflicts; the parallel development
+  plan lives in `docs/08-implementation-plan.md` (module map, ownership P1–P4, phases).
 - GitHub flow: small PRs per module, English names, no direct pushes to `main` once the repo exists.
-- **Do not implement code yet.** Current phase is requirements gathering only.
+- **Current phase: Phase 0 done** (multi-module skeleton + frozen contracts in
+  `:core:common`); **Phase 1 (parallel module build) is next.** Implement only your
+  own modules against the contracts, tests first (§5), placeholders until real
+  gameplay lands. Re-read `docs/08-implementation-plan.md` before coding.
 
 ## 4. Mandatory Rule: Keep Docs in Sync
 **In every development phase, constantly align any change with the app documentation:**

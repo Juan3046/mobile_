@@ -36,4 +36,6 @@ git push -u origin feature/my-module
 
 ## Status
 
-Requirements phase — no app implementation yet. Parallel implementation plan: pending.
+Phase 0 done: multi-module skeleton (11 modules), frozen `Game` contract, 33 unit
+tests. Next: Phase 1 (parallel module build) per `docs/08-implementation-plan.md`.
+No CI — run `./gradlew testDebugUnitTest` locally before opening a PR.
