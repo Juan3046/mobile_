@@ -58,6 +58,31 @@ interface GameScope {
 }
 ```
 
+## Game Hosting Contract (frozen before Phase 1b, lives in `:core:common`)
+
+Lets the four developers work in parallel without touching shared navigation —
+each `:feature:game:*` module exposes exactly one `GameEntry`, and `:app` lists all
+of them once:
+
+```kotlin
+class GameEntry(                    // Adapter: logic + UI behind one stable type
+  val game: Game,
+  val screen: @Composable (GameScope) -> Unit, // same scope the host passed to start()
+)
+class GameRegistry(entries: List<GameEntry>) {  // Registry, built once in :app
+  val all: List<GameEntry>
+  fun find(gameId: String): GameEntry?   // resolves session/{gameId}; null = not found
+  // duplicate Game.id at construction = IllegalArgumentException
+}
+```
+
+- `:app` builds the `GameRegistry` from the five entries and the NavHost resolves
+  `session/{gameId}` through `find(...)` — **no route hardcoded per game**.
+- `:feature:session` creates the real `GameScope`, calls `start()`/`stop()` around a
+  run and renders `entry.screen(scope)`; timer/attempts/result UI is Phase 2.
+- Game authors edit only their own module (game impl + screen + entry factory);
+  `:app` and `:feature:session` are stable during Phase 1b.
+
 ## Shared Hardware Contracts (frozen in Phase 1a)
 
 `:core:sensors` — games see Flows, never `SensorManager`. Adapter (Android impl),
@@ -98,8 +123,9 @@ days, always live, no locks) — raw game scores (cs vs points) are never mixed 
   blink contract, extend `GameScope` with `hostScope`. No game logic. Exit:
   contracts merged to `main`, everyone rebased — games are unblocked.
 - **Phase 1b — Parallel build.** Each person builds only their game module against
-  the frozen contracts (sensors/vision via interfaces + fakes). Games ship with
-  procedural placeholders (no external assets). Exit: each game compiles standalone
+  the frozen contracts (sensors/vision via interfaces + fakes, plus `GameEntry` +
+  `GameRegistry` + the `:feature:session` host). Games ship with procedural
+  placeholders (no external assets). Exit: each game compiles standalone
   + own screen runs.
 - **Phase 2 — Integration.** Wire daily selector → session → results → seasons
   rollover → history. Playtest tuning (ramps, thresholds, fairness check for 01).
