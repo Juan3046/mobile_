@@ -11,7 +11,7 @@
 - No direct pushes to `main` (rule to enforce once repo exists).
 
 ## Parallel Development Plan
-- **Status: Phase 1a** — new ownership: P1 Escape · P2 Onion · P3 Blink · P4 Compass + Soda. Shared hardware layers (`:core:sensors`, `:core:vision`) are frozen together, then games run in parallel (Phase 1b). See `08-implementation-plan.md`.
+- **Status: Phase 1b (parallel game build)** — ownership: P1 Escape · P2 Onion · P3 Blink · P4 Compass + Soda. Phase 1a is done: `:core:sensors` + `:core:vision` are frozen and the hosting scaffolding (`GameEntry`/`GameRegistry`, session host, registry-driven nav) is merged — each developer now works only inside their own game module. See `08-implementation-plan.md`.
 
 ## Agent Rules
 - Keep `docs/` and `AGENTS.md` in sync with every change (see `AGENTS.md` §4).

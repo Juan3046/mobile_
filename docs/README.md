@@ -1,6 +1,6 @@
 # Docs Index — RM Games
 
-Single source of truth for requirements + the implementation plan. Status: Phase 0 done (skeleton + frozen contracts), Phase 1 (parallel build) not started yet.
+Single source of truth for requirements + the implementation plan. Status: Phase 0 + Phase 1a done (skeleton, frozen contracts, game hosting scaffolding); Phase 1b (parallel game build) is next.
 
 | File | Content |
 |------|---------|
