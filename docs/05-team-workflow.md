@@ -19,6 +19,7 @@
 2. **Your files** (nobody else touches them):
    - P1 `:feature:game:escape` · P2 `:feature:game:onion` · P3 `:feature:game:blink` · P4 `:feature:game:compass` + `:feature:game:soda`, plus your own `docs/games/0X-*.md`.
    - **Never edit**: `:app`, `:feature:session`, `:core:*`, `gradle/libs.versions.toml`, `settings.gradle.kts`, `AGENTS.md`, or another team member's module. Contracts are frozen — if you believe one must change, first open a docs-only PR against `docs/08-implementation-plan.md` and agree it with the team.
+   - **Exception — you genuinely need a new library**: Compose/Material3/Flow cover most needs (check first), but if one is missing, open a *separate* PR that touches **only** `gradle/libs.versions.toml` + your `build.gradle.kts`, explain why in the description, and rebase immediately. Never mix dependency changes with gameplay changes.
 3. **Implement** (three pieces, all inside your module):
    - Your `Game` impl: `start(scope)` collects your sensor/camera Flows in `scope.hostScope`, reports `scope.onScore(value)` (centiseconds/points) and ends with `scope.onFinished(win)` — **never suspend after `onFinished`** (the host cancels `hostScope` there). Collecting Flows in `hostScope` is enough: the host stops your game and cancels the scope, so listeners cannot leak.
    - Your `@Composable` screen: renders your game's state only — the `Game` object is the single gateway to the host (screens never call `onScore`/`onFinished` directly).

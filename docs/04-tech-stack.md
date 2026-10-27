@@ -13,7 +13,7 @@
 - Native Android only (no cross-platform in MVP).
 - Portrait orientation locked.
 - Sensor APIs: CameraX (blink detection via ML Kit face detection), gyroscope, accelerometer, magnetometer (per minigame).
-- Min SDK / target SDK: minSdk API 31 (Android 12) per user decision; targetSdk TBD (latest stable at implementation time).
+- Min SDK / target SDK: minSdk API 31 (Android 12) per user decision; targetSdk 34 (set in `:app`; bump to the latest stable before release).
 
 ## Open Questions
 - [x] Decided: local-only storage (Room/DataStore); minSdk API 31 (Android 12); **no CI** — GitHub Actions workflow removed (user decision); tests are run manually before each PR.
