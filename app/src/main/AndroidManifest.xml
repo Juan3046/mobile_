@@ -4,6 +4,9 @@
          see docs/games/03-blink-sniper.md. Devices without a front camera still
          install; the in-app fallback explains why the game cannot run. -->
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- CAMERA implies these features; keep them optional so devices without a
+         camera still install (fallback explained in-app, see PermissionGate). -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.camera.front" android:required="false" />
     <application
         android:label="RM Games"
