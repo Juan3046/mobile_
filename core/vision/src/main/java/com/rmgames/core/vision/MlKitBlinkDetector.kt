@@ -2,6 +2,7 @@ package com.rmgames.core.vision
 
 import android.content.Context
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.concurrent.futures.await
@@ -34,6 +35,7 @@ class MlKitBlinkDetector(
 
     private val appContext = context.applicationContext
 
+    @ExperimentalGetImage
     override fun eyeState(): Flow<EyeState> = callbackFlow {
         val provider = ProcessCameraProvider.getInstance(appContext).await()
         val detector = FaceDetection.getClient(
