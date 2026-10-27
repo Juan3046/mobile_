@@ -1,5 +1,6 @@
 package com.rmgames.feature.game.blink
 
+import android.Manifest
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import com.rmgames.core.common.Game
@@ -32,4 +33,4 @@ fun BlinkSniperScreen() {
  * `FakeBlinkDetector` in tests); the placeholder ignores it until gameplay lands.
  */
 fun blinkSniperEntry(detector: BlinkDetector): GameEntry =
-    GameEntry(BlinkSniperGame) { BlinkSniperScreen() }
+    GameEntry(BlinkSniperGame, listOf(Manifest.permission.CAMERA)) { BlinkSniperScreen() }

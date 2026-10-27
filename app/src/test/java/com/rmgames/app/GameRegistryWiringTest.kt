@@ -1,5 +1,6 @@
 package com.rmgames.app
 
+import android.Manifest
 import com.rmgames.core.common.GameRegistry
 import com.rmgames.core.sensors.FakeAccelerometerSensor
 import com.rmgames.core.sensors.FakeCompassSensor
@@ -12,6 +13,7 @@ import com.rmgames.feature.game.onion.onionRollEntry
 import com.rmgames.feature.game.soda.sodaShakeEntry
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
@@ -55,5 +57,23 @@ class GameRegistryWiringTest {
         registry.all.forEach { entry ->
             assertNotNull("session/{gameId} must resolve ${entry.game.id}", registry.find(entry.game.id))
         }
+    }
+
+    @Test
+    fun `only blink declares the camera runtime permission`() {
+        val registry = registry()
+
+        val blink = registry.find("03-blink-sniper")
+        assertNotNull(blink)
+        assertEquals(listOf(Manifest.permission.CAMERA), blink!!.requiredPermissions)
+
+        registry.all
+            .filter { it.game.id != "03-blink-sniper" }
+            .forEach { entry ->
+                assertTrue(
+                    "${entry.game.id} needs no runtime permission, got ${entry.requiredPermissions}",
+                    entry.requiredPermissions.isEmpty(),
+                )
+            }
     }
 }

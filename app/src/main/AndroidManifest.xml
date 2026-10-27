@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Blink Sniper: runtime-permission gated in-app by PermissionGate (:app);
+         see docs/games/03-blink-sniper.md. Devices without a front camera still
+         install; the in-app fallback explains why the game cannot run. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera.front" android:required="false" />
     <application
         android:label="RM Games"
         android:supportsRtl="true">
