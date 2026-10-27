@@ -68,6 +68,7 @@ of them once:
 class GameEntry(                    // Adapter: logic + UI behind one stable type
   val game: Game,
   val screen: @Composable () -> Unit, // renders the game's state — no params by design
+  val requiredPermissions: List<String> = emptyList(), // CAMERA for blink; empty otherwise
 )
 class GameRegistry(entries: List<GameEntry>) {  // Registry, built once in :app
   val all: List<GameEntry>
@@ -99,6 +100,12 @@ fun sodaShakeEntry(accelerometer: AccelerometerSensor): GameEntry
   `entry.screen()`; screens take no parameters — the `Game` object owns the
   `GameScope` it received in `start()`, so scoring/finishing rules stay out of the UI
   (and on the JVM, where they are unit-tested). Timer/attempts/result UI is Phase 2.
+- Permission gate (in `:app`, by contract): an entry may declare `requiredPermissions`;
+  while they are not held the `session/{gameId}` route shows the explanation/fallback
+  instead of running (grant → play; denial → "open settings" hint; re-checked on
+  ON_RESUME) — a denied permission never records a fake score. Only Blink (CAMERA)
+  needs it today; front-camera hardware fallback copy + home-level Play disabling
+  land in Phase 2.
 - Game authors edit only their own module (game impl + screen + entry factory);
   `:app` and `:feature:session` are stable during Phase 1b.
 

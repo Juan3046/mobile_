@@ -71,7 +71,10 @@ fun RMGamesNav() {
         }
         composable("session/{gameId}") { backStack ->
             val gameId = backStack.arguments?.getString("gameId").orEmpty()
-            SessionScreen(registry.find(gameId))
+            val entry = registry.find(gameId)
+            PermissionGate(entry) {
+                SessionScreen(entry)
+            }
         }
     }
 }
