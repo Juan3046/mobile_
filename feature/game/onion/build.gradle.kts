@@ -20,13 +20,17 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true // debug-only keyboard controls are gated on BuildConfig.DEBUG
     }
 }
 
 dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:sensors"))
+    implementation(libs.kotlinx.coroutines.android)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.material3)
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
 }

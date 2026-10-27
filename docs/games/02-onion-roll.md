@@ -14,12 +14,20 @@ fall ends the run. There is no win state — score is pure survival time.
 - Contact with a fruit is **not lethal** (blocking only — see Rules).
 
 ## Controls
-- **Gyroscope**: tilt phone left/right; the onion strafes sideways following the tilt.
-  Smooth analog follow, no input lag. Tilt axis = horizontal only (portrait).
+- **Gyroscope — rate-based steering**: the onion's strafing speed follows the
+  phone's angular velocity around the portrait axis (`ω_z`, rad/s) — tilt left to
+  go left, tilt right to go right — through a deadband of `0.05 rad/s` (swallows
+  sensor bias), gain `0.55` (screen-widths/s per rad/s), a 60 ms smoothing window
+  and a comfort cap of `1.1` screen-widths/s. The onion **parks where the player
+  leaves it**: a gyroscope cannot sense a static lean, so a "follow the tilt
+  angle" model would either drift or rubber-band back to centre. Tilt axis =
+  horizontal only (portrait). Verify axis/sign on device (`STEERING_SIGN`, one
+  constant to flip; a flat hold may need the y-axis instead).
 - No jump, attack, or extra buttons. No touch input in the release build.
 - **Permission**: the Android gyroscope needs no runtime permission; the app only
   requires the sensor to exist (`SensorManager.TYPE_GYROSCOPE`).
-- Desktop/emulator debug only: `A` / Left arrow, `D` / Right arrow (strip for release).
+- Desktop/emulator debug only: `A` / Left arrow, `D` / Right arrow — compiled
+  behind `BuildConfig.DEBUG`, so release builds ignore them entirely.
 
 ## Format
 - Portrait only, **top-down view over the belt**.
@@ -32,10 +40,15 @@ fall ends the run. There is no win state — score is pure survival time.
 - **One run = one attempt** (global 2-attempts/day rule; best of 2 counts).
 - **Belt speed ramps continuously** over the run: fruits approach faster and the
   end of the belt arrives sooner. The ramp guarantees the fall before 90s.
-- **Fruit collision = blocking only.** Fruits occupy space; the onion bumps and
-  slides along them. No damage, no knockback, no instant death. Per decided
-  design the run is passive: the belt ramp alone determines survival time
-  (see Open Questions for the playtest caveat).
+- **Fruit collision = blocking only.** Fruits occupy space and the onion never
+  enters them: while a fruit is alongside (same horizontal band), it caps or
+  floors the onion's x-range — fruits on the right cap it, fruits on the left
+  floor it, and being squeezed between two holds the onion in place. A fruit
+  that would ride into the onion's space stops just short (`0.01` gap) and
+  resumes once the onion dodges away. Blocking never touches the fall timer.
+  No damage, no knockback, no instant death. Per decided design the run is
+  passive: the belt ramp alone determines survival time (see Open Questions
+  for the playtest caveat).
 - **Score = survived time in centiseconds** (win-equivalent max ≈ 8500, hard
   ceiling 9000 at 90s). Daily best of the 2 attempts; the daily best ranks the day for position points (same mapping as `01-escape-poruba.md`).
 - **No win state**: reaching 90s without falling is not expected; the run always
@@ -50,21 +63,29 @@ fall ends the run. There is no win state — score is pure survival time.
   - `BANANA` — long, blocks a full lane width.
 
 ## Difficulty Ramp
-Continuous time-based ramp (e.g. `beltSpeed = base * pow(1 + elapsed/T, k)`,
-tuned by playtest) driving:
-- Belt scroll speed (fruit approach speed).
-- Fruit spawn rate / density on the belt.
-- Time between fruit groups (less reaction time).
+Continuous time-based ramp (initial values live in `OnionRollEngine`, tune by
+playtest) driving:
+- **Fall window**: `progress = (elapsed / 82s)^1.6`; the run falls when
+  `progress` reaches 1 — 82 s, the centre of the 80–85 s window — with a 90 s
+  hard cap as a safety net. The end-of-belt line rises with `progress`.
+- **Belt speed**: `0.22 * (1 + elapsed / 45s)^1.3` screen-heights/s — both the
+  fruit approach speed and the belt scroll.
+- **Fruit spawns**: first at 600 ms, then every `1.2s → 0.4s` (scaled by
+  progress). One fruit per spawn while `progress < 0.45`, then 1–2 — never all
+  three lanes, so one lane always stays open. Mix: `CHERRY` 45 % / `APPLE` 35 %
+  / `BANANA` 20 %.
 - Curves tuned so: early game readable, mid game busy, last ~10s dense enough
   that the fall lands in the 80–85s window.
 
 ## HUD (minimal)
-- Small elapsed-time corner (e.g. `62.4s`).
-- **End-of-belt proximity gauge** showing how close the onion is to the fall.
+- Elapsed time, top-left corner (e.g. `62.4s`), locale-independent formatting.
+- **End-of-belt proximity gauge**, top-right, showing how close the onion is to
+  the fall (the host's score overlay sits top-centre, so corners stay clear).
 - Nothing else.
 
 ## Game Over Flow
-- On falling off the end: short fall animation, then results: survived time +
+- On falling off the end: short fall animation (700 ms; the score is frozen at
+  the moment of the fall), then results: survived time +
   best (local). Retry respects global attempts; with 0 attempts left →
   lock + countdown screen (global rule).
 - Fast loop: play → fall → retry almost instantly while attempts remain.
@@ -92,4 +113,13 @@ tuned by playtest) driving:
 - [ ] Playtest caveat: a fully passive run means most players post ≈ the same
   score. If the leaderboard stagnates, revisit (e.g. small ground loss on contact
   or per-run randomized ramp). Do not change before first playtest.
-- [ ] Ramp tuning: exact `base` speed / curve for the 80–85s perfect-run window.
+- [ ] Ramp tuning: initial values are in `OnionRollEngine` (fall at `82s` via
+  `^1.6`, belt `0.22 * (1 + t/45s)^1.3`, spawns `1.2s → 0.4s`); confirm the
+  80–85 s window and the feel by playtest.
+
+## Implementation (Phase 1b)
+- `feature/game/onion`: `OnionRollEngine` (pure rules, JVM unit tests),
+  `OnionRollGame` (16 ms loop on `hostScope`, gyro → engine, centisecond
+  scores, `onFinished(false)` after the fall animation), `OnionRollScreen`
+  (Compose rendering + debug keys).
+- Tests: `OnionRollEngineTest` + `OnionRollGameTest`.
