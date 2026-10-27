@@ -16,6 +16,18 @@ Short daily sensor-driven mobile games (Android native, Kotlin, portrait only).
 Update the relevant `.md` in the same change whenever behavior, screens,
 rules, stack, or workflow changes. English everywhere.
 
+## How to Build
+
+Requires **JDK 17**. Recent Android Studio bundles JBR (Java 25), which breaks
+Kotlin 2.0.21 (`IllegalArgumentException: 25.0.3`) — point Gradle at a JDK 17:
+
+- **Android Studio**: Settings → Build, Execution, Deployment → Build Tools → Gradle → **Gradle JDK → 17** (download one if no JDK 17 is listed). Do not keep the embedded JBR if it reports Java 23+.
+- **Terminal**: export `JAVA_HOME` to a JDK 17 (e.g. Temurin 17) before running Gradle.
+
+```sh
+./gradlew testDebugUnitTest   # full unit suite — run locally before every PR (no CI)
+```
+
 ## How to Collaborate (4 + AI agents)
 
 1. Clone `main`, never push directly to it.
