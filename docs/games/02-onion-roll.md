@@ -84,7 +84,8 @@ playtest) driving:
 - Nothing else.
 
 ## Game Over Flow
-- On falling off the end: short fall animation (700 ms; the score is frozen at
+- On falling off the end: short fall animation (700 ms; the onion drops with a
+  gravity-like quadratic ease and tumbles up to 240°; the score is frozen at
   the moment of the fall), then results: survived time +
   best (local). Retry respects global attempts; with 0 attempts left →
   lock + countdown screen (global rule).

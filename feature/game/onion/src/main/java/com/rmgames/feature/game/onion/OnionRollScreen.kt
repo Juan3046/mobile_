@@ -19,6 +19,9 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.KeyEvent
@@ -90,13 +93,36 @@ fun OnionRollScreen(
                 }
             }
 
-            // The onion: an accelerating drop once the belt runs out.
-            val drop = s.fallProgress * s.fallProgress * size.height * 0.6f
-            drawCircle(
-                color = OnionColor,
-                radius = ONION_HALF_W * size.width,
-                center = Offset(s.onionX * size.width, ONION_Y * size.height + drop),
+            // The onion: an accelerating, tumbling drop once the belt runs out.
+            val onionRadius = ONION_HALF_W * size.width
+            val onionCenter = Offset(
+                s.onionX * size.width,
+                ONION_Y * size.height + fallDropFraction(s.fallProgress) * size.height * FALL_DROP_SCREENS,
             )
+            rotate(degrees = fallTiltDeg(s.fallProgress), pivot = onionCenter) {
+                drawCircle(color = OnionColor, radius = onionRadius, center = onionCenter)
+                val face = faceLayout(onionRadius)
+                drawCircle(
+                    color = FaceColor,
+                    radius = face.eyeRadius,
+                    center = onionCenter + Offset(face.leftEyeX, face.leftEyeY),
+                )
+                drawCircle(
+                    color = FaceColor,
+                    radius = face.eyeRadius,
+                    center = onionCenter + Offset(face.rightEyeX, face.rightEyeY),
+                )
+                // Lower half of a circle = smile.
+                drawArc(
+                    color = FaceColor,
+                    startAngle = 20f,
+                    sweepAngle = 140f,
+                    useCenter = false,
+                    topLeft = onionCenter + Offset(face.smileCx - face.smileRadius, face.smileCy - face.smileRadius),
+                    size = Size(face.smileRadius * 2f, face.smileRadius * 2f),
+                    style = Stroke(width = face.eyeRadius * 0.8f, cap = StrokeCap.Round),
+                )
+            }
 
             // End-of-belt proximity gauge (top-right; the host's score sits top-centre).
             val gaugeWidth = size.width * 0.3f
@@ -138,12 +164,6 @@ private fun handleDebugKey(event: KeyEvent, onDebugSteer: (Float?) -> Unit): Boo
     }
 }
 
-/** "62.4s" — locale-independent, so the HUD reads the same everywhere. */
-private fun elapsedLabel(elapsedMs: Long): String {
-    val tenths = elapsedMs / 100
-    return "${tenths / 10}.${tenths % 10}s"
-}
-
 private val BeltColor = Color(0xFFB0BEC5)
 private val SlatColor = Color(0xFF90A4AE)
 private val VoidColor = Color(0xFF263238)
@@ -155,3 +175,7 @@ private val OnionColor = Color(0xFFCE93D8)
 private val GaugeTrack = Color(0x66FFFFFF)
 private val GaugeFill = Color(0xFFFF7043)
 private val HudTextColor = Color(0xFF263238)
+private val FaceColor = Color(0xFF4A148C)
+
+/** Full fall drop distance, in screen heights. */
+private const val FALL_DROP_SCREENS = 0.6f
