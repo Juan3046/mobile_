@@ -125,6 +125,25 @@ Czech beer on a poster, trams, dorm blocks. Never all at once.
 - ~85s: show `ALMOST OUT.`
 - Never obscure obstacles with effects.
 
+## Implementation Plan & Current Status
+
+Implementation stays inside `:feature:game:escape` and follows TDD:
+
+1. Write JVM tests for movement bounds, collision, score/time, difficulty, and safe-pattern reachability.
+2. Build a pure Kotlin simulation engine with injectable randomness, continuous difficulty, lane patterns, collision checks, and a 90-second finish.
+3. Connect the engine to `Game`/`GameScope` and render procedural scenery/HUD in Compose; no external assets.
+4. Run module tests, the full unit suite, lint, and app debug build before opening the module PR.
+
+Phase 1b implementation currently includes the pure game loop, drag control, debug keyboard steering, procedural Poruba-like scene, HUD/distance, zone labels, hazard patterns, reachable-gap selection, collision result, 100ms impact freeze, escape animation, and occasional haptics from 60s. Difficulty is driven by `pow(elapsed / 90, 1.8)`; a new pattern waits until the previous row has passed the player to avoid overlapping its safe corridor.
+
+Deferred to host/data integration or later playtest:
+- `ESCAPE AGAIN` instant retry: current session host ends/cancels a run and does not yet expose a retry callback or remaining-attempt state. The current result dialog returns to the game menu; do not create a game-owned scope to bypass the host lifecycle.
+- Durable personal records (`best time`, `max distance`, attempts, escapes) and shared daily ranking: require the `:core:data`/session contracts.
+- Audio assets and audio playback; the game currently runs silently.
+- Playtest tuning of spawn rate, hazard widths, and difficulty; the unit tests establish invariants, not the final player-facing difficulty.
+- Richer moving-obstacle behaviors and zone-specific landmark/decor pools; current hazards are procedural lane patterns and background building silhouettes.
+
 ## Open Questions
 - [x] Decided: touch allowed for Escape Poruba (sensor-first is a guideline); 1 run = 1 attempt (ESCAPE AGAIN only with attempts left, else lock + countdown); score = survived centiseconds (win = 9000), daily best = max and ranks the day for position points.
-- [ ] Desktop A/D keys: debug-only and stripped from release? (assumed yes, to confirm at implementation).
+- [x] Desktop A/D and arrow keys are debug-only and gated by the debug build.
+- [ ] Host retry support: add a per-run restart action in `:feature:session` so `ESCAPE AGAIN` starts a fresh attempt while respecting the daily limit.
