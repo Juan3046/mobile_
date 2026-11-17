@@ -116,6 +116,7 @@ class BlinkSniperGame(
             shotsFired = engine.shotsFired,
             finished = engine.isFinished,
             endReason = engine.endReason,
+            lastHit = engine.lastHit,
         )
     }
 

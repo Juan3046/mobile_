@@ -1,6 +1,6 @@
 package com.rmgames.feature.game.blink
 
-import kotlin.math.hypot
+import kotlin.math.abs
 import kotlin.random.Random
 
 /** Horizontal position of the fixed crosshair, normalized to the gallery box. */
@@ -28,6 +28,21 @@ data class TargetUi(
     val bullseyeRadius: Double,
 )
 
+/**
+ * One scoring shot, so the screen can celebrate it (docs/games/03-blink-sniper.md):
+ * the points earned, where the target was, when it happened on the run clock — the
+ * impact burst reads it to know how far the animation has advanced — and a [sequence]
+ * that changes on every hit so the UI restarts its animation instead of replaying a
+ * stale one.
+ */
+data class HitFeedback(
+    val points: Int,
+    val x: Double,
+    val y: Double,
+    val atMs: Long,
+    val sequence: Int,
+)
+
 /** Immutable snapshot of one run, consumed by the Compose screen. */
 data class BlinkSniperUiState(
     val score: Int = 0,
@@ -38,6 +53,8 @@ data class BlinkSniperUiState(
     val shotsFired: Int = 0,
     val finished: Boolean = false,
     val endReason: EndReason? = null,
+    /** Most recent scoring shot, or null when the run has not scored yet. */
+    val lastHit: HitFeedback? = null,
 )
 
 /**
@@ -45,19 +62,14 @@ data class BlinkSniperUiState(
  * a fixed 60s timer, three difficulty phases (0-20 / 20-40 / 40-60s) and a
  * crosshair fixed at the centre of the gallery.
  *
- * Only [centerLane] can be scored: the crosshair does not move, so targets on the
- * other lanes are decoys (decided — see the game doc).
+ * Every target travels along that crosshair line (decided after playtest — see the
+ * game doc): the crosshair never moves, so a target anywhere else could not be shot,
+ * and decoy lanes only read as a bug.
  */
 data class BlinkSniperConfig(
     val durationMs: Long = 60_000,
     /** Minimum gap between two shots; blocks one blink from firing twice. */
     val cooldownMs: Long = 300,
-    /** Vertical centre of every lane, normalized to the gallery box. */
-    val lanesY: List<Double> = listOf(0.14, 0.32, 0.50, 0.68, 0.86),
-    /** Lane that sits exactly under the crosshair — the only hittable one. */
-    val centerLane: Int = 2,
-    /** Share of spawns placed on the crosshair lane; the rest are decoys. */
-    val centerLaneChance: Double = 0.5,
     val standardOuterRadius: Double = 0.070,
     val standardBullseyeRadius: Double = 0.030,
     /** Small targets are both smaller and harder to time. */
@@ -89,7 +101,6 @@ data class BlinkSniperConfig(
 /** One target while it is alive. Speed is fixed at spawn; position is derived. */
 private data class LiveTarget(
     val id: Int,
-    val lane: Int,
     val kind: TargetKind,
     val spawnedAtMs: Long,
     val startX: Double,
@@ -112,15 +123,6 @@ class BlinkSniperEngine(
     private val random: Random = Random.Default,
 ) {
 
-    init {
-        require(config.centerLane in config.lanesY.indices) {
-            "centerLane ${config.centerLane} is outside ${config.lanesY.size} lanes"
-        }
-        require(config.lanesY[config.centerLane] == CROSSHAIR_Y) {
-            "centerLane must sit on the crosshair (y=$CROSSHAIR_Y)"
-        }
-    }
-
     var elapsedMs: Long = 0L
         private set
     var score: Int = 0
@@ -133,6 +135,9 @@ class BlinkSniperEngine(
         private set
     var endReason: EndReason? = null
         private set
+    /** Most recent scoring shot; null until the run scores, kept across ticks. */
+    var lastHit: HitFeedback? = null
+        private set
 
     val durationMs: Long get() = config.durationMs
 
@@ -140,13 +145,14 @@ class BlinkSniperEngine(
     private var nextId = 0
     private var nextSpawnAtMs = 0L
     private var lastShotAtMs: Long? = null
+    private var hitSequence = 0
 
-    /** Targets as the UI should draw them right now. */
+    /** Targets as the UI should draw them right now — always on the crosshair line. */
     fun snapshot(): List<TargetUi> = targets.map { target ->
         TargetUi(
             id = target.id,
             x = xOf(target, elapsedMs),
-            y = config.lanesY[target.lane],
+            y = CROSSHAIR_Y,
             kind = target.kind,
             outerRadius = target.outerRadius,
             bullseyeRadius = target.bullseyeRadius,
@@ -184,11 +190,9 @@ class BlinkSniperEngine(
         lastShotAtMs = nowMs
         shotsFired++
 
+        // Targets always ride the crosshair line, so only the horizontal gap matters.
         val candidates = targets.mapNotNull { target ->
-            val distance = hypot(
-                xOf(target, nowMs) - CROSSHAIR_X,
-                config.lanesY[target.lane] - CROSSHAIR_Y,
-            )
+            val distance = abs(xOf(target, nowMs) - CROSSHAIR_X)
             if (distance <= target.outerRadius) target to distance else null
         }
         if (candidates.isEmpty()) return ShotOutcome.MISS
@@ -207,12 +211,25 @@ class BlinkSniperEngine(
             return ShotOutcome.BOMB
         }
         return if (distance <= hit.bullseyeRadius) {
-            score += 2
+            registerHit(hit, nowMs, points = 2)
             ShotOutcome.BULLSEYE
         } else {
-            score += 1
+            registerHit(hit, nowMs, points = 1)
             ShotOutcome.OUTER
         }
+    }
+
+    /** Scores the shot and remembers where it landed so the screen can celebrate it. */
+    private fun registerHit(target: LiveTarget, nowMs: Long, points: Int) {
+        score += points
+        hitSequence++
+        lastHit = HitFeedback(
+            points = points,
+            x = xOf(target, nowMs),
+            y = CROSSHAIR_Y,
+            atMs = nowMs,
+            sequence = hitSequence,
+        )
     }
 
     private fun end(reason: EndReason) {
@@ -229,7 +246,6 @@ class BlinkSniperEngine(
 
         targets = targets + LiveTarget(
             id = nextId++,
-            lane = pickLane(),
             kind = kind,
             spawnedAtMs = atMs,
             startX = config.startX,
@@ -254,12 +270,6 @@ class BlinkSniperEngine(
             roll < bombChance + config.smallChance -> TargetKind.FAST_SMALL
             else -> TargetKind.STANDARD
         }
-    }
-
-    private fun pickLane(): Int {
-        if (random.nextDouble() < config.centerLaneChance) return config.centerLane
-        val decoys = config.lanesY.indices.filter { it != config.centerLane }
-        return decoys[random.nextInt(decoys.size)]
     }
 
     private fun jitter(): Double =

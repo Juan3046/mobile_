@@ -3,7 +3,7 @@
 > Ref. 2.2.1 — Blink Sniper (Camera). Sensor-driven game, part of Season 1 library.
 
 ## Concept
-A stationary crosshair is fixed in the center of the screen. Targets ("dianas") pass continuously across the screen horizontally from left to right at various heights and speeds. The app uses the front-facing camera to detect when the player blinks. Every time a blink is detected, an arrow is fired instantly at the crosshair location.
+A stationary crosshair is fixed in the center of the screen. Targets ("dianas") pass continuously across the screen horizontally from left to right along the crosshair line, at varying speeds, so every target sweeps straight through the crosshair. The app uses the front-facing camera to detect when the player blinks. Every time a blink is detected, an arrow is fired instantly at the crosshair location.
 
 - **Objective**: Score as many points as possible within 60 seconds by shooting targets with timed blinks.
 - **Normal target hit**: +1 point.
@@ -22,22 +22,23 @@ A stationary crosshair is fixed in the center of the screen. Targets ("dianas") 
 
 ## Format
 - **Orientation**: Portrait only.
-- **Camera View**: 2D arcade shooting gallery with targets scrolling horizontally from left to right across five height lanes (`y = 0.14 / 0.32 / 0.50 / 0.68 / 0.86`, normalized).
+- **Camera View**: 2D arcade shooting gallery with targets scrolling horizontally from left to right along a single line (`y = 0.50`, normalized), passing straight through the fixed crosshair.
 - **Camera Feedback Overlay**: Small box in a top corner showing the **eye tracking state** (open eye / closed eye + `CAM` label). *Provisional: a real video thumbnail needs a `:core:vision` change, which is frozen during Phase 1b — see Open Questions.*
 - **Duration**: Fixed **60-second timer** (respecting the global 30–90s rule).
 
 ## Rules & Scoring
 - **One run = one attempt** (global 2-attempts/day rule; best of 2 counts).
 - **Hit Detection** (crosshair fixed at 0.5 / 0.5 of the gallery box; **decided**):
-  - Only the **center lane** (`y = 0.50`) can ever be hit. The crosshair does not move, so targets on the other lanes are **visual decoys** — they raise the density and the reading challenge but cannot be scored.
+  - Every target travels along `y = 0.50`, straight through the crosshair, so it is always hittable. **Decided after playtest**: the crosshair does not move, so a target anywhere else could not be aimed at — there are **no decoy lanes**, only targets and bombs.
   - Distance from the crosshair to the target center determines the score for hittable targets.
   - Inner bullseye hit (≤ 0.030 gallery widths): **+2 points**.
   - Outer ring hit (≤ 0.070 gallery widths): **+1 point**.
   - Miss (nothing in range, or cooldown active): 0 points, arrow wasted.
+  - **Hit Feedback**: a scoring shot pops `+1` / `+2` over the crosshair (mint for a bullseye, gold for the outer ring) plus an expanding shockwave at the impact point, both driven by `HitFeedback` (`points`, `x`, `y`, `atMs`, `sequence`) and shown for 700 ms (pop) / 450 ms (shockwave). The `sequence` increments per hit so the pop restarts instead of replaying a finished one; misses and bombs show no scoring feedback.
 - **Bomb / Hazard Target**:
   - Identified visually (e.g. red skull / bomb icon on target).
   - Shooting a bomb target results in **instant Game Over**. The run ends immediately, but the player **keeps all points earned up to that moment**.
-- **Target Movement**: All targets travel horizontally from left to right across multiple height lanes at varying speeds.
+- **Target Movement**: All targets travel horizontally from left to right along the crosshair line at varying speeds.
 - **Target Expiration**: Targets crossing off-screen without being shot simply exit without penalty.
 - **Win / Finish State**: Timer reaches 0.0s without hitting a bomb target (`TIME'S UP!`).
 - **Score Mapping**: Score = Total Points accumulated during the run. Daily best = max of up to 2 attempts; the daily best ranks the day for position points (never summed).
@@ -45,7 +46,7 @@ A stationary crosshair is fixed in the center of the screen. Targets ("dianas") 
 ## Target Types
 1. **Standard Target**: Classic red and white concentric rings. Outer radius = 0.070, bullseye = 0.030 gallery widths (+1 / +2 pts).
 2. **Fast / Small Target**: Smaller and 1.35× faster, so it needs tighter timing. Outer radius = 0.050, bullseye = 0.020 (+1 / +2 pts).
-3. **Bomb Target**: Dark red / black with a hazard cross. Shooting this causes instant Game Over (keeping current points).
+3. **Bomb Target**: Dark red body with a black core, a bold yellow hazard cross and a breathing orange halo (900 ms cycle) so it stands out from the standard targets at a glance. Shooting this causes instant Game Over (keeping current points). The halo sits outside the hit radius: it is a warning, not part of the target.
 
 ## Difficulty & Progression
 Continuous time-based ramp over the 60-second run (all values are `BlinkSniperConfig` defaults):
@@ -54,7 +55,7 @@ Continuous time-based ramp over the 60-second run (all values are `BlinkSniperCo
 - **20–40s (Phase 2 - Intermediate)**: spawn interval ~1107 → ~813 ms, speed ~0.37 → 0.46, **12% bomb chance** per spawn.
 - **40–60s (Phase 3 - High Intensity)**: spawn interval ~813 → 520 ms, speed ~0.46 → 0.55, **30% bomb chance** per spawn.
 
-Shared modifiers: per-target speed jitter ×0.85–1.15, 25% chance of a Fast/Small target, 50% of spawns land on the crosshair lane (the rest are decoys), hard cap of 14 simultaneous targets, targets spawn just off the left edge (`x = -0.12`) and are dropped past `x = 1.12`.
+Shared modifiers: per-target speed jitter ×0.85–1.15, 25% chance of a Fast/Small target, every spawn travels along the crosshair line (no decoy lanes), hard cap of 14 simultaneous targets, targets spawn just off the left edge (`x = -0.12`) and are dropped past `x = 1.12`.
 
 ## HUD (minimal)
 - **Top Left**: Score counter (e.g. `SCORE: 18`).
@@ -70,7 +71,7 @@ Shared modifiers: per-target speed jitter ×0.85–1.15, 25% chance of a Fast/Sm
 ## Art Direction
 - **Theme**: Carnival / arcade shooting gallery.
 - **Color Palette**: Bright contrasting colors for targets against a dark gallery background.
-- **Provisional Graphics**: Procedural vector / Canvas shapes (concentric circles, crosshairs, bomb icon) so code compiles and runs without external asset files.
+- **Provisional Graphics**: Procedural vector / Canvas shapes (concentric circles, crosshairs, a hazard cross with a breathing halo on bombs, floating `+N` hit pops and impact shockwaves) so code compiles and runs without external asset files.
 
 ## Fallback (Missing Sensor / Permission Denied)
 - Per global rules: If `CAMERA` permission is denied or no front camera is available, **disable Play** with a clear explanation screen:
@@ -82,6 +83,6 @@ Shared modifiers: per-target speed jitter ×0.85–1.15, 25% chance of a Fast/Sm
 
 ## Open Questions
 - [x] Decided: Fixed 60-second timer; retain accumulated points on bomb hit; real-time camera thumbnail in corner; targets travel left-to-right across lanes; instant raycast arrow shot on blink detection; score = total points earned.
-- [x] Decided (Phase 1b): **only the center lane is hittable** — the crosshair is fixed, so the other lanes are visual decoys. This keeps the shot honest (blink timing is the skill) instead of requiring an aim mechanism the blink input cannot provide.
+- [x] Decided (Phase 1b, revised after playtest): **every target travels along the crosshair line** — the crosshair is fixed, so decoy lanes could never be aimed at and read as a bug rather than as a challenge. The shot stays honest (blink timing is the skill) without needing an aim mechanism the blink input cannot provide.
 - [ ] **Real camera preview in the corner.** The current build shows a placeholder eye-state box because `:core:vision` only exposes `EyeState`/`BlinkDetector`; adding a CameraX preview surface means changing a frozen shared module. Decide whether to extend `:core:vision` (owner: Phase 1a) or accept the eye-state placeholder for the MVP.
 - [ ] ML Kit eye detection threshold tuning (e.g. `< 0.25` open probability) during initial implementation playtests.

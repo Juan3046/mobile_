@@ -2,6 +2,8 @@ package com.rmgames.feature.game.blink
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.random.Random
@@ -30,7 +32,6 @@ class BlinkSniperEngineTest {
         bombChanceWarmup: Double = 0.0,
         bombChanceIntermediate: Double = 0.0,
         bombChanceHigh: Double = 0.0,
-        centerLaneChance: Double = 1.0,
         smallChance: Double = 0.0,
     ) = BlinkSniperConfig(
         durationMs = durationMs,
@@ -43,7 +44,6 @@ class BlinkSniperEngineTest {
         bombChanceWarmup = bombChanceWarmup,
         bombChanceIntermediate = bombChanceIntermediate,
         bombChanceHigh = bombChanceHigh,
-        centerLaneChance = centerLaneChance,
         smallChance = smallChance,
     )
 
@@ -62,6 +62,24 @@ class BlinkSniperEngineTest {
         assertEquals(1, engine.spawnedCount)
         assertEquals(CROSSHAIR_Y, target.y, 0.0)
         assertEquals(TargetKind.STANDARD, target.kind)
+    }
+
+    @Test
+    fun `every target travels along the crosshair line`() {
+        // Default config, so the old 50/50 decoy split would fail this immediately.
+        val engine = BlinkSniperEngine(
+            BlinkSniperConfig(startSpawnIntervalMs = 500, endSpawnIntervalMs = 500),
+            Random(seed = 42),
+        )
+
+        var t = 0L
+        while (t < 60_000) {
+            engine.tick(t)
+            t += 100
+        }
+
+        assertTrue("spawned=${engine.spawnedCount}", engine.spawnedCount > 10)
+        assertTrue(engine.snapshot().all { it.y == CROSSHAIR_Y })
     }
 
     @Test
@@ -94,7 +112,6 @@ class BlinkSniperEngineTest {
             endSpawnIntervalMs = 520,
             speedJitterMin = 1.0,
             speedJitterMax = 1.0,
-            centerLaneChance = 1.0,
             smallChance = 0.0,
         )
         val engine = BlinkSniperEngine(config, Random(7))
@@ -230,6 +247,85 @@ class BlinkSniperEngineTest {
         assertEquals(EndReason.BOMB, engine.endReason)
         assertEquals(2, engine.score)
         assertEquals(ShotOutcome.IGNORED, engine.shoot(22_000))
+    }
+
+    // --- Hit feedback -------------------------------------------------------
+
+    @Test
+    fun `a bullseye publishes feedback with its points and position`() {
+        val engine = engine()
+        engine.tick(0)
+        engine.tick(1_240)
+
+        assertEquals(ShotOutcome.BULLSEYE, engine.shoot(1_240))
+
+        val hit = requireNotNull(engine.lastHit) { "no feedback after a scoring shot" }
+        assertEquals(2, hit.points)
+        assertEquals(0.5, hit.x, 1e-9)
+        assertEquals(CROSSHAIR_Y, hit.y, 0.0)
+        assertEquals(1_240L, hit.atMs)
+        assertEquals(1, hit.sequence)
+    }
+
+    @Test
+    fun `an outer ring hit publishes one point of feedback`() {
+        val engine = engine()
+        engine.tick(0)
+        engine.tick(1_340)
+
+        assertEquals(ShotOutcome.OUTER, engine.shoot(1_340))
+
+        assertEquals(1, requireNotNull(engine.lastHit) { "no feedback after a scoring shot" }.points)
+    }
+
+    @Test
+    fun `each scoring shot starts a new feedback sequence`() {
+        val engine = engine(
+            testConfig(startSpawnIntervalMs = 1_240, endSpawnIntervalMs = 1_240),
+        )
+        engine.tick(0)
+        engine.tick(1_240)
+        assertEquals(ShotOutcome.BULLSEYE, engine.shoot(1_240))
+        assertEquals(1, requireNotNull(engine.lastHit).sequence)
+
+        engine.tick(2_480)
+        assertEquals(ShotOutcome.BULLSEYE, engine.shoot(2_480))
+        assertEquals(2, requireNotNull(engine.lastHit).sequence)
+    }
+
+    @Test
+    fun `a miss does not publish feedback`() {
+        val engine = engine()
+        engine.tick(0)
+
+        assertEquals(ShotOutcome.MISS, engine.shoot(0))
+
+        assertNull(engine.lastHit)
+    }
+
+    @Test
+    fun `shooting a bomb does not publish scoring feedback`() {
+        val engine = engine(
+            testConfig(
+                startSpawnIntervalMs = 500,
+                endSpawnIntervalMs = 500,
+                bombChanceIntermediate = 1.0,
+            ),
+        )
+        engine.tick(0)
+        engine.tick(1_240)
+        assertEquals(ShotOutcome.BULLSEYE, engine.shoot(1_240))
+        assertEquals(1, requireNotNull(engine.lastHit).sequence)
+
+        var t = 1_240L
+        while (t < 21_740) {
+            t += 100
+            engine.tick(t)
+        }
+        assertEquals(ShotOutcome.BOMB, engine.shoot(21_740))
+
+        // The bomb ends the run with "BOOM!"; it must not register a scoring hit.
+        assertEquals(1, requireNotNull(engine.lastHit).sequence)
     }
 
     // --- Run end -------------------------------------------------------------

@@ -47,7 +47,6 @@ class BlinkSniperGameTest {
         speedJitterMax = 1.0,
         startSpawnIntervalMs = 60_000,
         endSpawnIntervalMs = 60_000,
-        centerLaneChance = 1.0,
         smallChance = 0.0,
         bombChanceWarmup = bombChanceWarmup,
     )
@@ -130,6 +129,53 @@ class BlinkSniperGameTest {
 
         assertEquals(listOf(2L), scope.scores)
         assertEquals(2, game.state.value.score)
+    }
+
+    @Test
+    fun `a scoring blink surfaces hit feedback on the UI state`() = runTest {
+        val detector = FakeBlinkDetector()
+        val game = BlinkSniperGame(
+            detector,
+            timeSource = { testScheduler.currentTime },
+            engineFactory = { BlinkSniperEngine(singleTargetConfig(), Random(1)) },
+        )
+        val scope = RecordingScope(backgroundScope)
+        game.start(scope)
+        testScheduler.runCurrent()
+
+        testScheduler.advanceTimeBy(1_240)
+        detector.emit(EyeState.CLOSED)
+        testScheduler.runCurrent()
+
+        val hit = requireNotNull(game.state.value.lastHit) { "no feedback after a scoring blink" }
+        assertEquals(2, hit.points)
+        assertEquals(1, hit.sequence)
+    }
+
+    @Test
+    fun `a miss leaves the previous feedback untouched`() = runTest {
+        val detector = FakeBlinkDetector()
+        val game = BlinkSniperGame(
+            detector,
+            timeSource = { testScheduler.currentTime },
+            engineFactory = { BlinkSniperEngine(singleTargetConfig(), Random(1)) },
+        )
+        val scope = RecordingScope(backgroundScope)
+        game.start(scope)
+        testScheduler.runCurrent()
+
+        testScheduler.advanceTimeBy(1_240)
+        detector.emit(EyeState.CLOSED)
+        testScheduler.runCurrent()
+        val scored = requireNotNull(game.state.value.lastHit)
+
+        testScheduler.advanceTimeBy(300)
+        detector.emit(EyeState.OPEN)
+        testScheduler.runCurrent()
+        detector.emit(EyeState.CLOSED)
+        testScheduler.runCurrent()
+
+        assertEquals(scored, game.state.value.lastHit)
     }
 
     @Test
