@@ -1,9 +1,12 @@
 package com.rmgames.core.vision
 
 import android.content.Context
+import android.util.Size
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.resolutionselector.ResolutionSelector
+import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.concurrent.futures.await
 import androidx.core.content.ContextCompat
@@ -43,6 +46,16 @@ class MlKitBlinkDetector(
         val mainExecutor: Executor = ContextCompat.getMainExecutor(appContext)
 
         val analysis = ImageAnalysis.Builder()
+            .setResolutionSelector(
+                ResolutionSelector.Builder()
+                    .setResolutionStrategy(
+                        ResolutionStrategy(
+                            Size(ANALYSIS_WIDTH, ANALYSIS_HEIGHT),
+                            ResolutionStrategy.FALLBACK_RULE_CLOSEST_LOWER_THEN_HIGHER,
+                        ),
+                    )
+                    .build(),
+            )
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .build()
             .apply {
@@ -79,6 +92,27 @@ class MlKitBlinkDetector(
         }
     }.conflate().flowOn(Dispatchers.Default)
 }
+
+/**
+ * Analysis resolution for the blink detector.
+ *
+ * ML Kit's per-frame processing time is what caps the sampling rate, and sampling has
+ * to stay faster than a blink (~200-400 ms) or the CLOSED state is never observed at
+ * all — the shot is an OPEN -> CLOSED edge, so a missed sample is a missed shot.
+ *
+ * Measured on the emulator webcam before this change: the 640x480 default yielded
+ * **2.78 samples/s** (median 327 ms between them, max 1300 ms) against blinks of
+ * 200-400 ms, so most blinks fell in the gap between two samples. Playtest symptom:
+ * "the CAM box almost never changes to the closed line"; only 6 blinks were caught
+ * in a 48.6 s run.
+ *
+ * At 320x240 — a quarter of the pixels — the same run measured **8.57 samples/s**
+ * (median 88 ms, max 905 ms) and 14 blinks caught. The face fills a large share of a
+ * front-camera frame (measured bounding boxes of 160x233 up to 248x432 at 640x480),
+ * so it stays comfortably large enough for ML Kit's eye classification.
+ */
+private const val ANALYSIS_WIDTH = 320
+private const val ANALYSIS_HEIGHT = 240
 
 /**
  * Options for the single detector this adapter creates.

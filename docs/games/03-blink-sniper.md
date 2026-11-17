@@ -16,6 +16,7 @@ A stationary crosshair is fixed in the center of the screen. Targets ("dianas") 
   - Detects eye-open probability (`leftEyeOpenProbability` and `rightEyeOpenProbability`).
   - A blink is triggered when **both** eye probabilities drop below the detection threshold and then return above it (or instantly upon eye closure with a minimum cooldown).
   - **Decided (playtest)**: the threshold stays at **0.5**, and the face counts as *open* as soon as **either** eye is at or above it. ML Kit reports the two eyes very unevenly off a webcam — an eye at `0.03` while the other reads `1.00`, for seconds at a time — so requiring *both* eyes to be open used to report open faces as closed and swallow the blink that followed. Consequence: a wink (one eye only) is **not** a trigger.
+  - **Decided (playtest)**: frames are analysed at **320×240**. ML Kit's per-frame time is what caps the sampling rate, and sampling has to stay faster than a blink (200–400 ms) or the closed-eye state is never observed and no shot fires. The 640×480 default managed only **2.78 samples/s** (median 327 ms between them) and caught **6** blinks in a 48.6 s run; at 320×240 it manages **8.57 samples/s** (median 88 ms) and catches **14**.
 - **Shot Mechanism**: Blinking fires an arrow instantly toward the center crosshair.
 - **Cooldown**: A short firing cooldown (e.g. 300 ms) prevents accidental multi-firing from a single prolonged blink.
 - **Permission**: Requires runtime `android.permission.CAMERA`.
