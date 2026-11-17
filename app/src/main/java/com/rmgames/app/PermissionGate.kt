@@ -20,7 +20,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -35,17 +38,22 @@ import com.rmgames.core.common.GameEntry
  * Pure decision state of the permission gate — *what to show*. The composable owns
  * the Android glue (system checks/requests); this part is JVM-unit-tested.
  * See docs/08-implementation-plan.md (Game Hosting Contract).
+ *
+ * [isContentVisible] and [wasDenied] are backed by Compose snapshot state, not plain
+ * fields: [PermissionGate] reads them while composing, so a plain field would change
+ * without invalidating anything and the gate would stay on the fallback after the user
+ * grants the permission (PermissionGateModelTest pins this).
  */
 class PermissionGateModel(
     val requiredPermissions: List<String>,
     initiallyGranted: Boolean,
 ) {
     /** True once the run may start: nothing required, or everything granted. */
-    var isContentVisible: Boolean = initiallyGranted || requiredPermissions.isEmpty()
+    var isContentVisible: Boolean by mutableStateOf(initiallyGranted || requiredPermissions.isEmpty())
         private set
 
     /** True once the system dialog denied a permission — enables the settings hint. */
-    var wasDenied: Boolean = false
+    var wasDenied: Boolean by mutableStateOf(false)
         private set
 
     fun onPermissionsResult(results: Map<String, Boolean>) {
