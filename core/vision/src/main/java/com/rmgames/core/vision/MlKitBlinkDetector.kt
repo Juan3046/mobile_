@@ -38,11 +38,7 @@ class MlKitBlinkDetector(
     @ExperimentalGetImage
     override fun eyeState(): Flow<EyeState> = callbackFlow {
         val provider = ProcessCameraProvider.getInstance(appContext).await()
-        val detector = FaceDetection.getClient(
-            FaceDetectorOptions.Builder()
-                .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
-                .build()
-        )
+        val detector = FaceDetection.getClient(blinkFaceDetectorOptions())
 
         val mainExecutor: Executor = ContextCompat.getMainExecutor(appContext)
 
@@ -83,3 +79,20 @@ class MlKitBlinkDetector(
         }
     }.conflate().flowOn(Dispatchers.Default)
 }
+
+/**
+ * Options for the single detector this adapter creates.
+ *
+ * Extracted so the two flags that decide whether Blink Sniper works at all are pinned
+ * by a JVM test (AGENTS.md §5):
+ *  - [FaceDetectorOptions.CLASSIFICATION_MODE_ALL] — without it ML Kit reports both
+ *    eye probabilities as **null**, and [BlinkClassifier] maps a missing value to
+ *    OPEN, so the detector claimed "eyes open" forever and no shot ever fired.
+ *  - [FaceDetectorOptions.PERFORMANCE_MODE_FAST] — keeps latency down so a ~200 ms
+ *    blink is still sampled while it happens.
+ */
+internal fun blinkFaceDetectorOptions(): FaceDetectorOptions =
+    FaceDetectorOptions.Builder()
+        .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
+        .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_ALL)
+        .build()
