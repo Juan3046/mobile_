@@ -130,6 +130,9 @@ enum class EyeState { OPEN, CLOSED }
 interface BlinkDetector { fun eyeState(): Flow<EyeState> }
 // MlKitBlinkDetector (CameraX + ML Kit face detection) is the only ML Kit consumer.
 // Camera permission UX lives in :app, not here.
+// CameraX bind/unbind MUST run on Dispatchers.Main: any other dispatcher throws
+// "IllegalStateException: Not in application's main thread" (issue #22).
+// eyeStateFlow() owns that hop and EyeStateFlowTest pins it — do not remove it.
 ```
 
 Repositories in `:core:data`: `AttemptRepository` (2/day, local-midnight reset),
