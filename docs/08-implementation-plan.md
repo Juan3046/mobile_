@@ -69,6 +69,7 @@ class GameEntry(                    // Adapter: logic + UI behind one stable typ
   val game: Game,
   val screen: @Composable () -> Unit, // renders the game's state — no params by design
   val requiredPermissions: List<String> = emptyList(), // CAMERA for blink; empty otherwise
+  val drawsOwnHud: Boolean = false, // true = host hides its placeholder score/finish texts
 )
 class GameRegistry(entries: List<GameEntry>) {  // Registry, built once in :app
   val all: List<GameEntry>
@@ -106,6 +107,11 @@ fun sodaShakeEntry(accelerometer: AccelerometerSensor): GameEntry
   ON_RESUME) — a denied permission never records a fake score. Only Blink (CAMERA)
   needs it today; front-camera hardware fallback copy + home-level Play disabling
   land in Phase 2.
+- **Own-HUD opt-out** (backward-compatible addition, 2026-11-10): an entry with
+  `drawsOwnHud = true` draws its own score and end-of-run feedback, so the host
+  hides its Phase 1b placeholder texts (`score: N` and `Run finished (win=…) ·
+  score=…`) for that game only. Default `false` keeps every other game exactly
+  as before. Used by Onion Roll (seconds counter + "YOU LOST!" banner).
 - Game authors edit only their own module (game impl + screen + entry factory);
   `:app` and `:feature:session` are stable during Phase 1b.
 
