@@ -14,6 +14,16 @@ Also visible (per global rules):
 - Remaining attempts indicator.
 - Debug reset-attempts button (test phase only).
 
+Implementation (Phase 2, Direction A — `HomeRoute`/`HomeScreen` in `:feature:home`):
+- Top bar with the "RM GAMES" wordmark; settings gear only once the Settings screen exists.
+- Season strip (season N, day d of 7, the player's season points).
+- "Today's game" header with a countdown chip ("Ends in HH:MM:SS"; "Next game in" when locked).
+- `GameCard`: thumbnail (generated fallback until each game ships art), sensor chip, duration, title, how-to (the game's `description`).
+- Fixed bottom area, always reachable: attempts pips + text, best of today, the big **Play** button; **Seasons history** button once the Ranking screen exists (plan 09 PR 13).
+- Locked (0 attempts): Play becomes a disabled "Back at 12:00" button + "Next game in" countdown + best of the day (§3.5).
+- Debug builds only: "Reset attempts (debug)" + a launcher for every registered game (also the ones out of the rotation).
+- State refreshes on resume and at the 12:00 boundary.
+
 ## 3.2 Nick Onboarding (first launch only)
 - Shown once, before anything else, when no nick is bound to this install.
 - Nick input + Continue button. Rules: 3–12 chars (letters/numbers/underscore), unique (rejected if taken), set once, never editable.

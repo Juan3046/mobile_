@@ -7,6 +7,8 @@ interface AttemptRepository {
     fun remaining(dayIndex: Long): Int
     /** Returns false when no attempts remain. */
     fun consume(dayIndex: Long): Boolean
+    /** Debug-only (docs/02 "Reset attempts"): restores [dayIndex]'s attempts; other days untouched. */
+    fun reset(dayIndex: Long)
 }
 
 class InMemoryAttemptRepository : AttemptRepository {
@@ -19,5 +21,9 @@ class InMemoryAttemptRepository : AttemptRepository {
         if (remaining(dayIndex) <= 0) return false
         used[dayIndex] = (used[dayIndex] ?: 0) + 1
         return true
+    }
+
+    override fun reset(dayIndex: Long) {
+        used.remove(dayIndex)
     }
 }

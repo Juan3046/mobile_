@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -57,11 +58,16 @@ private fun gameKey(gameId: String) = gameId.split('-').getOrNull(1).orEmpty()
  * fallback from Decision 5: game accent + glyph + rings (docs/09 §1).
  */
 @Composable
-fun GameThumbnail(gameId: String, modifier: Modifier = Modifier, art: (@Composable () -> Unit)? = null) {
+fun GameThumbnail(
+    gameId: String,
+    modifier: Modifier = Modifier,
+    aspectRatio: Float = 16f / 9f,
+    art: (@Composable () -> Unit)? = null,
+) {
     val c = RmTheme.colors
     val shape = MaterialTheme.shapes.large
     Box(
-        modifier.fillMaxWidth().aspectRatio(16f / 9f).clip(shape)
+        modifier.fillMaxWidth().aspectRatio(aspectRatio).clip(shape)
             .background(gameAccent(gameId, c))
             .border(RmTheme.dimens.strokeWidth, c.ledge, shape),
         contentAlignment = Alignment.Center,
@@ -105,6 +111,7 @@ fun GameCard(
     sensorIcon: ImageVector?,
     durationLabel: String,
     modifier: Modifier = Modifier,
+    thumbnailAspectRatio: Float = 16f / 9f,
     art: (@Composable () -> Unit)? = null,
 ) {
     val c = RmTheme.colors
@@ -113,10 +120,10 @@ fun GameCard(
             Modifier.fillMaxWidth().padding(start = 12.dp, top = 12.dp, end = 12.dp, bottom = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            GameThumbnail(gameId, art = art)
+            GameThumbnail(gameId, aspectRatio = thumbnailAspectRatio, art = art)
             Column(Modifier.padding(horizontal = 8.dp), verticalArrangement = Arrangement.spacedBy(RmTheme.dimens.gapRelated)) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    GameChip(gameId, sensorLabel, sensorIcon)
+                    if (sensorLabel.isNotEmpty()) GameChip(gameId, sensorLabel, sensorIcon) else Spacer(Modifier)
                     Text(durationLabel.uppercase(), style = MaterialTheme.typography.labelMedium, color = c.onSurfaceVariant)
                 }
                 Text(title.uppercase(), style = MaterialTheme.typography.headlineLarge.copy(lineHeight = 38.sp), color = c.onSurface)

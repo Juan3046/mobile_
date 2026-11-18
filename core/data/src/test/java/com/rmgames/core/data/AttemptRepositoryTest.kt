@@ -36,4 +36,15 @@ class AttemptRepositoryTest {
         repo.consume(dayIndex = 10)
         assertEquals(2, repo.remaining(dayIndex = 11))
     }
+
+    @Test
+    fun `debug reset restores today's attempts only`() {
+        val repo = InMemoryAttemptRepository()
+        repo.consume(dayIndex = 9)
+        repo.consume(dayIndex = 10)
+        repo.consume(dayIndex = 10)
+        repo.reset(dayIndex = 10)
+        assertEquals(2, repo.remaining(dayIndex = 10))
+        assertEquals(1, repo.remaining(dayIndex = 9))
+    }
 }
