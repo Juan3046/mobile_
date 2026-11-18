@@ -38,7 +38,7 @@
    `:core:data`, and a new `:core:audio`. Update `08-implementation-plan.md`
    (ownership + "Phase 2 starts for the shell while 1b continues") and the
    "Current phase" line in `AGENTS.md`.
-5. **DECISION — Game thumbnails.** `GameEntry` has no thumbnail. Proposal: add a
+5. **DECIDED (2026-11-18): optional `thumbnail` on `GameEntry`, each game draws its own (Canvas, no image files).** Original proposal: **DECISION — Game thumbnails.** `GameEntry` has no thumbnail. Proposal: add a
    backward-compatible `thumbnail: @Composable () -> Unit = {}` (same pattern as
    `drawsOwnHud`); each game owner fills theirs later; the shell shows a
    generated fallback (title + colour + icon) until then.
@@ -113,6 +113,14 @@
   `safeDrawingPadding()` on the root `Surface`, so no feature screen changed. Rules live in
   `AppChrome` (JVM-tested); a resource test checks the icon layers, palette, safe zone, manifest
   and starting theme. Verified: unit tests + `:app:assembleDebug`. Not checked on a device yet.
+  **Status (2026-11-18): PR 17 done** — `GameEntry.thumbnail: (@Composable () -> Unit)? = null`
+  (backward compatible; null keeps the generated fallback). Main (2:1) and the session intro (16:9)
+  show it inside the accent-coloured, outlined box. With the user's OK (they and Claude build Phase 2
+  together), Claude drew all five in their own modules: one `<Game>Thumbnail.kt` (Canvas, flat shapes
+  with the ink outline) + one line in each entry factory — Escape: road between Poruba panel blocks;
+  Onion: onion on the belt with fruit; Blink: target + crosshair + bomb; Compass: spinning dial;
+  Soda: shaking can with fizz. A wiring test requires every registered game to ship one. Verified by
+  unit tests + build only — no device/emulator available (SDK system images are incomplete).
   Arcade/playful, high
   contrast, readable at a glance, portrait, dark-first with a light variant.
 - **Tokens**: colour scheme (brand + per-game accent colours), typography
@@ -181,7 +189,7 @@ paginated top-50 reads, security rules. Separate PRs after D.1–D.3 work offlin
 | 14 | App icon, splash, edge-to-edge — **done** | `:app` | 3 |
 | 15 | Firebase: auth + nick onboarding | `:core:data`, `:feature:onboarding` | 8 |
 | 16 | Firebase: daily-best upload + ranking reads | `:core:data`, `:feature:ranking` | 13, 15 |
-| 17 | Thumbnails contract + fallback (Decision 5); owners add theirs | `:core:common`, games | 4 |
+| 17 | Thumbnails contract + fallback (Decision 5); owners add theirs — **done** (all 5 drawn) | `:core:common`, games | 4 |
 
 Exit of Phase 2 (`08`): full daily loop works offline with 2 attempts enforced,
 plus the screens above styled with `RmTheme` and app-wide audio honouring Settings.

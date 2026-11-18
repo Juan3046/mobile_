@@ -64,6 +64,7 @@ fun HomeRoute(
     onPlay: (gameId: String) -> Unit,
     debugTools: Boolean,
     debugGames: List<Game> = games,
+    thumbnails: Map<String, @Composable () -> Unit> = emptyMap(),
     onHistory: (() -> Unit)? = null,
     onSettings: (() -> Unit)? = null,
 ) {
@@ -79,6 +80,7 @@ fun HomeRoute(
     }
     HomeScreen(
         state = state,
+        thumbnail = thumbnails[state.gameId],
         onPlay = { onPlay(state.gameId) },
         onHistory = onHistory,
         onSettings = onSettings,
@@ -107,6 +109,7 @@ fun HomeScreen(
     state: HomeUiState,
     onPlay: () -> Unit,
     modifier: Modifier = Modifier,
+    thumbnail: (@Composable () -> Unit)? = null,
     onHistory: (() -> Unit)? = null,
     onSettings: (() -> Unit)? = null,
     debug: HomeDebug? = null,
@@ -137,6 +140,7 @@ fun HomeScreen(
                     sensorIcon = sensor?.icon,
                     durationLabel = gameDurationLabel(state.gameId, state.durationMs),
                     thumbnailAspectRatio = 2f,
+                    art = thumbnail,
                 )
             }
             if (debug != null) DebugSection(debug)

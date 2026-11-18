@@ -138,5 +138,6 @@ fun blinkSniperEntry(detector: BlinkDetector): GameEntry {
     return GameEntry(
         game = game,
         requiredPermissions = listOf(Manifest.permission.CAMERA),
+        thumbnail = { BlinkSniperThumbnail() },
     ) { BlinkSniperScreen(game) }
 }

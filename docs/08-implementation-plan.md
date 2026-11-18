@@ -76,6 +76,7 @@ class GameEntry(                    // Adapter: logic + UI behind one stable typ
   val screen: @Composable () -> Unit, // renders the game's state — no params by design
   val requiredPermissions: List<String> = emptyList(), // CAMERA for blink; empty otherwise
   val drawsOwnHud: Boolean = false, // true = host hides its placeholder score/finish texts
+  val thumbnail: (@Composable () -> Unit)? = null, // Phase 2 (Decision 5): game art for Main/intro
 )
 class GameRegistry(entries: List<GameEntry>) {  // Registry, built once in :app
   val all: List<GameEntry>

@@ -26,11 +26,16 @@ import androidx.compose.runtime.Composable
  * @param drawsOwnHud true when the game draws its own score and end-of-run feedback,
  * so the session host hides its placeholder texts for it (docs/08 — own-HUD opt-out).
  * Default false: the host keeps showing them.
+ * @param thumbnail the game's own art for the Main card and the intro (Decision 5, Phase 2,
+ * backward compatible). Drawn inside a clipped box already filled with the game's accent
+ * colour, at 2:1 on Main and 16:9 on the intro — fill [androidx.compose.ui.Modifier.fillMaxSize]
+ * and scale with the size. Null shows the generated fallback (accent + glyph).
  * @param screen renders the game's state; typically closes over the game instance.
  */
 class GameEntry(
     val game: Game,
     val requiredPermissions: List<String> = emptyList(),
     val drawsOwnHud: Boolean = false,
+    val thumbnail: (@Composable () -> Unit)? = null,
     val screen: @Composable () -> Unit,
 )

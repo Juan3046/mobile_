@@ -146,6 +146,7 @@ fun RMGamesNav(container: AppContainer) {
             HomeRoute(
                 games = dailyRotation(registry.all.map { it.game }),
                 debugGames = registry.all.map { it.game },
+                thumbnails = registry.all.mapNotNull { e -> e.thumbnail?.let { e.game.id to it } }.toMap(),
                 attempts = attempts,
                 scores = scores,
                 clock = clock,

@@ -129,7 +129,7 @@ fun SessionRoute(
 
     when (phase) {
         SessionPhase.Intro, SessionPhase.Locked ->
-            IntroScreen(entry.game, flow.attemptsLeft(), locked = phase == SessionPhase.Locked, onStart = ::startRun, onClose = onExit)
+            IntroScreen(entry.game, entry.thumbnail, flow.attemptsLeft(), locked = phase == SessionPhase.Locked, onStart = ::startRun, onClose = onExit)
         is SessionPhase.Finished -> {
             var showResult by remember(phase) { mutableStateOf(false) }
             LaunchedEffect(phase) {
@@ -168,7 +168,7 @@ private fun NotFound(onExit: () -> Unit) {
 
 /** How-to + Start (plan 09 §2D.2). Start spends the attempt. */
 @Composable
-private fun IntroScreen(game: Game, attemptsLeft: Int, locked: Boolean, onStart: () -> Unit, onClose: () -> Unit) {
+private fun IntroScreen(game: Game, thumbnail: (@Composable () -> Unit)?, attemptsLeft: Int, locked: Boolean, onStart: () -> Unit, onClose: () -> Unit) {
     val c = RmTheme.colors
     val d = RmTheme.dimens
     Column(Modifier.fillMaxSize().background(c.background)) {
@@ -179,6 +179,7 @@ private fun IntroScreen(game: Game, attemptsLeft: Int, locked: Boolean, onStart:
                 gameId = game.id, title = game.title, howToPlay = game.description,
                 sensorLabel = sensor?.label.orEmpty(), sensorIcon = sensor?.icon,
                 durationLabel = gameDurationLabel(game.id, game.durationMs),
+                art = thumbnail,
             )
         }
         Column(Modifier.fillMaxWidth().padding(d.gutter), verticalArrangement = Arrangement.spacedBy(d.gapRelated)) {
