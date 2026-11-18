@@ -3,7 +3,7 @@
 ## 1. Project Context (Brief)
 
 **RM Games** is a mobile app (Android native) offering **one short daily game at a time**.
-Games are short (30–90s), portrait-only, with intuitive rules, controlled mainly via
+Games are short (30–90s; documented exceptions in `docs/02-gameplay-rules.md`), portrait-only, with intuitive rules, controlled mainly via
 mobile sensors: **camera, gyroscope, accelerometer**.
 
 Key product rules:

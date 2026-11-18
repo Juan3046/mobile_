@@ -22,7 +22,8 @@ import com.rmgames.core.common.GameEntry
  * Creates a [SessionGameScope] per run, starts the game when the screen enters
  * composition and closes the run (stops the game, cancels `hostScope`) when the run
  * finishes or the player leaves. The score readout and end-of-run note are Phase 1b
- * placeholders — the full HUD, attempts and result navigation land in Phase 2.
+ * placeholders — the full HUD, attempts and result navigation land in Phase 2. Games
+ * whose entry sets [GameEntry.drawsOwnHud] skip them (see [hostHudVisible]).
  *
  * @param entry resolved from the `GameRegistry` by `:app`; null = unknown game id.
  */
@@ -50,6 +51,7 @@ fun SessionScreen(entry: GameEntry?) {
 
     Box(modifier = Modifier.fillMaxSize()) {
         entry.screen()
+        if (!hostHudVisible(entry)) return@Box
         if (finished == null) {
             Text(
                 text = "score: $score",
@@ -67,3 +69,6 @@ fun SessionScreen(entry: GameEntry?) {
         }
     }
 }
+
+/** Whether the host draws its placeholder score/finish texts over [entry]'s screen. */
+internal fun hostHudVisible(entry: GameEntry): Boolean = !entry.drawsOwnHud

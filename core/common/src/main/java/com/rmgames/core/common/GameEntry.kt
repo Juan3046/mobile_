@@ -23,10 +23,14 @@ import androidx.compose.runtime.Composable
  * games. Declared by the game module, checked and requested by the `:app` gate — a
  * denied permission blocks the run with an explanation, never a fake score
  * (docs/02-gameplay-rules.md).
+ * @param drawsOwnHud true when the game draws its own score and end-of-run feedback,
+ * so the session host hides its placeholder texts for it (docs/08 — own-HUD opt-out).
+ * Default false: the host keeps showing them.
  * @param screen renders the game's state; typically closes over the game instance.
  */
 class GameEntry(
     val game: Game,
     val requiredPermissions: List<String> = emptyList(),
+    val drawsOwnHud: Boolean = false,
     val screen: @Composable () -> Unit,
 )
