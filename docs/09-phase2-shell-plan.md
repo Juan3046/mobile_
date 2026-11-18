@@ -61,7 +61,14 @@
   PR 3 ports these tokens to `RmTheme`.
   **Status (2026-11-18): PR 3 done** — `RmTheme` (`:core:common` `theme/`: `RmColors` +
   `RmPalette`, `rmTypography`, `RmShapes`, `RmDimens`, `RmMotion`, WCAG `Contrast` checks in
-  unit tests) wraps `MaterialTheme` in `:app`; fonts bundled and listed in `CREDITS.md`. Arcade/playful, high
+  unit tests) wraps `MaterialTheme` in `:app`; fonts bundled and listed in `CREDITS.md`.
+  **Status (2026-11-18): PR 4 done** — UI kit in `:core:common` `ui/`: `LedgeSurface` (the hard
+  ledge), `RmButton` (filled/tonal/outlined/text, default/xl), `RmIconButton`, `RmCard`,
+  `GameCard` + `GameThumbnail` fallback + `GameChip`, `AttemptsPips`, `CountdownChip` +
+  `rememberRemaining`, `ScoreCounter`, `NewBestStamp`, `Confetti`, `StatTile`, `SeasonStrip`,
+  `SectionHeader`, `RmTopBar`, `RmTransitions`, `RmIcons` (ported from the sprite). Click
+  feedback goes through `LocalUiFeedback` (silent until `:core:audio` provides it). Logic is
+  JVM-tested; `UiKitPreviews.kt` renders Main + Result in Android Studio. Arcade/playful, high
   contrast, readable at a glance, portrait, dark-first with a light variant.
 - **Tokens**: colour scheme (brand + per-game accent colours), typography
   (one display font for titles/scores + one UI font), shapes, spacing, elevation,
@@ -116,7 +123,7 @@ paginated top-50 reads, security rules. Separate PRs after D.1–D.3 work offlin
 | 1 | Docs: decisions 1–6 + ownership + this plan | `docs/`, `AGENTS.md` | team OK |
 | 2 | Visual direction mockups (not code) — `design-system/` — **done** | — | 1 |
 | 3 | `RmTheme` tokens + fonts — **done** | `:core:common`, `:app` | 2 |
-| 4 | UI kit components (+ screenshot-free unit tests for logic) | `:core:common` | 3 |
+| 4 | UI kit components (+ screenshot-free unit tests for logic) — **done** | `:core:common` | 3 |
 | 5 | Seeded season shuffle selector | `:core:data` | 1 |
 | 6 | DataStore attempts + settings repos | `:core:data` | 1 |
 | 7 | `:core:audio` (director, settings flow, focus, no main-thread work) | `:core:audio` | 6 |

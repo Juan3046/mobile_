@@ -1,0 +1,112 @@
+package com.rmgames.core.common.ui
+
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.rmgames.core.common.theme.RmTheme
+
+/**
+ * Hero result number (03 §3.3). Counts up from 0 over `RmMotion.durationCountUp`, then
+ * pops with the spring easing. [isBest] tints it with the primary ink.
+ */
+@Composable
+fun ScoreCounter(
+    score: Long,
+    unit: String,
+    modifier: Modifier = Modifier,
+    isBest: Boolean = false,
+    animate: Boolean = true,
+) {
+    val c = RmTheme.colors
+    val m = RmTheme.motion
+    val progress = remember(score) { Animatable(if (animate) 0f else 1f) }
+    val pop = remember(score) { Animatable(1f) }
+    LaunchedEffect(score, animate) {
+        if (!animate) return@LaunchedEffect
+        progress.animateTo(1f, tween(m.durationCountUp, easing = m.standard))
+        pop.snapTo(0.92f)
+        pop.animateTo(1f, tween(m.durationBase, easing = m.spring))
+    }
+    Column(
+        modifier.clearAndSetSemantics { contentDescription = "$score $unit" },
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text(
+            countUpValue(score, progress.value).toString(),
+            style = RmTheme.score(120.sp),
+            color = if (isBest) c.primaryInk else c.onSurface,
+            modifier = Modifier.scale(pop.value),
+        )
+        Text(unit.uppercase(), style = MaterialTheme.typography.labelLarge, color = c.onSurfaceVariant)
+    }
+}
+
+/** The tilted "New best" stamp — the only place the celebration colour appears. */
+@Composable
+fun NewBestStamp(modifier: Modifier = Modifier, text: String = "New best") {
+    val c = RmTheme.colors
+    LedgeSurface(c.tertiary, CircleShape, modifier.rotate(-3f)) {
+        Row(
+            Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Icon(RmIcons.Star, contentDescription = null, tint = c.onTertiary, modifier = Modifier.size(18.dp))
+            Text(text.uppercase(), style = MaterialTheme.typography.headlineSmall.copy(fontSize = 15.sp, lineHeight = 20.sp, letterSpacing = 0.9.sp), color = c.onTertiary)
+        }
+    }
+}
+
+/**
+ * Celebration burst for a new best: pieces fall and fade over ~1.3s. Decorative only.
+ * Deterministic per [seed] so recomposition doesn't reshuffle it.
+ */
+@Composable
+fun Confetti(modifier: Modifier = Modifier, seed: Int = 1, count: Int = 36, play: Boolean = true) {
+    val c = RmTheme.colors
+    val slots = listOf(c.tertiary, c.primary, c.secondary)
+    val pieces = remember(seed, count) { confettiPieces(count, seed) }
+    val duration = RmTheme.motion.durationSlow * 3
+    val t = remember(seed) { Animatable(if (play) 0f else 1f) }
+    LaunchedEffect(seed, play) { if (play) t.animateTo(1f, tween(duration, easing = LinearEasing)) }
+    Canvas(modifier.clearAndSetSemantics { }) {
+        val p = t.value
+        if (p >= 1f) return@Canvas
+        val unit = 8.dp.toPx()
+        pieces.forEach { piece ->
+            val x = (piece.x + piece.drift * 0.08f * p) * size.width
+            val y = (piece.y * 0.45f + p * 0.75f) * size.height
+            val s = unit * piece.size
+            val color = slots[piece.colorSlot].copy(alpha = 1f - p)
+            if (piece.isCircle) drawCircle(color, s / 2, Offset(x, y))
+            else rotate(piece.rotation + p * 540f * piece.drift, Offset(x, y)) {
+                drawRect(color, Offset(x - s / 2, y - s / 2), Size(s, s * 0.6f))
+            }
+        }
+    }
+}
