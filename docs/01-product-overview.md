@@ -24,4 +24,4 @@ Mobile app called **RM Games** that offers a short daily game.
 
 ## Open Questions
 - [x] Decided: daily rotation (deterministic by date, same-for-all); scoring (daily best ranks the day, season = sum of position points `(N−p+1)×25`, ties share, noon-to-noon days, no locks); identity (Anonymous Auth UID + chosen nick); backend (Firebase Spark free + local-first cache).
-- [ ] Minigame library: 5 drafted (01–05, see `games/`); 2 more needed for season 1; 04–05 still draft.
+- [ ] Minigame library: Games 01–05 defined (see `games/`); 06–07 intentionally deferred.

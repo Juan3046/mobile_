@@ -7,6 +7,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import android.content.pm.PackageManager
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -16,9 +17,10 @@ import com.rmgames.core.sensors.AndroidAccelerometerSensor
 import com.rmgames.core.sensors.AndroidCompassSensor
 import com.rmgames.core.sensors.AndroidGyroscopeSensor
 import com.rmgames.core.vision.MlKitBlinkDetector
+import com.rmgames.core.vision.MlKitHeadGestureDetector
 import com.rmgames.feature.game.blink.blinkSniperEntry
 import com.rmgames.feature.game.compass.compassChaosEntry
-import com.rmgames.feature.game.escape.escapePorubaEntry
+import com.rmgames.feature.game.casino.porubaCasinoEntry
 import com.rmgames.feature.game.onion.onionRollEntry
 import com.rmgames.feature.game.soda.sodaShakeEntry
 import com.rmgames.feature.home.HomeScreen
@@ -48,7 +50,10 @@ private fun rememberGameRegistry(): GameRegistry {
     return remember(context, lifecycleOwner) {
         GameRegistry(
             listOf(
-                escapePorubaEntry(),
+                porubaCasinoEntry(
+                    MlKitHeadGestureDetector(context, lifecycleOwner),
+                    cameraAvailable = context.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT),
+                ),
                 onionRollEntry(AndroidGyroscopeSensor(context)),
                 blinkSniperEntry(MlKitBlinkDetector(context, lifecycleOwner)),
                 compassChaosEntry(AndroidCompassSensor(context)),

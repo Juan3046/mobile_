@@ -1,6 +1,6 @@
 # Docs Index — RM Games
 
-Single source of truth for requirements + the implementation plan. Status: Phase 0 + Phase 1a done (skeleton, frozen contracts, game hosting scaffolding); Phase 1b (parallel game build) is next.
+Single source of truth for requirements + the implementation plan. Status: Phase 0 + Phase 1a done; Phase 1b is in progress, including the coordinated Poruba Casino camera-contract and app-wiring change.
 
 | File | Content |
 |------|---------|
