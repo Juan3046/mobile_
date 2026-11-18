@@ -97,7 +97,13 @@
   fades). Screens reach it through `UiFeedback.cue/scene` (no dependency on the module); `:app`
   wires Settings and foreground. Checked on device (focus + playing track via adb; listened by the
   user). Not done: the `FeedbackSettings` flow for games — games still ignore the SFX/vibration
-  switches for their own sounds. Arcade/playful, high
+  switches for their own sounds.
+  **Status (2026-11-18): PR 13 done (local)** — new `:feature:ranking`: Seasons history with Season
+  (day by day: game + best) and History (past seasons, all-time days/seasons) tabs, built by the
+  pure `SeasonHistory.build` from `ScoreRepository.history()`. Uses the 60-day DataStore bests
+  instead of Room (PR 10 still pending for longer history). Points/standings wait for stream E; the
+  Main season strip now hides points until then. Kit gained `RmTabs` and a calendar icon. Verified by
+  unit tests, build and previews — not yet seen on a device (user away). Arcade/playful, high
   contrast, readable at a glance, portrait, dark-first with a light variant.
 - **Tokens**: colour scheme (brand + per-game accent colours), typography
   (one display font for titles/scores + one UI font), shapes, spacing, elevation,
@@ -161,7 +167,7 @@ paginated top-50 reads, security rules. Separate PRs after D.1–D.3 work offlin
 | 10 | Room scores + daily best + local best | `:core:data` | 6 |
 | 11 | Settings screen — **done** (sound applies with 7) | `:feature:settings`, `:app` nav | 4, 6, 7 |
 | 12 | Music & UI SFX wiring across screens | `:app`, features | 7, 8, 9 |
-| 13 | Ranking / Seasons History (local data first) | `:feature:ranking` | 10 |
+| 13 | Ranking / Seasons History (local data first) — **done** (bests from DataStore, 60 days) | `:feature:ranking` | 10 |
 | 14 | App icon, splash, edge-to-edge | `:app` | 3 |
 | 15 | Firebase: auth + nick onboarding | `:core:data`, `:feature:onboarding` | 8 |
 | 16 | Firebase: daily-best upload + ranking reads | `:core:data`, `:feature:ranking` | 13, 15 |

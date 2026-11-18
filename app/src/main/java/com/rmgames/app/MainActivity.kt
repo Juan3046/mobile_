@@ -36,6 +36,7 @@ import com.rmgames.feature.game.soda.sodaShakeEntry
 import com.rmgames.feature.home.HomeRoute
 import com.rmgames.feature.session.SessionRoute
 import com.rmgames.feature.settings.SettingsRoute
+import com.rmgames.feature.ranking.SeasonsHistoryRoute
 import com.rmgames.core.common.ui.LocalUiFeedback
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -127,6 +128,15 @@ fun RMGamesNav(container: AppContainer) {
                 onPlay = { gameId -> nav.navigate("session/$gameId") },
                 debugTools = debuggable,
                 onSettings = { nav.navigate("settings") },
+                onHistory = { nav.navigate("history") },
+            )
+        }
+        composable("history") {
+            SeasonsHistoryRoute(
+                scores = scores,
+                clock = clock,
+                games = registry.all.map { it.game },
+                onBack = { nav.popBackStack() },
             )
         }
         composable("settings") {

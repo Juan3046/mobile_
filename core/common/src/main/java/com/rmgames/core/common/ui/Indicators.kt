@@ -123,9 +123,9 @@ fun StatTile(
     }
 }
 
-/** 7-day season progress with today highlighted, plus the player's season points. */
+/** 7-day season progress with today highlighted, plus the player's season points (null hides them). */
 @Composable
-fun SeasonStrip(season: Int, todayIndex: Int, points: Long, modifier: Modifier = Modifier) {
+fun SeasonStrip(season: Int, todayIndex: Int, points: Long?, modifier: Modifier = Modifier) {
     val c = RmTheme.colors
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -134,7 +134,7 @@ fun SeasonStrip(season: Int, todayIndex: Int, points: Long, modifier: Modifier =
                 withStyle(SpanStyle(color = c.onSurface, fontWeight = FontWeight.Bold)) { append("Season $season") }
                 append(" · day ${todayIndex + 1} of 7")
             }, style = style, color = c.onSurfaceVariant)
-            Text(buildAnnotatedString {
+            if (points != null) Text(buildAnnotatedString {
                 append("You: ")
                 withStyle(SpanStyle(color = c.onSurface, fontWeight = FontWeight.Bold)) { append(formatPoints(points)) }
                 append(" pts")

@@ -42,6 +42,7 @@ dependencies {
     implementation(project(":feature:home"))
     implementation(project(":feature:session"))
     implementation(project(":feature:settings"))
+    implementation(project(":feature:ranking"))
     implementation(project(":feature:game:escape"))
     implementation(project(":feature:game:onion"))
     implementation(project(":feature:game:blink"))

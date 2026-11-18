@@ -89,6 +89,8 @@ class PersistentScoreRepository(
     }
 
     override fun best(dayIndex: Long, gameId: String): Long? = synchronized(bests) { bests[dayIndex to gameId] }
+
+    override fun history(): List<DailyBest> = synchronized(bests) { bests.toHistory() }
 }
 
 /** User preferences for the Settings screen (plan 09 Decision 3) and the audio/haptics layer. */

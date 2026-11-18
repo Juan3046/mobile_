@@ -23,8 +23,8 @@ data class HomeUiState(
     val nextResetMillis: Long,
     val season: Int,
     val seasonDayIndex: Int,
-    /** Local season points; live values arrive with the ranking (plan 09 PR 13/16). */
-    val seasonPoints: Long,
+    /** Season points; null until the online ranking computes them (plan 09 stream E). */
+    val seasonPoints: Long?,
 )
 
 /** Main-screen logic. Plain class (no Android deps) so it unit-tests on the JVM. */
@@ -56,7 +56,7 @@ class HomeViewModel(
             nextResetMillis = clock.nextResetMillis(nowMillis),
             season = season.season,
             seasonDayIndex = season.dayOfSeason,
-            seasonPoints = 0,
+            seasonPoints = null,
         )
     }
 
