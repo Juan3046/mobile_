@@ -3,6 +3,7 @@ package com.rmgames.core.common.theme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.junit.Assert.assertEquals
@@ -47,6 +48,7 @@ class RmTypographyAndShapesTest {
         assertEquals("tnum", num.fontFeatureSettings)
         assertEquals(120.sp, num.fontSize)
         assertSame(FontFamily.Monospace, num.fontFamily)
+        assertEquals(LineHeightStyle.Trim.Both, num.lineHeightStyle?.trim)
     }
 
     @Test

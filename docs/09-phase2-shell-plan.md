@@ -68,7 +68,10 @@
   `rememberRemaining`, `ScoreCounter`, `NewBestStamp`, `Confetti`, `StatTile`, `SeasonStrip`,
   `SectionHeader`, `RmTopBar`, `RmTransitions`, `RmIcons` (ported from the sprite). Click
   feedback goes through `LocalUiFeedback` (silent until `:core:audio` provides it). Logic is
-  JVM-tested; `UiKitPreviews.kt` renders Main + Result in Android Studio. Arcade/playful, high
+  JVM-tested; `UiKitPreviews.kt` renders Main + Result in Android Studio.
+  Checked on a real device (2026-11-18): `:app` now has a `Theme.RmGames` window theme
+  (no action bar, bar colours = RmTheme background, light + night); big scores use a
+  glyph-height box because Bungee's line box is ~1.3× the font size. Arcade/playful, high
   contrast, readable at a glance, portrait, dark-first with a light variant.
 - **Tokens**: colour scheme (brand + per-game accent colours), typography
   (one display font for titles/scores + one UI font), shapes, spacing, elevation,

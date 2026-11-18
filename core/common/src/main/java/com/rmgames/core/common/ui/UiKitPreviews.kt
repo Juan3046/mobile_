@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,7 +36,8 @@ private fun MainSample() {
             RmIconButton(RmIcons.Settings, "Settings", onClick = {})
         })
         Column(
-            Modifier.weight(1f).padding(horizontal = RmTheme.dimens.gutter).padding(bottom = 16.dp),
+            Modifier.weight(1f).verticalScroll(rememberScrollState())
+                .padding(horizontal = RmTheme.dimens.gutter).padding(bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(RmTheme.dimens.gapSection),
         ) {
             SeasonStrip(season = 12, todayIndex = 3, points = 3150)
@@ -48,7 +51,6 @@ private fun MainSample() {
                     sensorLabel = "Front camera", sensorIcon = RmIcons.Camera, durationLabel = "60 seconds",
                 )
             }
-            Spacer(Modifier.weight(1f))
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     AttemptsPips(remaining = 2)
@@ -86,8 +88,10 @@ private fun ResultSample() {
             }
             StatTile("Provisional · #14 of 212", formatPoints(4975, signed = true), caption = "Season points if the day ended now · final at 12:00", accent = true)
             Spacer(Modifier.weight(1f))
-            RmButton("Play again", {}, Modifier.fillMaxWidth(), size = RmButtonSize.Xl, icon = RmIcons.Replay)
-            RmButton("Back to home", {}, Modifier.fillMaxWidth(), variant = RmButtonVariant.Text)
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                RmButton("Play again", {}, Modifier.fillMaxWidth(), size = RmButtonSize.Xl, icon = RmIcons.Replay)
+                RmButton("Back to home", {}, Modifier.fillMaxWidth(), variant = RmButtonVariant.Text)
+            }
         }
     }
 }

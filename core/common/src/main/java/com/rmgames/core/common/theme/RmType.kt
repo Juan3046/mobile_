@@ -7,6 +7,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -63,4 +64,6 @@ fun rmTypography(display: FontFamily, body: FontFamily): Typography {
 fun rmNumberStyle(family: FontFamily, size: TextUnit, weight: FontWeight = FontWeight.Normal) = TextStyle(
     fontFamily = family, fontWeight = weight, fontSize = size, lineHeight = size,
     fontFeatureSettings = "tnum",
+    // Trim the font's extra ascent/descent so big numbers sit tight against their labels.
+    lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both),
 )

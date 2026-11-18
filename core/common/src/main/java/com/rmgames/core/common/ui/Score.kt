@@ -25,6 +25,9 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmgames.core.common.theme.RmTheme
@@ -60,7 +63,7 @@ fun ScoreCounter(
             countUpValue(score, progress.value).toString(),
             style = RmTheme.score(120.sp),
             color = if (isBest) c.primaryInk else c.onSurface,
-            modifier = Modifier.scale(pop.value),
+            modifier = Modifier.digitBox(120.sp).scale(pop.value),
         )
         Text(unit.uppercase(), style = MaterialTheme.typography.labelLarge, color = c.onSurfaceVariant)
     }
@@ -110,3 +113,17 @@ fun Confetti(modifier: Modifier = Modifier, seed: Int = 1, count: Int = 36, play
         }
     }
 }
+
+/**
+ * Bungee's line box is ~1.3× the font size (tall accents), so a huge score sits in a lot of
+ * empty space. Lays the text out at [DIGIT_BOX] × size and centres the glyphs in it —
+ * digits have no descenders and Bungee centres them in its line box (measured on device).
+ */
+internal fun Modifier.digitBox(size: TextUnit): Modifier = layout { measurable, constraints ->
+    val placeable = measurable.measure(constraints.copy(minHeight = 0, maxHeight = Constraints.Infinity))
+    val height = (size * DIGIT_BOX).roundToPx()
+    layout(placeable.width, height) { placeable.place(0, (height - placeable.height) / 2) }
+}
+
+/** Visual height of Bungee digits relative to the font size (cap height + a little air). */
+internal const val DIGIT_BOX = 0.82f

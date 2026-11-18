@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Window theme behind Compose. No action bar: RmTopBar draws the app's own bars.
+         Bar colours match RmPalette.Light.background (docs/09 §2A). Splash + edge-to-edge
+         land in plan 09 PR 14. -->
+    <style name="Theme.RmGames" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/rm_background</item>
+        <item name="android:statusBarColor">@color/rm_background</item>
+        <item name="android:navigationBarColor">@color/rm_background</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
+</resources>

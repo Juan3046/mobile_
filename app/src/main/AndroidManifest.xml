@@ -10,6 +10,7 @@
     <uses-feature android:name="android.hardware.camera.front" android:required="false" />
     <application
         android:label="RM Games"
+        android:theme="@style/Theme.RmGames"
         android:supportsRtl="true">
         <activity
             android:name=".MainActivity"
