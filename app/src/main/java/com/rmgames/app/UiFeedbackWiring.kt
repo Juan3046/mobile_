@@ -1,12 +1,21 @@
 package com.rmgames.app
 
+import com.rmgames.core.common.ui.AudioScene
+import com.rmgames.core.common.ui.UiCue
 import com.rmgames.core.common.ui.UiFeedback
 import com.rmgames.core.data.Settings
 
 /**
- * Click feedback for the UI kit, driven by the user's Settings: haptics follow the
- * Vibration toggle. The click sound joins here when `:core:audio` lands (plan 09 PR 7).
+ * Feedback for every screen, driven by the user's Settings: haptics follow the Vibration
+ * toggle; cues and scenes go to the audio layer ([play]/[scene] — the AudioDirector in
+ * the app, which applies the Sound effects switch and the music volume itself).
  */
-internal fun uiFeedbackFor(settings: Settings): UiFeedback = object : UiFeedback {
+internal fun uiFeedbackFor(
+    settings: Settings,
+    play: (UiCue) -> Unit,
+    scene: (AudioScene) -> Unit,
+): UiFeedback = object : UiFeedback {
     override val hapticsEnabled: Boolean = settings.vibrationEnabled
+    override fun cue(cue: UiCue) = play(cue)
+    override fun scene(scene: AudioScene) = scene(scene)
 }

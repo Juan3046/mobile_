@@ -15,6 +15,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
@@ -27,6 +28,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rmgames.core.common.theme.RmTheme
+import com.rmgames.core.common.ui.AudioScene
+import com.rmgames.core.common.ui.LocalUiFeedback
 import com.rmgames.core.common.ui.RmButton
 import com.rmgames.core.common.ui.RmButtonVariant
 import com.rmgames.core.common.ui.RmCard
@@ -53,6 +56,8 @@ fun SettingsRoute(
     onResetAttempts: (() -> Unit)? = null,
 ) {
     val settings by repository.settings.collectAsStateWithLifecycle()
+    val feedback = LocalUiFeedback.current
+    LaunchedEffect(Unit) { feedback.scene(AudioScene.Menu) }
     SettingsScreen(
         settings = settings,
         appVersion = appVersion,

@@ -80,13 +80,22 @@ fun confettiPieces(count: Int, seed: Int): List<ConfettiPiece> {
     }
 }
 
+/** Short UI sounds a screen can ask for (synthesized by `:core:audio`). */
+enum class UiCue { Click, Tick, Go, NewBest }
+
+/** What kind of screen is showing, so the audio layer can pick or fade the music. */
+enum class AudioScene { Menu, Game, Silent }
+
 /**
- * Click feedback hook. `:core:audio` will provide an implementation that plays the UI
- * click and honours the Settings toggles (plan 09 §2B); until then it is silent.
+ * Feedback hook for screens: haptics flag, UI sound cues and the audio scene. `:app`
+ * provides the real one (Settings + `:core:audio`); the default is silent, so screens and
+ * previews never depend on the audio module.
  */
 interface UiFeedback {
     val hapticsEnabled: Boolean get() = true
-    fun click() {}
+    fun cue(cue: UiCue) {}
+    fun scene(scene: AudioScene) {}
+    fun click() = cue(UiCue.Click)
 }
 
 object NoUiFeedback : UiFeedback

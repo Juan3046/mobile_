@@ -38,6 +38,8 @@ import com.rmgames.core.common.Game
 import com.rmgames.core.common.GameEntry
 import com.rmgames.core.common.theme.RmTheme
 import com.rmgames.core.common.ui.AttemptsPips
+import com.rmgames.core.common.ui.AudioScene
+import com.rmgames.core.common.ui.UiCue
 import com.rmgames.core.common.ui.Confetti
 import com.rmgames.core.common.ui.CountdownChip
 import com.rmgames.core.common.ui.GameCard
@@ -100,16 +102,20 @@ fun SessionRoute(
 
     LaunchedEffect(phase) {
         when (phase) {
+            SessionPhase.Intro, SessionPhase.Locked -> feedback.scene(AudioScene.Menu)
             is SessionPhase.Countdown -> {
+                feedback.scene(AudioScene.Game)
+                feedback.cue(UiCue.Tick)
                 if (feedback.hapticsEnabled) view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
                 delay(1_000)
                 flow.tick()
             }
             SessionPhase.Playing -> {
+                feedback.cue(UiCue.Go)
                 if (feedback.hapticsEnabled) view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
                 run?.startRun()
             }
-            SessionPhase.Abandoned -> onExit()
+            SessionPhase.Abandoned -> { feedback.scene(AudioScene.Menu); onExit() }
             else -> Unit
         }
     }
@@ -126,7 +132,12 @@ fun SessionRoute(
             IntroScreen(entry.game, flow.attemptsLeft(), locked = phase == SessionPhase.Locked, onStart = ::startRun, onClose = onExit)
         is SessionPhase.Finished -> {
             var showResult by remember(phase) { mutableStateOf(false) }
-            LaunchedEffect(phase) { delay(END_HOLD_MS); showResult = true }
+            LaunchedEffect(phase) {
+                delay(END_HOLD_MS)
+                showResult = true
+                feedback.scene(AudioScene.Menu)
+                if (phase.summary.isNewBest) feedback.cue(UiCue.NewBest)
+            }
             if (showResult) ResultScreen(entry.game, phase.summary, onPlayAgain = ::startRun, onHome = onExit)
             else RunStage(entry, phase, flow.liveScore)
         }

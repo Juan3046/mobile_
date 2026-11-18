@@ -25,6 +25,8 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import com.rmgames.core.common.Game
 import com.rmgames.core.common.theme.RmTheme
 import com.rmgames.core.common.ui.AttemptsPips
+import com.rmgames.core.common.ui.AudioScene
+import com.rmgames.core.common.ui.LocalUiFeedback
 import com.rmgames.core.common.ui.CountdownChip
 import com.rmgames.core.common.ui.GameCard
 import com.rmgames.core.common.ui.RmButton
@@ -66,6 +68,8 @@ fun HomeRoute(
     onSettings: (() -> Unit)? = null,
 ) {
     val vm = remember(games, attempts, scores, clock) { HomeViewModel(attempts, scores, clock, games) }
+    val feedback = LocalUiFeedback.current
+    LaunchedEffect(Unit) { feedback.scene(AudioScene.Menu) }
     var version by remember { mutableIntStateOf(0) }
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { version++ }
     val state = remember(vm, version) { vm.state() }

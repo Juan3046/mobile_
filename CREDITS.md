@@ -18,4 +18,6 @@ Full licence texts live in [`licenses/fonts/`](licenses/fonts/).
 
 ## Music & sound effects
 
-None yet (lands with `:core:audio`, plan 09 workstream B).
+No third-party audio. The menu music and every UI sound are synthesized in code by
+`:core:audio` (`SoundBook`), written for this project. Games' own sounds are synthesized in
+their modules too (e.g. Onion Roll).

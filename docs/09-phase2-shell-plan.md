@@ -20,7 +20,7 @@
 
 ## 1. Decisions to take first (docs before code — AGENTS.md §4)
 
-1. **DECISION — Music in the MVP.** `06-out-of-scope-roadmap.md` excludes
+1. **DECIDED (2026-11-18): app-level music, synthesized in code.** Original proposal: **DECISION — Music in the MVP.** `06-out-of-scope-roadmap.md` excludes
    *per-minigame* soundtracks. Proposal: allow **app-level music** — one menu
    theme + one shared in-game loop + short stingers (new best, lock) — and keep
    dedicated per-game soundtracks post-MVP. Update `06` and `02` (Audio rules).
@@ -90,7 +90,14 @@
   (live: drives `LocalUiFeedback` haptics), nick placeholder, privacy note, credits (synced with
   `CREDITS.md` by a test), debug reset, version. Gear on Main. Kit gained `RmListItem`,
   `RmListDivider`, `RmSwitch`, `RmSlider`. Music/SFX values take effect when `:core:audio` lands (PR 7).
-  Not built: "force daily game" debug (the Main debug launcher already opens any game). Arcade/playful, high
+  Not built: "force daily game" debug (the Main debug launcher already opens any game).
+  **Status (2026-11-18): PR 7 done** — new `:core:audio`: `Synth` + `SoundBook` (menu loop + click,
+  tick, go, new-best; no files, no licences), `AudioDirector` (scene/volume/SFX/foreground/focus
+  rules, unit-tested) and `AndroidAudioBackend` (static AudioTracks on an "rm-audio" thread, volume
+  fades). Screens reach it through `UiFeedback.cue/scene` (no dependency on the module); `:app`
+  wires Settings and foreground. Checked on device (focus + playing track via adb; listened by the
+  user). Not done: the `FeedbackSettings` flow for games — games still ignore the SFX/vibration
+  switches for their own sounds. Arcade/playful, high
   contrast, readable at a glance, portrait, dark-first with a light variant.
 - **Tokens**: colour scheme (brand + per-game accent colours), typography
   (one display font for titles/scores + one UI font), shapes, spacing, elevation,
@@ -148,7 +155,7 @@ paginated top-50 reads, security rules. Separate PRs after D.1–D.3 work offlin
 | 4 | UI kit components (+ screenshot-free unit tests for logic) — **done** | `:core:common` | 3 |
 | 5 | Seeded season shuffle selector | `:core:data` | 1 |
 | 6 | DataStore attempts + settings repos — **done** (+ daily bests) | `:core:data` | 1 |
-| 7 | `:core:audio` (director, settings flow, focus, no main-thread work) | `:core:audio` | 6 |
+| 7 | `:core:audio` (director, settings flow, focus, no main-thread work) — **done** | `:core:audio` | 6 |
 | 8 | Main screen (daily game, attempts, lock + countdown) — **done** (in-memory repos until 6) | `:feature:home`, `:app` nav | 4, 5, 6 |
 | 9 | Session: pre-run countdown, attempt consumption, result screen — **done** (in-memory repos until 6) | `:feature:session` | 4, 6 |
 | 10 | Room scores + daily best + local best | `:core:data` | 6 |

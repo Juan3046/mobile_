@@ -3,6 +3,8 @@ package com.rmgames.app
 import android.app.Application
 import android.content.Context
 import android.util.Log
+import com.rmgames.core.audio.AndroidAudioBackend
+import com.rmgames.core.audio.AudioDirector
 import com.rmgames.core.data.DayClock
 import com.rmgames.core.data.PersistentAttemptRepository
 import com.rmgames.core.data.PersistentScoreRepository
@@ -41,6 +43,17 @@ class AppContainer(context: Context) {
     val attempts = PersistentAttemptRepository(DataStoreSnapshotStore(dataStore, "attempts", AttemptsCodec), ioScope, logError)
     val scores = PersistentScoreRepository(DataStoreSnapshotStore(dataStore, "daily_bests", ScoresCodec), ioScope, logError)
     val settings = SettingsRepository(DataStoreSnapshotStore(dataStore, "settings", SettingsCodec), ioScope, logError)
+
+    /**
+     * App-wide music and UI sounds (plan 09 PR 7). Synthesized in code; all AudioTrack work
+     * on its own thread. Call it from the main thread (MainActivity feeds it the Settings
+     * and the foreground state; screens reach it through LocalUiFeedback).
+     */
+    val audio: AudioDirector by lazy {
+        lateinit var director: AudioDirector
+        director = AudioDirector(AndroidAudioBackend(context.applicationContext) { director.onFocusChange(it) })
+        director
+    }
 
     private val loadLock = Mutex()
 

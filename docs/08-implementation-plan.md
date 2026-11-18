@@ -31,6 +31,8 @@ Shared (frozen in Phase 1a — built together, no cross-module edits afterwards)
                              Seasons History button, attempts indicator, debug reset)
 :feature:session            game host: timer, 1 run = 1 attempt, best-of-2,
                              lock + countdown, result screen
+:core:audio                 app music + UI sounds: synthesizer, SoundBook,
+                             AudioDirector rules, Android AudioTrack backend — Phase 2
 :feature:settings           settings screen (sound, vibration, nick, privacy,
                              credits & licences, debug) — Phase 2
 ```

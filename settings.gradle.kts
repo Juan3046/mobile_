@@ -16,6 +16,7 @@ rootProject.name = "RM Games"
 include(":app")
 include(":core:common")
 include(":core:data")
+include(":core:audio")
 include(":core:sensors")
 include(":core:vision")
 include(":feature:home")

@@ -1,6 +1,8 @@
 package com.rmgames.app
 
 import android.os.Bundle
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -44,6 +46,14 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val container = (application as RmApplication).container
+        // Music pauses in the background and resumes in the foreground (plan 09 §2B).
+        lifecycle.addObserver(LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_START -> container.audio.onForeground(true)
+                Lifecycle.Event.ON_STOP -> container.audio.onForeground(false)
+                else -> Unit
+            }
+        })
         setContent {
             // Direction A "Chunky Cabinet" (docs/09 §2A). Surface paints the themed background.
             RmTheme {
@@ -53,7 +63,11 @@ class MainActivity : ComponentActivity() {
                     LaunchedEffect(container) { container.load(); ready = true }
                     if (ready) {
                         val settings by container.settings.settings.collectAsStateWithLifecycle()
-                        CompositionLocalProvider(LocalUiFeedback provides uiFeedbackFor(settings)) {
+                        LaunchedEffect(settings) { container.audio.onSettings(settings.musicVolume, settings.sfxEnabled) }
+                        val feedback = remember(settings) {
+                            uiFeedbackFor(settings, play = container.audio::play, scene = container.audio::setScene)
+                        }
+                        CompositionLocalProvider(LocalUiFeedback provides feedback) {
                             RMGamesNav(container)
                         }
                     }
