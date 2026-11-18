@@ -53,4 +53,18 @@ class GameRegistryTest {
             ),
         )
     }
+
+    @Test
+    fun `entries let the host draw its HUD by default`() {
+        val entry = GameEntry(fakeGame("01-escape-poruba")) { }
+
+        assertEquals(false, entry.drawsOwnHud)
+    }
+
+    @Test
+    fun `an entry can declare that it draws its own HUD`() {
+        val entry = GameEntry(fakeGame("02-onion-roll"), drawsOwnHud = true) { }
+
+        assertEquals(true, entry.drawsOwnHud)
+    }
 }

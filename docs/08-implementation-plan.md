@@ -75,7 +75,8 @@ of them once:
 class GameEntry(                    // Adapter: logic + UI behind one stable type
   val game: Game,
   val screen: @Composable () -> Unit, // renders the game's state — no params by design
-  val requiredPermissions: List<String> = emptyList(), // CAMERA for blink/casino; empty otherwise
+  val requiredPermissions: List<String> = emptyList(), // CAMERA for blink/casino when hardware exists
+  val drawsOwnHud: Boolean = false, // true = host hides its placeholder score/finish texts
 )
 class GameRegistry(entries: List<GameEntry>) {  // Registry, built once in :app
   val all: List<GameEntry>
@@ -89,7 +90,7 @@ class GameRegistry(entries: List<GameEntry>) {  // Registry, built once in :app
 - The per-game entry factories are **frozen** (each module owns its own):
 
 ```kotlin
-fun porubaCasinoEntry(detector: HeadGestureDetector): GameEntry
+fun porubaCasinoEntry(detector: HeadGestureDetector, cameraAvailable: Boolean = true): GameEntry
 fun onionRollEntry(gyroscope: GyroscopeSensor): GameEntry
 fun blinkSniperEntry(detector: BlinkDetector): GameEntry
 fun compassChaosEntry(compass: CompassSensor): GameEntry
@@ -110,9 +111,15 @@ fun sodaShakeEntry(accelerometer: AccelerometerSensor): GameEntry
 - Permission gate (in `:app`, by contract): an entry may declare `requiredPermissions`;
   while they are not held the `session/{gameId}` route shows the explanation/fallback
   instead of running (grant → play; denial → "open settings" hint; re-checked on
-  ON_RESUME) — a denied permission never records a fake score. Blink and Poruba Casino (CAMERA)
-  need it today; device-level front-camera fallback copy + home-level Play disabling
-  land in Phase 2. Casino also reports face-tracking readiness from the vision flow.
+  ON_RESUME) — a denied permission never records a fake score. Blink needs CAMERA;
+  Poruba Casino requests CAMERA only on devices with a front camera. Without that
+  hardware, it uses touch controls without requesting permission. Casino also reports
+  face-tracking readiness from the vision flow.
+- **Own-HUD opt-out** (backward-compatible addition, 2026-11-10): an entry with
+  `drawsOwnHud = true` draws its own score and end-of-run feedback, so the host
+  hides its Phase 1b placeholder texts (`score: N` and `Run finished (win=…) ·
+  score=…`) for that game only. Default `false` keeps every other game exactly
+  as before. Used by Onion Roll (seconds counter + "YOU LOST!" banner).
 - Game authors edit only their own module (game impl + screen + entry factory);
   `:app` and `:feature:session` are stable during Phase 1b.
 
@@ -147,6 +154,9 @@ interface HeadGestureDetector { fun observations(): Flow<HeadGestureObservation>
 // MlKitHeadGestureDetector emits thresholded, neutral-rearmed head gesture events;
 // pure classifier + fake live in :core:vision and are JVM-tested.
 // Camera permission UX lives in :app, not here.
+// CameraX bind/unbind MUST run on Dispatchers.Main: any other dispatcher throws
+// "IllegalStateException: Not in application's main thread" (issue #22).
+// eyeStateFlow() owns that hop and EyeStateFlowTest pins it — do not remove it.
 ```
 
 Repositories in `:core:data`: `AttemptRepository` (2/day, local-midnight reset),

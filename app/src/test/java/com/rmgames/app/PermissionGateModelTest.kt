@@ -1,5 +1,6 @@
 package com.rmgames.app
 
+import androidx.compose.runtime.snapshots.Snapshot
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -89,5 +90,47 @@ class PermissionGateModelTest {
 
         assertFalse(model.isContentVisible)
         assertTrue(model.wasDenied)
+    }
+
+    @Test
+    fun `a grant is published to the snapshot system so the gate recomposes`() {
+        val model = PermissionGateModel(requiredPermissions = listOf(camera), initiallyGranted = false)
+
+        val applied = snapshotChangesOf {
+            model.onPermissionsResult(mapOf(camera to true))
+        }
+
+        assertTrue(
+            "isContentVisible must be snapshot state: with a plain var PermissionGate " +
+                "never recomposes after the user grants the permission",
+            applied,
+        )
+    }
+
+    @Test
+    fun `a denial is published to the snapshot system so the hint appears`() {
+        val model = PermissionGateModel(requiredPermissions = listOf(camera), initiallyGranted = false)
+
+        val applied = snapshotChangesOf {
+            model.onPermissionsResult(mapOf(camera to false))
+        }
+
+        assertTrue(
+            "wasDenied must be snapshot state or the settings hint never appears",
+            applied,
+        )
+    }
+
+    /** True when [block] wrote at least one Compose snapshot state object. */
+    private fun snapshotChangesOf(block: () -> Unit): Boolean {
+        val applied = mutableListOf<Any>()
+        val observer = Snapshot.registerApplyObserver { state, _ -> applied.add(state) }
+        try {
+            block()
+            Snapshot.sendApplyNotifications()
+        } finally {
+            observer.dispose()
+        }
+        return applied.isNotEmpty()
     }
 }
