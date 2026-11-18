@@ -51,7 +51,14 @@
 
 ### A. Visual identity & design system (`:core:common`, `:app` resources)
 - **Direction first, code second**: mood board → 2–3 visual directions as
-  mockups (main + result screens) → team picks one. Arcade/playful, high
+  mockups (main + result screens) → team picks one.
+  **DECIDED (2026-11-18): Direction A · Chunky Cabinet** — deep plum ground, hot-pink
+  primary, sun-yellow reserved for “new best”; Bungee (display, scores) + Rubik (UI);
+  medium radii with a 2px dark outline sitting on a 4px hard “ledge” that compresses on
+  press; dark-first with a light variant. Spec, tokens and component catalogue live in
+  [`design-system/`](../design-system/README.md) (`concept.html` = Main + Result screens).
+  Directions B (Soft Tonal Pop) and C (Scoreboard Grid) were explored and discarded.
+  PR 3 ports these tokens to `RmTheme`. Arcade/playful, high
   contrast, readable at a glance, portrait, dark-first with a light variant.
 - **Tokens**: colour scheme (brand + per-game accent colours), typography
   (one display font for titles/scores + one UI font), shapes, spacing, elevation,
@@ -104,7 +111,7 @@ paginated top-50 reads, security rules. Separate PRs after D.1–D.3 work offlin
 | # | PR | Module(s) | Depends on |
 |---|---|---|---|
 | 1 | Docs: decisions 1–6 + ownership + this plan | `docs/`, `AGENTS.md` | team OK |
-| 2 | Visual direction mockups (not code) | — | 1 |
+| 2 | Visual direction mockups (not code) — `design-system/` | — | 1 |
 | 3 | `RmTheme` tokens + fonts | `:core:common`, `:app` res | 2 |
 | 4 | UI kit components (+ screenshot-free unit tests for logic) | `:core:common` | 3 |
 | 5 | Seeded season shuffle selector | `:core:data` | 1 |

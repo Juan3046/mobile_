@@ -13,6 +13,7 @@ Single source of truth for requirements + the implementation plan. Status: Phase
 | `games/` | One `.md` per minigame (index + template: `games/README.md`) |
 | `08-implementation-plan.md` | Multi-module parallel plan: ownership, contracts, phases, PR rules |
 | `09-phase2-shell-plan.md` | Phase 2 proposal: app shell screens, look & feel, audio, daily rotation (pending team decisions) |
+| `../design-system/` | Phase 2 visual identity (Direction A · Chunky Cabinet): HTML mockups (Main + Result) and Material 3 token/component catalogue |
 
 Conventions:
 - All content in English.

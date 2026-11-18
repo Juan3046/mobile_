@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RM Games · Design System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=JetBrains+Mono:wght@500;700&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="theme.js"></script>
+<style>
+/* page chrome (style-guide layout only; components/tokens live in styles.css) */
+body{font-family:var(--font-body);color:var(--on-background);background:var(--background);display:flex}
+nav.side{position:sticky;top:0;align-self:flex-start;height:100vh;width:220px;flex:0 0 220px;background:var(--surface-container-low);border-right:1px solid var(--outline-variant);padding:22px 14px;overflow:auto}
+nav.side .brand{font-family:var(--font-display);font-weight:var(--display-weight);font-size:20px;color:var(--on-surface);margin-bottom:4px}
+nav.side .sub{font:500 12px var(--font-body);color:var(--on-surface-variant);margin-bottom:16px}
+nav.side a{display:block;padding:5px 10px;border-radius:8px;font-size:13px;color:var(--on-surface-variant);text-decoration:none}
+nav.side a:hover{background:var(--surface-container-high);color:var(--on-surface)}
+nav.side a.concept-link{margin:0 0 6px;padding:10px;font-weight:700;color:var(--on-primary);background:var(--primary);border-radius:10px}
+nav.side .grp{font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:var(--outline);margin:16px 0 6px 10px;font-weight:700}
+main{flex:1;padding:36px 44px 120px;max-width:1100px;min-width:0}
+section{margin-bottom:56px;scroll-margin-top:20px}
+h2.sec{font-family:var(--font-display);font-weight:var(--display-weight);letter-spacing:var(--display-tracking);font-size:24px;color:var(--on-surface);margin-bottom:6px}
+h3.cat{font:700 12px var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--primary-ink);margin:64px 0 20px;padding-top:16px;border-top:1px solid var(--outline-variant)}
+.sec-desc{color:var(--on-surface-variant);font-size:14px;margin-bottom:20px;max-width:720px;line-height:1.6}
+.stage{background:var(--surface);border:1px solid var(--outline-variant);border-radius:12px;padding:26px;display:flex;flex-wrap:wrap;gap:24px 28px;align-items:center}
+.stage.col{flex-direction:column;align-items:stretch}
+.stage.tight{gap:12px}
+.cell{display:flex;flex-direction:column;align-items:center;gap:8px}
+.spec{font:11px var(--font-mono);color:var(--outline)}
+.colors{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.sw{border:1px solid var(--outline-variant);border-radius:10px;overflow:hidden;background:var(--surface)}
+.sw .c{height:52px;display:flex;align-items:flex-end;padding:6px 8px;font:600 12px var(--font-body)}.sw .m{padding:8px 10px}.sw .n{font:600 12px var(--font-mono);color:var(--on-surface)}.sw .v{font:11px var(--font-mono);color:var(--on-surface-variant)}
+.typerow{display:flex;align-items:baseline;gap:18px;padding:10px 0;border-bottom:1px solid var(--outline-variant)}
+.typerow .tk{width:150px;flex:0 0 150px;font:11px var(--font-mono);color:var(--on-surface-variant)}
+.typerow>div:last-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sprow{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.sprow .bar{background:var(--primary);height:12px;border-radius:3px}.sprow .lbl{width:170px;font:12px var(--font-mono);color:var(--on-surface-variant)}
+.boxes{display:flex;flex-wrap:wrap;gap:20px}
+.boxes .bx{width:110px;height:80px;background:var(--surface-container-high);display:flex;align-items:flex-end;padding:8px;font:11px var(--font-mono);color:var(--on-surface-variant)}
+.iconGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px}
+.iconGrid .it{background:var(--surface);border:1px solid var(--outline-variant);border-radius:10px;padding:14px 6px 8px;display:flex;flex-direction:column;align-items:center;gap:7px;color:var(--on-surface)}
+.iconGrid .it .nm{font:11px var(--font-mono);color:var(--on-surface-variant)}
+.phone{width:360px;border:1px solid var(--outline-variant);background:var(--background);overflow:hidden}
+code{font-family:var(--font-mono);font-size:.92em}
+
+/* top controls + Dev Mode + Inspector + Copy-as-prompt */
+#topctl{position:fixed;top:14px;right:18px;z-index:50;display:flex;gap:8px;align-items:center}
+#topctl select{font:600 12px system-ui,sans-serif;border:1px solid var(--outline-variant);border-radius:8px;padding:8px 10px;background:var(--surface-container-high);color:var(--on-surface)}
+.ds-btn{font:600 12px system-ui,sans-serif;background:var(--surface-container-high);border:1px solid var(--primary-ink);color:var(--primary-ink);border-radius:8px;padding:8px 12px;cursor:pointer}
+#devToggle{font:600 12px system-ui,sans-serif;background:var(--surface-container-high);border:1px solid var(--outline-variant);border-radius:8px;padding:8px 12px;cursor:pointer;color:var(--on-surface)}
+#devToggle.on{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
+.sec-prompt{font:600 11px system-ui,sans-serif;border:1px solid var(--primary-ink);background:transparent;color:var(--primary-ink);border-radius:8px;padding:3px 9px;margin-left:12px;cursor:pointer;vertical-align:middle;letter-spacing:0;text-transform:none}
+body.dev [data-insp]:hover{outline:2px dashed var(--tertiary);outline-offset:3px;cursor:pointer}
+.insp-sel{outline:2px solid var(--primary)!important;outline-offset:3px}
+#inspector{position:fixed;top:0;right:0;width:350px;height:100vh;background:var(--surface-container-low);border-left:1px solid var(--outline-variant);transform:translateX(100%);transition:transform .28s var(--ease);z-index:49;overflow:auto;padding:58px 20px 40px;color:var(--on-surface)}
+body.inspecting #inspector{transform:translateX(0)} body.inspecting main{margin-right:350px}
+#inspector .iclose{position:absolute;top:16px;right:16px;border:none;background:none;font-size:18px;color:var(--on-surface-variant);cursor:pointer}
+#inspector .nm{font-family:var(--font-display);font-weight:var(--display-weight);font-size:20px}
+#inspector .file{font:12px var(--font-mono);color:var(--on-surface-variant);margin-top:2px}
+#inspector .desc{font-size:13px;color:var(--on-surface-variant);line-height:1.6;margin-top:10px}
+#inspector h4{font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--outline);margin:20px 0 8px}
+.prop{padding:8px 0;border-bottom:1px solid var(--outline-variant)}.prop .pn{font:600 13px var(--font-mono)}.prop .pt{font:11px var(--font-mono);color:var(--primary-ink)}.prop .pdef{font:11px var(--font-mono);color:var(--on-surface-variant)}
+.tok{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:8px;cursor:pointer}.tok:hover{background:var(--surface-container-high)}
+.tok .tsw{width:22px;height:22px;border-radius:6px;border:1px solid var(--outline-variant);flex:0 0 22px}.tok .tn{font:600 12px var(--font-mono)}.tok .tr{font-size:11px;color:var(--on-surface-variant)}.tok .tv{margin-left:auto;font:11px var(--font-mono);color:var(--on-surface-variant);max-width:120px;text-align:right;word-break:break-all}
+.metric{display:flex;justify-content:space-between;gap:12px;font:12px var(--font-mono);padding:5px 0;border-bottom:1px dashed var(--outline-variant)}.metric .mk{color:var(--on-surface-variant)}
+.copyprompt{width:100%;margin-top:16px;font:600 13px system-ui,sans-serif;background:var(--primary);color:var(--on-primary);border:none;border-radius:10px;padding:11px;cursor:pointer}
+.copied{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--inverse-surface);color:var(--inverse-on-surface);font-size:12px;padding:8px 16px;border-radius:8px;opacity:0;transition:.2s;z-index:60;pointer-events:none}.copied.show{opacity:1}
+</style>
+</head>
+<body>
+<!--SPRITE (generated from icons.html — keep in sync)-->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
+  <symbol id="i-more-v" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.6" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15a1 1 0 0 0 1.5.9l12-7.5a1 1 0 0 0 0-1.8l-12-7.5A1 1 0 0 0 7 4.5z"/></symbol>
+  <symbol id="i-replay" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></symbol>
+  <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></symbol>
+  <symbol id="i-podium" viewBox="0 0 24 24"><path d="M9 21V9h6v12M3 21v-7h6M15 21v-5h6v5M2 21h20"/><path d="M12 3l.9 1.8 2 .3-1.4 1.4.3 2-1.8-1-1.8 1 .3-2-1.4-1.4 2-.3z"/></symbol>
+  <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 2.6-6.4L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+  <symbol id="i-timer" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6M12 2v3"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-crosshair" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/><circle cx="12" cy="12" r="1" fill="currentColor"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M22 18a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3l2-3h6l2 3h3a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></symbol>
+  <symbol id="i-tilt" viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2" transform="rotate(-15 12 12)"/><path d="M3 8a10 10 0 0 0 0 8M21 8a10 10 0 0 1 0 8"/></symbol>
+  <symbol id="i-shake" viewBox="0 0 24 24"><rect x="8" y="3" width="8" height="18" rx="2"/><path d="M4 8v8M20 8v8M2 10v4M22 10v4"/></symbol>
+  <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></symbol>
+  <symbol id="i-run" viewBox="0 0 24 24"><circle cx="14" cy="4" r="2"/><path d="M6 21l3-6 3 2v5M8 10l3-3 4 2 3 3M11 7l-1 6"/></symbol>
+  <symbol id="i-onion" viewBox="0 0 24 24"><path d="M12 3c0 3-6 6-6 11a6 6 0 0 0 12 0c0-5-6-8-6-11z"/><path d="M12 3c-1 4-2 7-2 11s1 6 2 6M12 3c1 4 2 7 2 11s-1 6-2 6"/></symbol>
+  <symbol id="i-can" viewBox="0 0 24 24"><path d="M7 5h10l1 3v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8z"/><path d="M6 8h12M9 3h6"/></symbol>
+  <symbol id="i-volume" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></symbol>
+  <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
+  <symbol id="i-vibrate" viewBox="0 0 24 24"><rect x="8" y="4" width="8" height="16" rx="1.5"/><path d="M4 9l-2 3 2 3M20 9l2 3-2 3"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></symbol>
+  <symbol id="i-bug" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="13" rx="5"/><path d="M12 11v9M7 13H3M21 13h-4M7 17l-3 2M17 17l3 2M7 9L4 7M17 9l3-2M9 5l1.5 2M15 5l-1.5 2"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 15h10l1-15M10 11v6M14 11v6"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 22a7 7 0 0 0 7-7c0-4-3-6-4-10-2 2-3 4-3 6-1-1-2-2-2-4-2 2-5 5-5 8a7 7 0 0 0 7 7z"/></symbol>
+</svg>
+<!--/SPRITE-->
+
+<div id="topctl">
+  <button class="ds-btn" onclick="copyFullSystem()" title="Copy a prompt to install or update the whole design system">⤓ Install design system</button>
+  <select id="themeSel" aria-label="Theme"><option value="">Dark</option><option value="light">Light</option></select>
+  <select id="langSel" title="Copy-as-prompt target" aria-label="Prompt language"></select>
+  <button id="devToggle" onclick="toggleDev()">◧ Dev Mode</button>
+</div>
+<aside id="inspector"><button class="iclose" onclick="closeInspector()" aria-label="Close inspector">✕</button><div id="inspectorBody"></div></aside>
+<div class="copied" id="copied">Copied</div>
+
+<nav class="side">
+  <div class="brand">RM Games DS</div>
+  <div class="sub">Material 3 · Direction A · Chunky Cabinet</div>
+  <a class="concept-link" href="concept.html">◳ &nbsp;Concept preview &nbsp;→</a>
+  <div class="grp">Foundations</div>
+  <a href="#colors">Color</a><a href="#type">Typography</a><a href="#shape">Shape</a><a href="#elevation">Elevation</a><a href="#states">State layers</a><a href="#spacing">Spacing</a><a href="#motion">Motion</a><a href="#icons">Icons</a>
+  <div class="grp">Actions</div>
+  <a href="#button">Buttons</a><a href="#iconbutton">Icon buttons</a><a href="#fab">FAB</a><a href="#segmented">Segmented buttons</a>
+  <div class="grp">Communication</div>
+  <a href="#badge">Badge</a><a href="#progress">Progress</a><a href="#snackbar">Snackbar</a><a href="#tooltip">Tooltip</a>
+  <div class="grp">Containment</div>
+  <a href="#card">Card</a><a href="#carousel">Carousel</a><a href="#divider">Divider</a><a href="#list">Lists</a><a href="#sheet">Bottom sheet</a><a href="#dialog">Dialog</a>
+  <div class="grp">Navigation</div>
+  <a href="#appbar">Top app bar</a><a href="#navbar">Navigation bar</a><a href="#navrail">Navigation rail</a><a href="#drawer">Navigation drawer</a><a href="#tabs">Tabs</a><a href="#search">Search</a><a href="#menu">Menu</a>
+  <div class="grp">Selection</div>
+  <a href="#checkbox">Checkbox</a><a href="#chip">Chips</a><a href="#radio">Radio button</a><a href="#switch">Switch</a><a href="#slider">Slider</a><a href="#datepicker">Date picker</a><a href="#timepicker">Time picker</a>
+  <div class="grp">Text inputs</div>
+  <a href="#textfield">Text field</a>
+  <div class="grp">Extensions · RM Games</div>
+  <a href="#gamecard">GameCard</a><a href="#pips">AttemptsPips</a><a href="#countdown">CountdownChip</a><a href="#score">ScoreCounter</a><a href="#stat">StatTile</a><a href="#seasonstrip">SeasonStrip</a><a href="#sechead">SectionHeader</a>
+</nav>
+
+<main>
+  <header style="margin-bottom:32px"><div class="t-headline-l">RM Games Design System</div>
+    <p class="sec-desc" style="margin-top:8px">Material 3 token model + component catalogue for the Phase 2 shell (<code>docs/09-phase2-shell-plan.md</code> §2A).
+    Chosen direction: <b>A · Chunky Cabinet</b> — outlined shapes on a hard ledge, dark-first with a light variant (switch at the top right).
+    Toggle <b>Dev Mode</b> to inspect a component; <b>Copy as prompt</b> targets Jetpack Compose by default.</p></header>
+
+  <!-- ===================== FOUNDATIONS ===================== -->
+  <section id="colors"><h2 class="sec">Color</h2><p class="sec-desc">M3 roles. Every fill ships its <code>on-*</code> partner, WCAG-checked by math (body ≥ 4.5:1). Values below are read live from the active theme. One interaction family (primary); tertiary is reserved for celebration (“new best”).</p><div class="colors" id="colorGrid"></div>
+    <p class="sec-desc" style="margin-top:20px">Per-game accents — thumbnail fallback fill only (content colour, never interaction):</p><div class="colors" id="gameGrid"></div></section>
+  <section id="type"><h2 class="sec">Typography</h2><p class="sec-desc">M3 type scale (15 styles). Display/headline use the direction's display face; titles, body and labels use the reading face. Scores, timers and ranks use <code>t-num</code> (tabular figures).</p><div id="typeList"></div></section>
+  <section id="shape"><h2 class="sec">Shape</h2><p class="sec-desc">M3 shape scale: none / extra-small / small / medium / large / extra-large / full.</p><div class="boxes" id="shapeList"></div></section>
+  <section id="elevation"><h2 class="sec">Elevation</h2><p class="sec-desc">A hard “ledge”: a solid offset in <code>--ledge</code>, no blur. Pressed buttons drop to 1px and shift down 3px.</p><div class="boxes" id="elevList"></div></section>
+  <section id="states"><h2 class="sec">State layers</h2><p class="sec-desc">Hover 8% · focus 10% · pressed 10% · dragged 16% of the content colour; disabled = on-surface at 38% (content) / 12% (container).</p>
+    <div class="stage"><div class="cell"><button class="btn btn-filled">Enabled</button><div class="spec">enabled</div></div><div class="cell"><button class="btn btn-filled is-hover">Hovered</button><div class="spec">hover</div></div><div class="cell"><button class="btn btn-filled is-focus">Focused</button><div class="spec">focus</div></div><div class="cell"><button class="btn btn-filled is-pressed">Pressed</button><div class="spec">pressed</div></div><div class="cell"><button class="btn btn-filled is-disabled">Disabled</button><div class="spec">disabled</div></div></div></section>
+  <section id="spacing"><h2 class="sec">Spacing</h2><p class="sec-desc">4dp grid + semantic roles: related (8) &lt; section (24) &lt; major (32); screen gutter 20; touch target ≥ 48.</p><div id="spacingList"></div></section>
+  <section id="motion"><h2 class="sec">Motion</h2><p class="sec-desc">M3 standard + emphasized easing; a spring overshoot for score pops and press release; score count-up 900ms.</p><div id="motionList" class="stage col tight"></div></section>
+  <section id="icons"><h2 class="sec">Icons</h2><p class="sec-desc">Token-driven inline SVG sprite (<code>stroke:currentColor; stroke-width:var(--icon-stroke)</code>; rounded caps/joins, 2.25 stroke). Drawn in the style of Lucide / Material Symbols outlined. Never emoji. Full sprite: <a href="icons.html" style="color:var(--link)">icons.html</a>.</p><div class="iconGrid" id="iconGrid"></div></section>
+
+  <!-- ===================== ACTIONS ===================== -->
+  <h3 class="cat">Actions</h3>
+  <section id="button"><h2 class="sec">Buttons</h2><p class="sec-desc">Filled (one per screen — Play), tonal, elevated, outlined, text. Plus the <code>xl</code> hero size used for Play / Play again.</p>
+    <div class="stage">
+      <div class="cell"><button class="btn btn-filled" data-insp="button">Filled</button><div class="spec">filled</div></div>
+      <div class="cell"><button class="btn btn-tonal" data-insp="button">Tonal</button><div class="spec">filled-tonal</div></div>
+      <div class="cell"><button class="btn btn-elevated" data-insp="button">Elevated</button><div class="spec">elevated</div></div>
+      <div class="cell"><button class="btn btn-outlined" data-insp="button">Outlined</button><div class="spec">outlined</div></div>
+      <div class="cell"><button class="btn btn-text" data-insp="button">Text</button><div class="spec">text</div></div>
+      <div class="cell"><button class="btn btn-filled is-disabled" data-insp="button"><svg class="ico ico--sm"><use href="#i-lock"/></svg>Locked</button><div class="spec">disabled</div></div>
+      <div class="cell"><button class="btn btn-tonal" data-insp="button"><svg class="ico ico--sm"><use href="#i-podium"/></svg>Seasons history</button><div class="spec">with icon</div></div>
+    </div>
+    <div class="stage" style="margin-top:12px"><div class="cell" style="width:320px"><button class="btn btn-filled btn-xl btn-block" data-insp="button"><svg class="ico ico--filled"><use href="#i-play"/></svg>Play</button><div class="spec">xl · hero</div></div>
+      <div class="cell" style="width:320px"><button class="btn btn-filled btn-xl btn-block is-disabled" data-insp="button"><svg class="ico"><use href="#i-lock"/></svg>Next game 12:00</button><div class="spec">xl · locked (03 §3.5)</div></div></div></section>
+
+  <section id="iconbutton"><h2 class="sec">Icon buttons</h2><p class="sec-desc">Standard, filled, tonal, outlined; toggle selected/unselected. 48dp target, 40dp container.</p>
+    <div class="stage">
+      <div class="cell"><button class="iconbtn iconbtn-standard" data-insp="iconbutton" aria-label="Settings"><svg class="ico"><use href="#i-settings"/></svg></button><div class="spec">standard</div></div>
+      <div class="cell"><button class="iconbtn iconbtn-filled" data-insp="iconbutton" aria-label="Play"><svg class="ico ico--filled"><use href="#i-play"/></svg></button><div class="spec">filled</div></div>
+      <div class="cell"><button class="iconbtn iconbtn-tonal" data-insp="iconbutton" aria-label="Replay"><svg class="ico"><use href="#i-replay"/></svg></button><div class="spec">tonal</div></div>
+      <div class="cell"><button class="iconbtn iconbtn-outlined" data-insp="iconbutton" aria-label="Info"><svg class="ico"><use href="#i-info"/></svg></button><div class="spec">outlined</div></div>
+      <div class="cell"><button class="iconbtn iconbtn-standard is-selected" data-insp="iconbutton" aria-label="Music on"><svg class="ico"><use href="#i-music"/></svg></button><div class="spec">toggle · on</div></div>
+      <div class="cell"><button class="iconbtn iconbtn-filled is-unselected" data-insp="iconbutton" aria-label="Vibration off"><svg class="ico"><use href="#i-vibrate"/></svg></button><div class="spec">toggle · off</div></div>
+      <div class="cell"><button class="iconbtn iconbtn-outlined is-selected" data-insp="iconbutton" aria-label="Sound on"><svg class="ico"><use href="#i-volume"/></svg></button><div class="spec">outlined · on</div></div>
+      <div class="cell"><button class="iconbtn iconbtn-filled is-disabled" data-insp="iconbutton" aria-label="Disabled"><svg class="ico"><use href="#i-share"/></svg></button><div class="spec">disabled</div></div>
+    </div></section>
+
+  <section id="fab"><h2 class="sec">FAB</h2><p class="sec-desc">Small, regular, large, extended. Not used on the shell screens yet (Play is the hero button); kept for later screens.</p>
+    <div class="stage">
+      <div class="cell"><button class="fab fab-small" data-insp="fab" aria-label="Add"><svg class="ico"><use href="#i-plus"/></svg></button><div class="spec">small</div></div>
+      <div class="cell"><button class="fab" data-insp="fab" aria-label="Play"><svg class="ico ico--filled"><use href="#i-play"/></svg></button><div class="spec">regular</div></div>
+      <div class="cell"><button class="fab fab-large" data-insp="fab" aria-label="Play"><svg class="ico ico--filled"><use href="#i-play"/></svg></button><div class="spec">large</div></div>
+      <div class="cell"><button class="fab fab-extended" data-insp="fab"><svg class="ico"><use href="#i-trophy"/></svg>Ranking</button><div class="spec">extended</div></div>
+    </div></section>
+
+  <section id="segmented"><h2 class="sec">Segmented buttons</h2><p class="sec-desc">Single-select (ranking scope) and multi-select (feedback toggles).</p>
+    <div class="stage">
+      <div class="cell"><div class="segmented" data-insp="segmented"><span class="seg is-selected"><svg class="ico ico--sm"><use href="#i-check"/></svg>Today</span><span class="seg">Season</span><span class="seg">All time</span></div><div class="spec">single-select</div></div>
+      <div class="cell"><div class="segmented" data-insp="segmented"><span class="seg is-selected"><svg class="ico ico--sm"><use href="#i-check"/></svg>Music</span><span class="seg is-selected"><svg class="ico ico--sm"><use href="#i-check"/></svg>SFX</span><span class="seg">Vibration</span></div><div class="spec">multi-select</div></div>
+    </div></section>
+
+  <!-- ===================== COMMUNICATION ===================== -->
+  <h3 class="cat">Communication</h3>
+  <section id="badge"><h2 class="sec">Badge</h2><p class="sec-desc">Small (dot) and large (number).</p>
+    <div class="stage">
+      <div class="cell"><span class="badge-anchor" data-insp="badge"><svg class="ico"><use href="#i-bell"/></svg><span class="badge badge-dot"></span></span><div class="spec">small</div></div>
+      <div class="cell"><span class="badge-anchor" data-insp="badge"><svg class="ico"><use href="#i-trophy"/></svg><span class="badge">3</span></span><div class="spec">large</div></div>
+      <div class="cell"><span class="badge-anchor" data-insp="badge"><svg class="ico"><use href="#i-history"/></svg><span class="badge">99+</span></span><div class="spec">max</div></div>
+    </div></section>
+
+  <section id="progress"><h2 class="sec">Progress</h2><p class="sec-desc">Linear and circular, determinate and indeterminate. Linear doubles as the run timer bar.</p>
+    <div class="stage">
+      <div class="cell" style="width:260px"><div class="progress-linear" data-insp="progress" style="--value:62%"><i></i></div><div class="spec">linear · 62%</div></div>
+      <div class="cell" style="width:260px"><div class="progress-linear is-indeterminate" data-insp="progress"><i></i></div><div class="spec">linear · indeterminate</div></div>
+      <div class="cell"><div class="progress-circular" data-insp="progress" style="--value:65"></div><div class="spec">circular · 65%</div></div>
+      <div class="cell"><div class="progress-circular is-indeterminate" data-insp="progress"></div><div class="spec">circular · indeterminate</div></div>
+    </div></section>
+
+  <section id="snackbar"><h2 class="sec">Snackbar</h2><p class="sec-desc">With and without action.</p>
+    <div class="stage">
+      <div class="snackbar" data-insp="snackbar"><span class="msg">Score saved offline — it will sync later.</span></div>
+      <div class="snackbar" data-insp="snackbar"><span class="msg">Camera permission is needed for Blink Sniper.</span><span class="act">Allow</span></div>
+    </div></section>
+
+  <section id="tooltip"><h2 class="sec">Tooltip</h2><p class="sec-desc">Plain and rich.</p>
+    <div class="stage">
+      <span class="tooltip" data-insp="tooltip">Seasons history</span>
+      <div class="tooltip-rich" data-insp="tooltip"><div class="tt">How points work</div>Your best run of the day sets your position. Position p of N players earns (N − p + 1) × 25 season points.</div>
+    </div></section>
+
+  <!-- ===================== CONTAINMENT ===================== -->
+  <h3 class="cat">Containment</h3>
+  <section id="card"><h2 class="sec">Card</h2><p class="sec-desc">Elevated, filled, outlined — plus the direction's default card (<code>.card</code>).</p>
+    <div class="stage">
+      <div class="card" data-insp="card" style="width:220px"><div class="t-title-m">Default</div><div class="t-body-m muted" style="margin-top:4px">Direction default card</div></div>
+      <div class="card card-elevated" data-insp="card" style="width:220px"><div class="t-title-m">Elevated</div><div class="t-body-m muted" style="margin-top:4px">Floats above content</div></div>
+      <div class="card card-filled" data-insp="card" style="width:220px"><div class="t-title-m">Filled</div><div class="t-body-m muted" style="margin-top:4px">Highest container</div></div>
+      <div class="card card-outlined" data-insp="card" style="width:220px"><div class="t-title-m">Outlined</div><div class="t-body-m muted" style="margin-top:4px">Hairline boundary</div></div>
+    </div></section>
+
+  <section id="carousel"><h2 class="sec">Carousel</h2><p class="sec-desc">Multi-browse: the season's games as thumbnails (fallback art).</p>
+    <div class="stage" style="display:block"><div class="carousel" data-insp="carousel">
+      <div class="item g-blink" style="width:180px"><div class="thumb" style="border:0;border-radius:0"><svg class="ico glyph" style="--icon-size:48px"><use href="#i-eye"/></svg></div></div>
+      <div class="item g-onion" style="width:140px"><div class="thumb" style="border:0;border-radius:0"><svg class="ico glyph" style="--icon-size:48px"><use href="#i-onion"/></svg></div></div>
+      <div class="item g-compass" style="width:100px"><div class="thumb" style="border:0;border-radius:0;aspect-ratio:auto;height:101px"><svg class="ico glyph" style="--icon-size:40px"><use href="#i-compass"/></svg></div></div>
+      <div class="item g-soda is-small"><div class="thumb" style="border:0;border-radius:0;aspect-ratio:auto;height:101px"><svg class="ico glyph" style="--icon-size:28px"><use href="#i-can"/></svg></div></div>
+      <div class="item g-escape is-small"><div class="thumb" style="border:0;border-radius:0;aspect-ratio:auto;height:101px"><svg class="ico glyph" style="--icon-size:28px"><use href="#i-run"/></svg></div></div>
+    </div></div></section>
+
+  <section id="divider"><h2 class="sec">Divider</h2><p class="sec-desc">Full-width and inset.</p>
+    <div class="stage col"><div class="t-body-m">Full width</div><hr class="divider" data-insp="divider"><div class="t-body-m">Inset</div><hr class="divider divider-inset" data-insp="divider"></div></section>
+
+  <section id="list"><h2 class="sec">Lists</h2><p class="sec-desc">One-, two- and three-line items with leading/trailing. The ranking row highlights the current player (<code>is-me</code>).</p>
+    <div class="stage" style="display:block;padding:8px 0"><div class="list" data-insp="list">
+      <div class="list-item"><svg class="ico lead icon"><use href="#i-music"/></svg><div class="txt"><div class="hl">Music</div></div><span class="switch is-on"></span></div>
+      <hr class="divider divider-inset">
+      <div class="list-item two-line"><div class="lead">1</div><div class="txt"><div class="hl">pixel_pau</div><div class="sup">Best 41 points</div></div><div class="trail t-num">+5,300</div></div>
+      <div class="list-item two-line is-me"><div class="lead">14</div><div class="txt"><div class="hl">monica_rc (you)</div><div class="sup">Best 27 points</div></div><div class="trail t-num">+4,975</div></div>
+      <div class="list-item three-line"><svg class="ico lead icon"><use href="#i-calendar"/></svg><div class="txt"><div class="hl">Season 11 · 4–10 Nov</div><div class="sup">Finished 9th of 188 players with 21,400 points across 7 games.</div></div><div class="trail"><svg class="ico ico--sm"><use href="#i-chevron-right"/></svg></div></div>
+    </div></div></section>
+
+  <section id="sheet"><h2 class="sec">Bottom sheet</h2><p class="sec-desc">Standard / modal. Used for “How to play” before the countdown.</p>
+    <div class="stage" style="justify-content:center"><div class="phone" style="background:var(--scrim)"><div style="height:120px"></div>
+      <div class="sheet" data-insp="sheet"><div class="handle"></div><div class="t-title-l">How to play</div>
+        <p class="t-body-m muted" style="margin:8px 0 16px">Hold the phone at eye level. Targets slide through the crosshair — blink to fire. Bullseye +2, normal hit +1. Shooting a bomb ends the run.</p>
+        <button class="btn btn-filled btn-block">Got it — start</button></div></div></div></section>
+
+  <section id="dialog"><h2 class="sec">Dialog</h2><p class="sec-desc">Basic and full-screen.</p>
+    <div class="stage" style="align-items:flex-start">
+      <div class="dialog" data-insp="dialog"><div class="dh">Leave this run?</div><div class="db">Runs can't be paused. If you leave now, this attempt is used and your current score of 12 is kept.</div><div class="da"><button class="btn btn-text">Keep playing</button><button class="btn btn-text">Leave</button></div></div>
+      <div class="phone"><div class="dialog dialog-full" data-insp="dialog"><div class="appbar"><button class="iconbtn iconbtn-standard" aria-label="Close"><svg class="ico"><use href="#i-close"/></svg></button><div class="ttl" style="font-size:18px">Credits & licences</div><button class="btn btn-text">Done</button></div>
+        <div style="padding:8px 20px 20px" class="t-body-m muted">Fonts under the SIL Open Font License. Music and sound effects listed in CREDITS.md with their licences.</div></div></div>
+    </div></section>
+
+  <!-- ===================== NAVIGATION ===================== -->
+  <h3 class="cat">Navigation</h3>
+  <section id="appbar"><h2 class="sec">Top app bar</h2><p class="sec-desc">Center-aligned, small, medium, large — plus the brand bar on Main.</p>
+    <div class="stage col">
+      <div class="phone"><div class="appbar appbar-brand" data-insp="appbar"><div class="ttl">RM GAMES</div><button class="iconbtn iconbtn-standard" aria-label="Settings"><svg class="ico"><use href="#i-settings"/></svg></button></div></div>
+      <div class="phone"><div class="appbar appbar-center" data-insp="appbar"><button class="iconbtn iconbtn-standard" aria-label="Back"><svg class="ico"><use href="#i-back"/></svg></button><div class="ttl">Settings</div><span style="width:48px"></span></div></div>
+      <div class="phone"><div class="appbar" data-insp="appbar"><button class="iconbtn iconbtn-standard" aria-label="Back"><svg class="ico"><use href="#i-back"/></svg></button><div class="ttl">Ranking</div><button class="iconbtn iconbtn-standard" aria-label="Info"><svg class="ico"><use href="#i-info"/></svg></button></div></div>
+      <div class="phone"><div class="appbar appbar-medium" data-insp="appbar"><button class="iconbtn iconbtn-standard" aria-label="Back"><svg class="ico"><use href="#i-back"/></svg></button><div class="grow"></div><button class="iconbtn iconbtn-standard" aria-label="More"><svg class="ico"><use href="#i-more-v"/></svg></button><div class="big">Seasons history</div></div></div>
+      <div class="phone"><div class="appbar appbar-large" data-insp="appbar"><button class="iconbtn iconbtn-standard" aria-label="Back"><svg class="ico"><use href="#i-back"/></svg></button><div class="grow"></div><div class="big">Season 12 standings</div></div></div>
+    </div></section>
+
+  <section id="navbar"><h2 class="sec">Navigation bar</h2><p class="sec-desc">Not used in the MVP shell (one daily game → no tabs); catalogued for later.</p>
+    <div class="stage"><div class="phone"><div class="navbar" data-insp="navbar">
+      <div class="ni is-selected"><span class="pill"><svg class="ico"><use href="#i-home"/></svg></span>Today</div>
+      <div class="ni"><span class="pill badge-anchor"><svg class="ico"><use href="#i-podium"/></svg></span>Ranking</div>
+      <div class="ni"><span class="pill"><svg class="ico"><use href="#i-settings"/></svg></span>Settings</div></div></div></div></section>
+
+  <section id="navrail"><h2 class="sec">Navigation rail</h2><p class="sec-desc">Not yet used (portrait phone only).</p>
+    <div class="stage"><div class="navrail" data-insp="navrail" style="height:260px">
+      <div class="ni is-selected"><span class="pill"><svg class="ico"><use href="#i-home"/></svg></span>Today</div>
+      <div class="ni"><span class="pill"><svg class="ico"><use href="#i-podium"/></svg></span>Ranking</div>
+      <div class="ni"><span class="pill"><svg class="ico"><use href="#i-settings"/></svg></span>Settings</div></div></div></section>
+
+  <section id="drawer"><h2 class="sec">Navigation drawer</h2><p class="sec-desc">Standard / modal. Not yet used.</p>
+    <div class="stage"><div class="drawer is-modal" data-insp="drawer"><div class="dh">RM Games</div>
+      <div class="di is-selected"><svg class="ico"><use href="#i-home"/></svg>Today<span class="end">1</span></div>
+      <div class="di"><svg class="ico"><use href="#i-podium"/></svg>Seasons history</div>
+      <div class="di"><svg class="ico"><use href="#i-settings"/></svg>Settings</div></div></div></section>
+
+  <section id="tabs"><h2 class="sec">Tabs</h2><p class="sec-desc">Primary (Ranking: Season / History, 03 §3.4) and secondary.</p>
+    <div class="stage col"><div class="phone"><div class="tabs" data-insp="tabs"><div class="tab is-selected">Season</div><div class="tab">History</div></div></div>
+      <div class="phone"><div class="tabs secondary" data-insp="tabs"><div class="tab is-selected">Standings</div><div class="tab">My days</div><div class="tab">Points</div></div></div></div></section>
+
+  <section id="search"><h2 class="sec">Search</h2><p class="sec-desc">Bar + view (find a player in the ranking).</p>
+    <div class="stage" style="align-items:flex-start"><div class="searchbar" data-insp="search" style="width:320px"><button class="iconbtn iconbtn-standard" aria-label="Search"><svg class="ico"><use href="#i-search"/></svg></button><span class="q">Find a player</span></div>
+      <div class="searchview" data-insp="search"><div class="searchbar"><button class="iconbtn iconbtn-standard" aria-label="Back"><svg class="ico"><use href="#i-back"/></svg></button><span class="q" style="color:var(--on-surface)">pix</span><button class="iconbtn iconbtn-standard" aria-label="Clear"><svg class="ico"><use href="#i-close"/></svg></button></div>
+        <div class="list-item"><div class="lead">1</div><div class="txt"><div class="hl">pixel_pau</div></div></div><div class="list-item"><div class="lead">37</div><div class="txt"><div class="hl">pixie_88</div></div></div></div></div></section>
+
+  <section id="menu"><h2 class="sec">Menu</h2><p class="sec-desc">Dropdown.</p>
+    <div class="stage"><div class="menu" data-insp="menu"><div class="mi"><svg class="ico"><use href="#i-info"/></svg>How to play</div><div class="mi is-hover"><svg class="ico"><use href="#i-share"/></svg>Share score</div><div class="mi is-disabled"><svg class="ico"><use href="#i-bug"/></svg>Force daily game<span class="kbd">debug</span></div></div></div></section>
+
+  <!-- ===================== SELECTION ===================== -->
+  <h3 class="cat">Selection</h3>
+  <section id="checkbox"><h2 class="sec">Checkbox</h2><p class="sec-desc">Unchecked, checked, indeterminate, error, disabled.</p>
+    <div class="stage">
+      <div class="cell"><span class="checkbox" data-insp="checkbox"><i></i></span><div class="spec">unchecked</div></div>
+      <div class="cell"><span class="checkbox is-checked" data-insp="checkbox"><i><svg class="ico"><use href="#i-check"/></svg></i></span><div class="spec">checked</div></div>
+      <div class="cell"><span class="checkbox is-indeterminate" data-insp="checkbox"><i><svg class="ico"><use href="#i-minus"/></svg></i></span><div class="spec">indeterminate</div></div>
+      <div class="cell"><span class="checkbox is-error" data-insp="checkbox"><i></i></span><div class="spec">error</div></div>
+      <div class="cell"><span class="checkbox is-disabled" data-insp="checkbox"><i></i></span><div class="spec">disabled</div></div>
+    </div></section>
+
+  <section id="chip"><h2 class="sec">Chips</h2><p class="sec-desc">Assist, filter, input, suggestion — plus the per-game chip used on the GameCard.</p>
+    <div class="stage">
+      <div class="cell"><span class="chip chip-assist has-lead" data-insp="chip"><svg class="ico"><use href="#i-info"/></svg>How to play</span><div class="spec">assist</div></div>
+      <div class="cell"><span class="chip chip-filter" data-insp="chip">Sensor games</span><div class="spec">filter</div></div>
+      <div class="cell"><span class="chip chip-filter is-selected has-lead" data-insp="chip"><svg class="ico"><use href="#i-check"/></svg>This season</span><div class="spec">filter · selected</div></div>
+      <div class="cell"><span class="chip chip-input has-lead" data-insp="chip"><span class="av">PP</span>pixel_pau<svg class="ico"><use href="#i-close"/></svg></span><div class="spec">input</div></div>
+      <div class="cell"><span class="chip chip-suggestion" data-insp="chip">Try Soda Shake</span><div class="spec">suggestion</div></div>
+      <div class="cell"><span class="chip chip-assist chip-elevated has-lead" data-insp="chip"><svg class="ico"><use href="#i-share"/></svg>Share</span><div class="spec">elevated</div></div>
+      <div class="cell"><span class="chip is-disabled" data-insp="chip">Disabled</span><div class="spec">disabled</div></div>
+      <div class="cell g-blink"><span class="gamechip" data-insp="chip"><svg class="ico ico--sm"><use href="#i-camera"/></svg>Front camera</span><div class="spec">game chip</div></div>
+    </div></section>
+
+  <section id="radio"><h2 class="sec">Radio button</h2><p class="sec-desc">Selected, unselected, disabled.</p>
+    <div class="stage">
+      <div class="cell"><span class="radio is-checked" data-insp="radio"><i></i></span><div class="spec">selected</div></div>
+      <div class="cell"><span class="radio" data-insp="radio"><i></i></span><div class="spec">unselected</div></div>
+      <div class="cell"><span class="radio is-disabled" data-insp="radio"><i></i></span><div class="spec">disabled</div></div>
+    </div></section>
+
+  <section id="switch"><h2 class="sec">Switch</h2><p class="sec-desc">On, off, disabled — Settings (03 §3.6).</p>
+    <div class="stage">
+      <div class="cell"><span class="switch is-on" data-insp="switch"></span><div class="spec">on</div></div>
+      <div class="cell"><span class="switch" data-insp="switch"></span><div class="spec">off</div></div>
+      <div class="cell"><span class="switch is-on is-disabled" data-insp="switch"></span><div class="spec">disabled</div></div>
+    </div></section>
+
+  <section id="slider"><h2 class="sec">Slider</h2><p class="sec-desc">Continuous (music volume), discrete, range.</p>
+    <div class="stage col" style="gap:40px;padding-top:48px">
+      <div class="slider" data-insp="slider" style="--to:70%"><span class="track"></span><span class="fill"></span><span class="thumb"></span><span class="valtag">70</span></div>
+      <div class="slider" data-insp="slider" style="--to:50%"><span class="track"></span><span class="fill"></span><span class="stops"><i></i><i></i><i></i><i></i><i></i></span><span class="thumb"></span></div>
+      <div class="slider" data-insp="slider" style="--from:20%;--to:75%"><span class="track"></span><span class="fill"></span><span class="thumb from"></span><span class="thumb"></span></div>
+    </div></section>
+
+  <section id="datepicker"><h2 class="sec">Date picker</h2><p class="sec-desc">Docked calendar (pick a past day in History). Selected and in-range states.</p>
+    <div class="stage"><div class="datepicker" data-insp="datepicker"><div class="dp-sup">Select a day</div><div class="dp-hd">Wed, Nov 18</div>
+      <div class="dp-month"><span>November 2026</span><span class="row"><svg class="ico ico--sm"><use href="#i-chevron-left"/></svg><svg class="ico ico--sm"><use href="#i-chevron-right"/></svg></span></div>
+      <div class="dp-grid"><span class="wd">M</span><span class="wd">T</span><span class="wd">W</span><span class="wd">T</span><span class="wd">F</span><span class="wd">S</span><span class="wd">S</span>
+        <span></span><span></span><span></span><span></span><span></span><span></span><span>1</span>
+        <span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span>
+        <span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span class="inrange">15</span>
+        <span class="inrange">16</span><span class="inrange">17</span><span class="sel">18</span><span>19</span><span>20</span><span>21</span><span>22</span></div>
+      <div class="dp-act"><button class="btn btn-text">Cancel</button><button class="btn btn-text">OK</button></div></div></div></section>
+
+  <section id="timepicker"><h2 class="sec">Time picker</h2><p class="sec-desc">Input mode. Debug only (fake the noon boundary).</p>
+    <div class="stage"><div class="timepicker" data-insp="timepicker"><div class="t-label-m">Simulate time (debug)</div>
+      <div class="tp-row"><span class="tp-box is-selected t-num">11</span><span class="tp-colon">:</span><span class="tp-box t-num">59</span><span class="tp-ampm"><span>AM</span><span class="is-selected">PM</span></span></div>
+      <div class="dp-act" style="display:flex;justify-content:flex-end;gap:8px"><button class="btn btn-text">Cancel</button><button class="btn btn-text">OK</button></div></div></div></section>
+
+  <!-- ===================== TEXT INPUTS ===================== -->
+  <h3 class="cat">Text inputs</h3>
+  <section id="textfield"><h2 class="sec">Text field</h2><p class="sec-desc">Filled and outlined; empty, focused, filled, error, disabled. Nick onboarding (03 §3.2): 3–12 letters, numbers or underscore.</p>
+    <div class="stage" style="align-items:flex-start;gap:20px">
+      <div style="width:300px" class="field field-filled" data-insp="textfield"><div class="box"><span class="lbl">Nick</span></div><div class="help"><span>3–12 letters, numbers or _</span><span>0/12</span></div></div>
+      <div style="width:300px" class="field field-filled is-focused is-floating" data-insp="textfield"><div class="box"><span class="lbl">Nick</span><span class="val">monica_rc</span></div><div class="help"><span>Can't be changed later</span><span>9/12</span></div></div>
+      <div style="width:300px" class="field field-outlined is-floating has-lead" data-insp="textfield" style="--fieldbg:var(--surface)"><div class="box"><svg class="ico"><use href="#i-user"/></svg><span class="lbl">Nick</span><span class="val">monica_rc</span><svg class="ico"><use href="#i-check"/></svg></div><div class="help"><span>Available</span></div></div>
+      <div style="width:300px" class="field field-outlined is-focused is-floating" data-insp="textfield"><div class="box"><span class="lbl">Nick</span><span class="val">pix</span></div><div class="help"><span>&nbsp;</span><span>3/12</span></div></div>
+      <div style="width:300px" class="field field-outlined is-error is-floating" data-insp="textfield"><div class="box"><span class="lbl">Nick</span><span class="val">pixel_pau</span><svg class="ico trail-ico"><use href="#i-info"/></svg></div><div class="help"><span>That nick is taken — try another</span></div></div>
+      <div style="width:300px" class="field field-filled is-disabled is-floating" data-insp="textfield"><div class="box"><span class="lbl">Nick</span><span class="val">monica_rc</span><svg class="ico"><use href="#i-lock"/></svg></div><div class="help"><span>Set once, never editable</span></div></div>
+    </div></section>
+
+  <!-- ===================== EXTENSIONS ===================== -->
+  <h3 class="cat">Extensions · RM Games UI kit (plan 09 §2A)</h3>
+  <section id="gamecard"><h2 class="sec">GameCard</h2><p class="sec-desc">Today's game hero: thumbnail (or the generated fallback — game colour + glyph, Decision 5), sensor chip, duration, title, how-to.</p>
+    <div class="stage"><div class="gamecard g-soda" data-insp="gamecard" style="width:320px">
+      <div class="thumb"><span class="ring r1" style="width:120px;height:120px"></span><svg class="ico glyph"><use href="#i-can"/></svg><span class="ph">Thumbnail fallback</span></div>
+      <div class="gc-body"><div class="gc-kicker"><span class="gamechip"><svg class="ico ico--sm"><use href="#i-shake"/></svg>Shake</span><span class="t-label-m">20 shakes</span></div>
+        <div class="gc-title">Soda Shake</div><div class="gc-how">Shake the phone as fast as you can. The can pops at 20 shakes — your time is the score.</div></div></div>
+      <div class="gamecard g-compass" data-insp="gamecard" style="width:320px">
+      <div class="thumb"><svg class="ico glyph"><use href="#i-compass"/></svg><span class="ph">Thumbnail fallback</span></div>
+      <div class="gc-body"><div class="gc-kicker"><span class="gamechip"><svg class="ico ico--sm"><use href="#i-compass"/></svg>Compass</span><span class="t-label-m">20 seconds</span></div>
+        <div class="gc-title">Compass Chaos</div><div class="gc-how">Turn to face the direction called out. Point the top of the phone there before the window closes.</div></div></div></div></section>
+
+  <section id="pips"><h2 class="sec">AttemptsPips</h2><p class="sec-desc">Remaining daily attempts (2/day). Always paired with a text label — never colour alone.</p>
+    <div class="stage">
+      <div class="cell"><span class="pips" data-insp="pips"><i class="pip"></i><i class="pip"></i><span class="pl"><b>2 of 2</b> left</span></span><div class="spec">full</div></div>
+      <div class="cell"><span class="pips" data-insp="pips"><i class="pip"></i><i class="pip is-used"></i><span class="pl"><b>1 of 2</b> left</span></span><div class="spec">one used</div></div>
+      <div class="cell"><span class="pips" data-insp="pips"><i class="pip is-used"></i><i class="pip is-used"></i><span class="pl"><b>0 of 2</b> — back at 12:00</span></span><div class="spec">exhausted</div></div>
+    </div></section>
+
+  <section id="countdown"><h2 class="sec">CountdownChip</h2><p class="sec-desc">Time to the next 12:00 boundary (lock state 03 §3.5) or until today's game ends.</p>
+    <div class="stage">
+      <div class="cell"><span class="countdown" data-insp="countdown"><svg class="ico ico--sm"><use href="#i-timer"/></svg>Ends in <span class="t-num">21:14:08</span></span><div class="spec">today</div></div>
+      <div class="cell"><span class="countdown is-live" data-insp="countdown"><svg class="ico ico--sm"><use href="#i-lock"/></svg>Next game in <span class="t-num">03:42:51</span></span><div class="spec">locked</div></div>
+    </div></section>
+
+  <section id="score"><h2 class="sec">ScoreCounter</h2><p class="sec-desc">Hero number on Result; counts up over <code>--dur-countup</code>, pops with <code>--ease-spring</code>. <code>is-best</code> tints it with primary ink. Pairs with the “New best” stamp.</p>
+    <div class="stage"><div class="cell"><div class="score" data-insp="score"><div class="val">12</div><div class="unit">points</div></div><div class="spec">default</div></div>
+      <div class="cell"><span class="newbest" data-insp="score"><svg class="ico ico--sm"><use href="#i-star"/></svg>New best</span><div class="score is-best" data-insp="score"><div class="val">27</div><div class="unit">points</div></div><div class="spec">new best</div></div></div></section>
+
+  <section id="stat"><h2 class="sec">StatTile</h2><p class="sec-desc">Small labelled number for the result summary and ranking.</p>
+    <div class="stage"><div class="stat" data-insp="stat" style="width:160px"><span class="k">Daily best</span><span class="v">27</span><span class="s">this run</span></div>
+      <div class="stat is-accent" data-insp="stat" style="width:160px"><span class="k">Season pts</span><span class="v">+4,975</span><span class="s">provisional</span></div></div></section>
+
+  <section id="seasonstrip"><h2 class="sec">SeasonStrip</h2><p class="sec-desc">7-day season progress with today highlighted.</p>
+    <div class="stage"><div class="seasonstrip" data-insp="seasonstrip" style="width:320px"><div class="row"><span><b>Season 12</b> · day 4 of 7</span><span>You: <b class="t-num">3,150</b> pts</span></div><div class="days"><i class="is-done"></i><i class="is-done"></i><i class="is-done"></i><i class="is-today"></i><i></i><i></i><i></i></div></div></div></section>
+
+  <section id="sechead"><h2 class="sec">SectionHeader</h2><p class="sec-desc">Overline label with an optional trailing action/chip.</p>
+    <div class="stage"><div class="sechead" data-insp="sechead" style="width:320px"><span class="st">Today's game</span><button class="btn btn-text">How to play</button></div></div></section>
+</main>
+
+<script>
+/* ===== Foundations (values are read LIVE from the active direction + theme) ===== */
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const ROLE_PAIRS=[['primary','on-primary'],['primary-container','on-primary-container'],['secondary','on-secondary'],['secondary-container','on-secondary-container'],['tertiary','on-tertiary'],['tertiary-container','on-tertiary-container'],['error','on-error'],['error-container','on-error-container'],['success','on-success'],
+  ['background','on-background'],['surface','on-surface'],['surface-container-lowest','on-surface'],['surface-container-low','on-surface'],['surface-container','on-surface'],['surface-container-high','on-surface'],['surface-container-highest','on-surface-variant'],['inverse-surface','inverse-on-surface'],['outline','surface'],['outline-variant','on-surface'],['primary-ink','surface'],['inverse-primary','inverse-surface']];
+const TYPE=[['t-display-l','57/64 · display'],['t-display-m','45/52 · display'],['t-display-s','36/44 · display'],['t-headline-l','32/40 · display'],['t-headline-m','28/36 · display'],['t-headline-s','24/32 · display'],['t-title-l','22/28 · 600 body'],['t-title-m','16/24 · 600 body'],['t-title-s','14/20 · 600 body'],['t-body-l','16/24 · 400 body'],['t-body-m','14/20 · 400 body'],['t-body-s','12/16 · 400 body'],['t-label-l','14/20 · 600 body'],['t-label-m','12/16 · 600 body'],['t-label-s','11/16 · 600 body']];
+const SAMPLE={'t-display-l':'27','t-display-m':'+4,975','t-display-s':'Blink Sniper','t-headline-l':'New best','t-headline-m':'Season 12','t-headline-s':'Run over','t-title-l':'Seasons history','t-title-m':'Today\u2019s game','t-title-s':'Provisional position','t-body-l':'Targets slide through the crosshair. Blink to fire.','t-body-m':'Your best of 2 attempts counts for the day.','t-body-s':'Final at 12:00','t-label-l':'Play again','t-label-m':'Attempts left','t-label-s':'60 seconds'};
+const SPACING=[['sp-4',4],['sp-8 · gap-related',8],['sp-12',12],['sp-16',16],['sp-20 · layout-gutter',20],['sp-24 · gap-section',24],['sp-32 · gap-major',32],['sp-48 · target-min',48],['sp-64',64]];
+const SHAPES=['r-none','r-xs','r-sm','r-md','r-lg','r-xl','r-full'];
+const ELEV=['elev-0','elev-1','elev-2','elev-3'];
+const MOTION=[['dur-fast','ease'],['dur-base','ease'],['dur-slow','ease-emphasized'],['dur-countup','ease-spring']];
+const ICONS=[...document.querySelectorAll('svg symbol')].map(s=>s.id.replace(/^i-/,''));
+function renderFoundations(){
+  colorGrid.innerHTML=ROLE_PAIRS.map(([f,o])=>`<div class="sw"><div class="c" style="background:var(--${f});color:var(--${o})">Aa</div><div class="m"><div class="n">${f}</div><div class="v">${css('--'+f)} · on ${o}</div></div></div>`).join('');
+  gameGrid.innerHTML=['escape','onion','blink','compass','soda'].map(g=>`<div class="sw"><div class="c" style="background:var(--game-${g});color:var(--on-game)">Aa</div><div class="m"><div class="n">game-${g}</div><div class="v">${css('--game-'+g)}</div></div></div>`).join('');
+  typeList.innerHTML=TYPE.map(([n,m])=>`<div class="typerow"><div class="tk">${n}<br>${m}</div><div class="${n}">${SAMPLE[n]}</div></div>`).join('');
+  spacingList.innerHTML=SPACING.map(([n,v])=>`<div class="sprow"><div class="lbl">${n} · ${v}</div><div class="bar" style="width:${v*4}px"></div></div>`).join('');
+  shapeList.innerHTML=SHAPES.map(n=>`<div class="bx" style="border-radius:var(--${n})">${n}<br>${css('--'+n)}</div>`).join('');
+  elevList.innerHTML=ELEV.map(n=>`<div class="bx" style="box-shadow:var(--${n});background:var(--surface-container)">${n}</div>`).join('');
+  motionList.innerHTML=MOTION.map(([d,e])=>`<div class="sprow"><div class="lbl">${d} · ${css('--'+d)}</div><div class="spec">${e}: ${css('--'+e)}</div></div>`).join('');
+}
+iconGrid.innerHTML=ICONS.map(n=>`<div class="it"><svg class="ico ico--lg"><use href="#i-${n}"/></svg><div class="nm">i-${n}</div></div>`).join('');
+renderFoundations();
+document.addEventListener('ds-theme-change',()=>{renderFoundations();});
+document.fonts&&document.fonts.ready.then(renderFoundations);
+
+/* ===== SPECS — one entry per component. tokens: 'role:token' (values resolved live). ===== */
+const T=s=>s.split('|').map(x=>{const [r,n]=x.split(':');return {r,n};});
+const SPECS={
+ button:{name:'Button (RmButton)',file:'core/common/ui/RmButton.kt',desc:'Common button. Variants filled / filled-tonal / elevated / outlined / text; size default or xl (hero Play). Press: scale/ledge compress + haptic + click SFX (plan 09 §2A). States enabled/hover/focus/pressed/disabled.',
+  props:[{n:'text',t:'String'},{n:'onClick',t:'() -> Unit'},{n:'variant',t:'Filled|Tonal|Elevated|Outlined|Text',def:'Filled'},{n:'size',t:'Default|Xl',def:'Default'},{n:'icon',t:'ImageVector?',def:'null'},{n:'enabled',t:'Boolean',def:'true'}],
+  tokens:T('filled fill:--primary|filled label:--on-primary|tonal fill:--secondary-container|tonal label:--on-secondary-container|outlined/text label:--primary-ink|outline:--outline|border:--btn-border|elevation:--elev-1|pressed elevation:--elev-pressed|press shift:--press-shift|press scale:--press-scale|radius:--r-full|xl radius:--r-lg|label font:--font-body|xl font:--font-display'),
+  metrics:[['height','40 (xl 64)'],['padding','h 24 (text 12, xl 32)'],['icon gap','8'],['label','600 14/20 (xl display 22/28)']]},
+ iconbutton:{name:'Icon button',file:'core/common/ui/RmIconButton.kt',desc:'Standard / filled / tonal / outlined; toggle (selected/unselected). 40dp visual container inside a 48dp target.',
+  props:[{n:'icon',t:'ImageVector'},{n:'contentDescription',t:'String'},{n:'variant',t:'Standard|Filled|Tonal|Outlined',def:'Standard'},{n:'checked',t:'Boolean?',def:'null'},{n:'enabled',t:'Boolean',def:'true'}],
+  tokens:T('standard icon:--on-surface-variant|selected icon:--primary-ink|filled bg:--primary|filled icon:--on-primary|tonal bg:--secondary-container|outline:--outline|radius:--r-full'),metrics:[['target','48'],['container','40'],['icon','24']]},
+ fab:{name:'FAB',file:'core/common/ui/RmFab.kt',desc:'Floating action button: small / regular / large / extended.',
+  props:[{n:'icon',t:'ImageVector'},{n:'text',t:'String?',def:'null'},{n:'size',t:'Small|Regular|Large',def:'Regular'}],
+  tokens:T('bg:--primary-container|content:--on-primary-container|elevation:--elev-3|radius:--r-md|large radius:--r-xl'),metrics:[['small','40'],['regular','56'],['large','96'],['extended h','56']]},
+ segmented:{name:'Segmented buttons',file:'core/common/ui/RmSegmented.kt',desc:'Single- or multi-select segments with a check on selected ones.',
+  props:[{n:'options',t:'List<String>'},{n:'selected',t:'Set<Int>'},{n:'multiSelect',t:'Boolean',def:'false'}],
+  tokens:T('outline:--outline|selected bg:--secondary-container|selected label:--on-secondary-container|label:--on-surface|radius:--r-full'),metrics:[['height','40'],['padding','h 16']]},
+ badge:{name:'Badge',file:'core/common/ui/RmBadge.kt',desc:'Small dot or large number badge anchored to an icon.',
+  props:[{n:'count',t:'Int?',def:'null → dot'},{n:'max',t:'Int',def:'99'}],tokens:T('bg:--error|label:--on-error|radius:--r-full'),metrics:[['dot','6'],['large h','16'],['font','700 11']]},
+ progress:{name:'Progress indicators',file:'core/common/ui/RmProgress.kt',desc:'Linear (also the in-run timer bar) and circular; determinate / indeterminate.',
+  props:[{n:'progress',t:'Float?',def:'null → indeterminate'},{n:'kind',t:'Linear|Circular'}],tokens:T('indicator:--primary|track:--surface-container-highest|radius:--r-full'),metrics:[['linear h','6'],['circular','48 · stroke 4']]},
+ snackbar:{name:'Snackbar',file:'core/common/ui/RmSnackbar.kt',desc:'Inverse-surface message with optional action.',
+  props:[{n:'message',t:'String'},{n:'actionLabel',t:'String?',def:'null'}],tokens:T('bg:--inverse-surface|text:--inverse-on-surface|action:--inverse-primary|radius:--r-sm|elevation:--elev-3'),metrics:[['min h','48'],['max w','344']]},
+ tooltip:{name:'Tooltip',file:'core/common/ui/RmTooltip.kt',desc:'Plain (inverse) and rich (surface, title + body).',
+  props:[{n:'text',t:'String'},{n:'title',t:'String?',def:'null → plain'}],tokens:T('plain bg:--inverse-surface|plain text:--inverse-on-surface|rich bg:--surface-container|rich text:--on-surface-variant|radius:--r-xs|rich radius:--r-md'),metrics:[['plain','pad 4/8 · 12/16'],['rich max w','280']]},
+ card:{name:'Card',file:'core/common/ui/RmCard.kt',desc:'Default (direction card), elevated, filled, outlined.',
+  props:[{n:'variant',t:'Default|Elevated|Filled|Outlined',def:'Default'},{n:'onClick',t:'(() -> Unit)?',def:'null'},{n:'content',t:'@Composable'}],
+  tokens:T('default bg:--card-bg|border:--card-border|elevation:--elev-1|filled bg:--surface-container-highest|outline:--outline-variant|radius:--r-lg'),metrics:[['padding','16']]},
+ carousel:{name:'Carousel',file:'core/common/ui/RmCarousel.kt',desc:'Multi-browse carousel of game thumbnails (large → small items).',
+  props:[{n:'items',t:'List<GameEntry>'}],tokens:T('item radius:--r-lg|border:--card-border|gap:--sp-8'),metrics:[['large','180'],['small','56'],['height','~101']]},
+ divider:{name:'Divider',file:'core/common/ui/RmDivider.kt',desc:'Full-width or inset hairline.',props:[{n:'inset',t:'Dp',def:'0'}],tokens:T('color:--outline-variant'),metrics:[['thickness','1'],['inset','16']]},
+ list:{name:'List item',file:'core/common/ui/RmListItem.kt',desc:'One/two/three-line with leading (avatar/rank/icon) and trailing (value/switch/chevron). is-me highlights the player in rankings.',
+  props:[{n:'headline',t:'String'},{n:'supporting',t:'String?'},{n:'leading',t:'@Composable?'},{n:'trailing',t:'@Composable?'},{n:'highlighted',t:'Boolean',def:'false'}],
+  tokens:T('headline:--on-surface|supporting:--on-surface-variant|leading bg:--primary-container|me bg:--primary-container|me text:--on-primary-container|selected bg:--secondary-container'),metrics:[['1-line','56'],['2-line','72'],['3-line','88'],['padding','16 / 24']]},
+ sheet:{name:'Bottom sheet',file:'core/common/ui/RmBottomSheet.kt',desc:'Standard / modal (scrim). Drag handle; top radius extra-large.',
+  props:[{n:'onDismiss',t:'() -> Unit'},{n:'modal',t:'Boolean',def:'true'}],tokens:T('bg:--surface-container-low|scrim:--scrim|handle:--on-surface-variant|radius:--r-xl|border:--card-border'),metrics:[['handle','32×4'],['padding','16 / 24']]},
+ dialog:{name:'Dialog',file:'core/common/ui/RmDialog.kt',desc:'Basic (title, body, text actions) and full-screen.',
+  props:[{n:'title',t:'String'},{n:'text',t:'String'},{n:'confirm',t:'String'},{n:'dismiss',t:'String?'},{n:'fullScreen',t:'Boolean',def:'false'}],
+  tokens:T('bg:--surface-container-high|title:--on-surface|body:--on-surface-variant|radius:--r-xl|elevation:--elev-3'),metrics:[['width','312'],['padding','24'],['title','display 24/32']]},
+ appbar:{name:'Top app bar (RmTopBar)',file:'core/common/ui/RmTopBar.kt',desc:'Brand (Main), center-aligned, small, medium, large. Scrolled state uses surface-container.',
+  props:[{n:'title',t:'String'},{n:'variant',t:'Brand|Center|Small|Medium|Large',def:'Small'},{n:'navigationIcon',t:'@Composable?'},{n:'actions',t:'@Composable RowScope.()'}],
+  tokens:T('bg:--surface|scrolled bg:--surface-container|title:--on-surface|brand font:--font-display'),metrics:[['height','64 (medium 112, large 152)'],['title','22/28']]},
+ navbar:{name:'Navigation bar',file:'core/common/ui/RmNavigationBar.kt',desc:'Bottom navigation with active-indicator pill. Not used in the MVP shell.',
+  props:[{n:'items',t:'List<NavItem>'},{n:'selected',t:'Int'}],tokens:T('bg:--surface-container|indicator:--secondary-container|active icon:--on-secondary-container|inactive:--on-surface-variant'),metrics:[['height','80'],['indicator','64×32']]},
+ navrail:{name:'Navigation rail',file:'core/common/ui/RmNavigationRail.kt',desc:'Vertical rail for wide layouts. Not used (portrait phone).',
+  props:[{n:'items',t:'List<NavItem>'},{n:'selected',t:'Int'}],tokens:T('bg:--surface|indicator:--secondary-container|inactive:--on-surface-variant'),metrics:[['width','80'],['indicator','56×32']]},
+ drawer:{name:'Navigation drawer',file:'core/common/ui/RmDrawer.kt',desc:'Standard / modal drawer. Not used yet.',
+  props:[{n:'items',t:'List<NavItem>'},{n:'selected',t:'Int'},{n:'modal',t:'Boolean',def:'true'}],tokens:T('bg:--surface-container-low|selected bg:--secondary-container|label:--on-surface-variant|radius:--r-lg'),metrics:[['width','300'],['item h','56']]},
+ tabs:{name:'Tabs',file:'core/common/ui/RmTabs.kt',desc:'Primary (3px indicator under label) and secondary (full-width 2px). Ranking: Season / History.',
+  props:[{n:'tabs',t:'List<String>'},{n:'selected',t:'Int'},{n:'secondary',t:'Boolean',def:'false'},{n:'scrollable',t:'Boolean',def:'false'}],
+  tokens:T('active:--primary-ink|inactive:--on-surface-variant|indicator:--primary-ink|divider:--outline-variant'),metrics:[['height','48'],['indicator','3 (secondary 2)']]},
+ search:{name:'Search',file:'core/common/ui/RmSearch.kt',desc:'Search bar + expanded search view with results.',
+  props:[{n:'query',t:'String'},{n:'onQueryChange',t:'(String) -> Unit'},{n:'active',t:'Boolean',def:'false'}],tokens:T('bg:--surface-container-high|text:--on-surface|hint:--on-surface-variant|radius:--r-full|view radius:--r-xl'),metrics:[['height','56']]},
+ menu:{name:'Menu',file:'core/common/ui/RmMenu.kt',desc:'Dropdown menu with leading icons and trailing hint.',
+  props:[{n:'items',t:'List<MenuItem>'},{n:'expanded',t:'Boolean'}],tokens:T('bg:--surface-container|text:--on-surface|icon:--on-surface-variant|elevation:--elev-2|radius:--r-xs'),metrics:[['item h','48'],['min w','200']]},
+ checkbox:{name:'Checkbox',file:'core/common/ui/RmCheckbox.kt',desc:'Unchecked / checked / indeterminate / error / disabled.',
+  props:[{n:'state',t:'ToggleableState'},{n:'isError',t:'Boolean',def:'false'},{n:'enabled',t:'Boolean',def:'true'}],tokens:T('checked fill:--primary|check:--on-primary|unchecked outline:--on-surface-variant|error:--error'),metrics:[['box','18'],['target','48']]},
+ chip:{name:'Chips',file:'core/common/ui/RmChip.kt',desc:'Assist / filter / input / suggestion (flat or elevated) + the per-game chip (game accent fill).',
+  props:[{n:'label',t:'String'},{n:'kind',t:'Assist|Filter|Input|Suggestion|Game'},{n:'selected',t:'Boolean',def:'false'},{n:'leadingIcon',t:'ImageVector?'},{n:'elevated',t:'Boolean',def:'false'}],
+  tokens:T('outline:--outline-variant|label:--on-surface-variant|selected bg:--secondary-container|selected label:--on-secondary-container|game fill:--game-blink|game label:--on-game|radius:--r-sm'),metrics:[['height','32 (game 28)'],['padding','h 16 (lead 8)']]},
+ radio:{name:'Radio button',file:'core/common/ui/RmRadio.kt',desc:'Selected / unselected / disabled.',props:[{n:'selected',t:'Boolean'},{n:'enabled',t:'Boolean',def:'true'}],tokens:T('selected:--primary|unselected:--on-surface-variant'),metrics:[['ring','20'],['dot','10'],['target','48']]},
+ switch:{name:'Switch',file:'core/common/ui/RmSwitch.kt',desc:'On / off / disabled — Settings toggles (music, SFX, vibration).',
+  props:[{n:'checked',t:'Boolean'},{n:'onCheckedChange',t:'(Boolean) -> Unit'},{n:'enabled',t:'Boolean',def:'true'}],tokens:T('on track:--primary|on thumb:--on-primary|off track:--surface-container-highest|off outline:--outline|motion:--ease-spring'),metrics:[['track','52×32'],['thumb','16 → 24']]},
+ slider:{name:'Slider',file:'core/common/ui/RmSlider.kt',desc:'Continuous / discrete (stops) / range; value label on drag. Music volume.',
+  props:[{n:'value',t:'Float | ClosedFloatingPointRange'},{n:'steps',t:'Int',def:'0'}],tokens:T('active:--primary|inactive:--secondary-container|stops:--on-secondary-container|label bg:--inverse-surface'),metrics:[['track','16'],['handle','4×44']]},
+ datepicker:{name:'Date picker',file:'core/common/ui/RmDatePicker.kt',desc:'Docked calendar with today, selected and range states.',
+  props:[{n:'selectedDate',t:'LocalDate?'},{n:'range',t:'ClosedRange<LocalDate>?'}],tokens:T('bg:--surface-container-high|selected:--primary|on selected:--on-primary|today outline:--primary|range:--secondary-container|radius:--r-xl'),metrics:[['width','328'],['cell','40']]},
+ timepicker:{name:'Time picker',file:'core/common/ui/RmTimePicker.kt',desc:'Input-mode time picker (debug: simulate the noon boundary).',
+  props:[{n:'hour',t:'Int'},{n:'minute',t:'Int'},{n:'is24h',t:'Boolean',def:'false'}],tokens:T('bg:--surface-container-high|selected field:--primary-container|on selected:--on-primary-container|period:--tertiary-container|digits:--font-num'),metrics:[['field','96×80'],['digits','45']]},
+ textfield:{name:'Text field',file:'core/common/ui/RmTextField.kt',desc:'Filled / outlined; label, helper, counter, leading/trailing icons; empty/focused/filled/error/disabled.',
+  props:[{n:'value',t:'String'},{n:'label',t:'String'},{n:'variant',t:'Filled|Outlined',def:'Outlined'},{n:'supportingText',t:'String?'},{n:'isError',t:'Boolean',def:'false'},{n:'maxLength',t:'Int?'}],
+  tokens:T('filled bg:--surface-container-highest|outline:--outline|focus:--primary|label focus:--primary-ink|error:--error|text:--on-surface|radius:--r-xs'),metrics:[['height','56'],['padding','h 16'],['focus border','2 (filled 3)']]},
+ gamecard:{name:'GameCard',file:'core/common/ui/GameCard.kt',desc:'Today\u2019s game hero: thumbnail (GameEntry.thumbnail or generated fallback = game accent + glyph), sensor chip, duration, title, how-to.',
+  props:[{n:'entry',t:'GameEntry'},{n:'sensorLabel',t:'String'},{n:'durationLabel',t:'String'}],
+  tokens:T('bg:--card-bg|border:--card-border|elevation:--elev-1|thumb fill:--game-blink|thumb glyph:--on-game|title font:--font-display|how-to:--on-surface-variant|radius:--r-xl'),metrics:[['thumb','16:9'],['title','display 32/38'],['padding','12 / 20']]},
+ pips:{name:'AttemptsPips',file:'core/common/ui/AttemptsPips.kt',desc:'Remaining attempts (2/day) as pips + text label. Used pips are outlined.',
+  props:[{n:'remaining',t:'Int'},{n:'total',t:'Int',def:'2'}],tokens:T('remaining:--primary|used outline:--outline|label:--on-surface-variant'),metrics:[['pip','14'],['gap','8']]},
+ countdown:{name:'CountdownChip',file:'core/common/ui/CountdownChip.kt',desc:'Ticking HH:MM:SS to the next 12:00 boundary (DayClock).',
+  props:[{n:'target',t:'Instant'},{n:'label',t:'String'},{n:'locked',t:'Boolean',def:'false'}],tokens:T('bg:--surface-container-highest|text:--on-surface|digits:--font-num|locked icon:--primary-ink|radius:--r-full'),metrics:[['height','36'],['digits','15 tabular']]},
+ score:{name:'ScoreCounter',file:'core/common/ui/ScoreCounter.kt',desc:'Big result number; counts up then pops. New-best stamp in tertiary (celebration only).',
+  props:[{n:'score',t:'Int'},{n:'unit',t:'String'},{n:'isNewBest',t:'Boolean',def:'false'}],
+  tokens:T('digits:--font-num|value:--on-surface|best value:--primary-ink|stamp bg:--tertiary|stamp text:--on-tertiary|count-up:--dur-countup|pop:--ease-spring'),metrics:[['value','120'],['stamp h','36']]},
+ stat:{name:'StatTile',file:'core/common/ui/StatTile.kt',desc:'Label + number + caption tile; accent variant on primary-container.',
+  props:[{n:'label',t:'String'},{n:'value',t:'String'},{n:'caption',t:'String?'},{n:'accent',t:'Boolean',def:'false'}],tokens:T('bg:--surface-container|accent bg:--primary-container|value:--on-surface|label:--on-surface-variant|radius:--r-md'),metrics:[['value','26/32'],['padding','12 / 16']]},
+ seasonstrip:{name:'SeasonStrip',file:'core/common/ui/SeasonStrip.kt',desc:'7 segments for the 7-day season: done / today / upcoming, plus season points.',
+  props:[{n:'season',t:'Int'},{n:'dayIndex',t:'Int'},{n:'points',t:'Int'}],tokens:T('done:--on-surface-variant|today:--primary|upcoming:--surface-container-highest'),metrics:[['segment h','8'],['gap','4']]},
+ sechead:{name:'SectionHeader',file:'core/common/ui/SectionHeader.kt',desc:'Overline section label with optional trailing action.',
+  props:[{n:'text',t:'String'},{n:'action',t:'@Composable?'}],tokens:T('label:--on-surface-variant'),metrics:[['min h','48'],['label','600 11/16 · tracking .12em']]},
+};
+function resolveTokens(s){return s.tokens.map(t=>{const v=css(t.n)||'—';return {r:t.r,n:t.n,v,c:/^(#|rgb)/.test(v)?v:null};});}
+
+/* ===== Copy-as-prompt — Jetpack Compose first (the project's stack) ===== */
+const LANGS=['Jetpack Compose (Kotlin)','HTML + CSS','React (TypeScript + CSS)','SwiftUI','Flutter (Dart)','React Native'];
+let promptLang=LANGS[0];
+langSel.innerHTML=LANGS.map(l=>`<option${l===promptLang?' selected':''}>${l}</option>`).join('');
+langSel.onchange=()=>promptLang=langSel.value;
+const varGroups={
+ 'Color roles (M3; keep every fill paired with its --on-*)':['--primary','--on-primary','--primary-container','--on-primary-container','--primary-ink','--secondary','--on-secondary','--secondary-container','--on-secondary-container','--tertiary','--on-tertiary','--tertiary-container','--on-tertiary-container','--error','--on-error','--error-container','--on-error-container','--success','--on-success','--background','--on-background','--surface','--on-surface','--on-surface-variant','--surface-container-lowest','--surface-container-low','--surface-container','--surface-container-high','--surface-container-highest','--outline','--outline-variant','--inverse-surface','--inverse-on-surface','--inverse-primary','--scrim','--ledge'],
+ 'Game accents':['--game-escape','--game-onion','--game-blink','--game-compass','--game-soda','--on-game'],
+ 'Spacing':['--gap-related','--gap-section','--gap-major','--layout-gutter','--target-min','--sp-2','--sp-4','--sp-8','--sp-12','--sp-16','--sp-20','--sp-24','--sp-32','--sp-48','--sp-64'],
+ 'Shape':['--r-none','--r-xs','--r-sm','--r-md','--r-lg','--r-xl','--r-full'],
+ 'Elevation & outline':['--elev-0','--elev-1','--elev-2','--elev-3','--elev-pressed','--stroke-w','--btn-border','--card-border','--card-bg','--press-shift','--press-scale'],
+ 'State layers':['--state-hover','--state-focus','--state-pressed','--state-dragged','--state-disabled'],
+ 'Type':['--font-display','--display-weight','--display-tracking','--font-body','--font-num','--num-weight','--label-transform','--label-tracking'],
+ 'Motion':['--dur-fast','--dur-base','--dur-slow','--dur-countup','--ease','--ease-emphasized','--ease-spring'],
+ 'Icons':['--icon-size','--icon-inline','--icon-large','--icon-stroke','--icon-cap','--icon-join']};
+function dirLabel(){return 'A · Chunky Cabinet · '+(themeSel.value||'dark');}
+function tokenLines(){const out=[];for(const[g,names]of Object.entries(varGroups)){const rows=names.map(n=>{const v=css(n);return v?`- ${n} = ${v}`:null;}).filter(Boolean);if(rows.length)out.push(`### ${g}`,...rows,'');}return out;}
+function foundationsBody(){const L=[`## Foundations — design tokens (direction ${dirLabel()})`,`Define every token as a named constant in ONE theme file idiomatic to ${promptLang} (for Compose: an \`RmTheme\` in :core:common wrapping MaterialTheme with a ColorScheme, Typography, Shapes and a CompositionLocal for the extra tokens). Components reference tokens by name — never raw values. Implement BOTH dark (default) and light schemes.`,'',...tokenLines(),`### Type scale`];
+ TYPE.forEach(([n,m])=>L.push(`- ${n}: ${m}`));
+ L.push('','### Rules','- Every fill keeps its --on-* partner (WCAG ≥ 4.5:1 body, 3:1 large/UI).','- Primary is the only interaction family; tertiary is reserved for celebration (new best).','- Scores, timers and ranks use the numeric face with tabular figures.','- Respect the direction\u2019s elevation decision (A ledge / B tonal / C flat hairline).','- Every press: haptic + click SFX through :core:audio, both honouring Settings.');return L.join('\n');}
+function buildPrompt(key){const s=SPECS[key];const L=[`# Add or update the \`${s.name}\` component — ${promptLang}`,'',`Part of the RM Games design system (direction ${dirLabel()}). If a component with this role already exists, modify it IN PLACE to match this spec (source of truth) and note breaking changes; otherwise create it at \`${s.file}\` reusing the RmTheme tokens. Ship unit tests for any logic (AGENTS.md §5).`,'',`## What it is`,s.desc,'',`## Props`];
+ s.props.forEach(p=>L.push(`- \`${p.n}\`: ${p.t}${p.def?` (default ${p.def})`:''}`));
+ L.push('','## Design tokens (reference by name)');resolveTokens(s).forEach(t=>L.push(`- ${t.n} = ${t.v}   // ${t.r}`));
+ L.push('','## Metrics (dp)');s.metrics.forEach(([k,v])=>L.push(`- ${k}: ${v}`));
+ L.push('','## Requirements','- Implement every variant/state listed; 48dp minimum touch target.','- Tokens by name only; keep fill/--on-* pairs.',`- Output complete, compilable ${promptLang} code + a @Preview / usage example.`);return L.join('\n');}
+function fullSystemPrompt(){const keys=Object.keys(SPECS);const L=[`# Install or update the RM Games design system — ${promptLang}`,'',`Scaffold it if missing, otherwise update in place to match (source of truth). Owner: P2, modules :core:common (RmTheme + ui/) and :app resources (fonts, plan 09 PR 3–4).`,'','## Build order','1. Foundation token layer (RmTheme) — single source of truth, dark + light.','2. Components — may be split across parallel workers, but every one imports the shared RmTheme; never redefine values locally.','3. Reconcile: one ui/ package index + a pass confirming only named tokens are used.','','---','',foundationsBody(),'','---','',`## Components (${keys.length})`];
+ keys.forEach(k=>{const s=SPECS[k];L.push('',`### ${s.name} — \`${s.file}\``,s.desc,`- props: ${s.props.map(p=>p.n+': '+p.t).join(', ')}`,`- tokens: ${s.tokens.map(t=>t.n).join(', ')}`,`- metrics: ${s.metrics.map(m=>m[0]+' '+m[1]).join(', ')}`);});
+ return L.join('\n');}
+function copyText(t){navigator.clipboard&&navigator.clipboard.writeText(t);}
+function copyPrompt(key){copyText(buildPrompt(key));toast(`Copied: ${SPECS[key].name} → ${promptLang}`);}
+function copyFullSystem(){copyText(fullSystemPrompt());toast(`Copied: Install design system (${Object.keys(SPECS).length} components) → ${promptLang}`);}
+document.querySelectorAll('main section[id]').forEach(sec=>{const key=sec.id;if(!SPECS[key])return;const h=sec.querySelector('h2.sec');if(!h||h.querySelector('.sec-prompt'))return;
+  const b=document.createElement('button');b.className='sec-prompt';b.type='button';b.textContent='Copy as prompt';b.addEventListener('click',()=>copyPrompt(key));h.appendChild(b);});
+
+/* ===== Dev Mode + Inspector ===== */
+let lastSel=null;
+function toggleDev(){const on=document.body.classList.toggle('dev');devToggle.classList.toggle('on',on);devToggle.textContent=on?'◧ Dev Mode · ON':'◧ Dev Mode';if(!on)closeInspector();}
+function closeInspector(){document.body.classList.remove('inspecting');document.querySelectorAll('.insp-sel').forEach(e=>e.classList.remove('insp-sel'));lastSel=null;}
+document.addEventListener('click',e=>{if(e.target.closest('#inspector')||e.target.closest('#topctl'))return;if(!document.body.classList.contains('dev'))return;
+  const el=e.target.closest('[data-insp]');if(el&&SPECS[el.dataset.insp]){e.preventDefault();selectComp(el,el.dataset.insp);}});
+document.addEventListener('ds-theme-change',()=>{if(lastSel)selectComp(lastSel[0],lastSel[1]);});
+function selectComp(el,key){lastSel=[el,key];document.querySelectorAll('.insp-sel').forEach(x=>x.classList.remove('insp-sel'));el.classList.add('insp-sel');document.body.classList.add('inspecting');const s=SPECS[key];
+  const props=s.props.map(p=>`<div class="prop"><span class="pn">${p.n}</span> <span class="pt">${p.t}</span>${p.def?` <span class="pdef">= ${p.def}</span>`:''}</div>`).join('');
+  const toks=resolveTokens(s).map(t=>`<div class="tok" onclick="copyVal('${t.n}')"><div class="tsw" style="background:${t.c||'transparent'}"></div><div><div class="tn">${t.n}</div><div class="tr">${t.r}</div></div><div class="tv">${t.v}</div></div>`).join('');
+  const mets=s.metrics.map(([k,v])=>`<div class="metric"><span class="mk">${k}</span><span>${v}</span></div>`).join('');
+  inspectorBody.innerHTML=`<div class="nm">${s.name}</div><div class="file">${s.file}</div><div class="desc">${s.desc}</div><h4>Properties</h4>${props}<h4>Design tokens · ${dirLabel()} · click to copy</h4>${toks}<h4>Metrics</h4>${mets}<button class="copyprompt" onclick="copyPrompt('${key}')">Copy as prompt</button>`;}
+function copyVal(v){copyText(v);toast('Copied '+v);}
+function toast(m){copied.textContent=m;copied.classList.add('show');setTimeout(()=>copied.classList.remove('show'),1300);}
+</script>
+</body>
+</html>
