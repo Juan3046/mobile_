@@ -1,0 +1,228 @@
+package com.rmgames.feature.game.sound
+
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+
+// Neon sound corridor palette (docs/games/06-sound-barrier.md — Art Direction).
+private val CorridorBackground = Color(0xFF0E0E1F)
+private val FloorLine = Color(0xFF2A2A44)
+private val BarrierFill = Color(0xFFD63384)
+private val BarrierRim = Color(0xFFF7B2D9)
+private val BallFill = Color(0xFF22D3EE)
+private val BallRim = Color(0xFF0E7490)
+private val BallCore = Color(0xFF082F49)
+private val MeterTrack = Color(0xFF2A2A44)
+private val MeterLoud = Color(0xFFF5A623)
+private val MeterQuiet = Color(0xFF3A3A5C)
+private val HudText = Color(0xFFFFFFFF)
+
+/** Rim drawn on the edge of a bar that faces the gap, so the gap reads instantly. */
+private const val GAP_RIM = 8f
+
+/**
+ * Game 06 screen: the corridor, the ball, the minimal HUD and the sound meter.
+ *
+ * Rendering only — the [SoundBarrierGame] owns every rule through its
+ * [SoundBarrierEngine], so this file never scores, never counts down on its own and
+ * takes no parameters beyond the game instance it closes over (Game Hosting Contract,
+ * docs/08-implementation-plan.md).
+ *
+ * Provisional graphics: everything is drawn procedurally with [drawBehind], no assets.
+ */
+@Composable
+fun SoundBarrierScreen(game: SoundBarrierGame) {
+    val state by game.state.collectAsState()
+
+    // Read during composition so the draw modifier is rebuilt whenever the run changes.
+    val barriers = state.barriers
+    val ballX = state.ballX
+    val ballY = state.ballY
+    val ballRadius = state.ballRadius
+    val soundLevel = state.soundLevel
+    val soundDetected = state.soundDetected
+    val score = state.score
+    val remainingMs = state.remainingMs
+    val finished = state.finished
+    val endReason = state.endReason
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .focusable()
+            .onKeyEvent { event -> handleDebugKey(event, game::setDebugSound) },
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .drawBehind {
+                    drawCorridor(barriers, ballX, ballY, ballRadius, soundLevel, soundDetected)
+                },
+        )
+
+        Text(
+            text = "SCORE: $score",
+            color = HudText,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(16.dp),
+        )
+        Text(
+            text = "TIME: ${formatTenths(remainingMs)}s",
+            color = HudText,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(16.dp),
+        )
+
+        if (finished) {
+            Text(
+                text = endBanner(endReason),
+                color = HudText,
+                fontSize = 34.sp,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(16.dp),
+            )
+        }
+    }
+}
+
+/**
+ * Draws the corridor: backdrop, floor and ceiling, every barrier pair, the ball and
+ * the sound meter pinned to the bottom edge. Everything is normalized to the box, so
+ * the physics and the drawing agree at any screen size.
+ */
+private fun DrawScope.drawCorridor(
+    barriers: List<BarrierUi>,
+    ballX: Double,
+    ballY: Double,
+    ballRadius: Double,
+    soundLevel: Float,
+    soundDetected: Boolean,
+) {
+    val width = size.width
+    val height = size.height
+    drawRect(color = CorridorBackground)
+
+    drawLine(
+        color = FloorLine,
+        start = Offset(0f, 1f),
+        end = Offset(width, 1f),
+        strokeWidth = 4f,
+    )
+    drawLine(
+        color = FloorLine,
+        start = Offset(0f, height - 2f),
+        end = Offset(width, height - 2f),
+        strokeWidth = 4f,
+    )
+
+    barriers.forEach { barrier ->
+        val left = (barrier.x * width).toFloat()
+        val barWidth = (barrier.width * width).toFloat()
+        if (left > width || left + barWidth < 0f) return@forEach
+
+        val gapTop = ((barrier.gapCenter + barrier.gapHalf) * height).toFloat()
+        val gapBottom = ((barrier.gapCenter - barrier.gapHalf) * height).toFloat()
+
+        // Bar above the gap, from the ceiling down to it.
+        drawRect(color = BarrierFill, topLeft = Offset(left, 0f), size = Size(barWidth, gapTop))
+        drawRect(
+            color = BarrierRim,
+            topLeft = Offset(left, gapTop - GAP_RIM),
+            size = Size(barWidth, GAP_RIM),
+        )
+
+        // Bar below the gap, from it down to the floor.
+        val lowerHeight = height - gapBottom
+        drawRect(color = BarrierFill, topLeft = Offset(left, gapBottom), size = Size(barWidth, lowerHeight))
+        drawRect(
+            color = BarrierRim,
+            topLeft = Offset(left, gapBottom),
+            size = Size(barWidth, GAP_RIM),
+        )
+    }
+
+    // The ball: glow, body, rim and a small core so a spin would read if added later.
+    val center = Offset((ballX * width).toFloat(), (ballY * height).toFloat())
+    val radius = (ballRadius * width).toFloat()
+    drawCircle(color = BallFill.copy(alpha = 0.22f), radius = radius * 1.6f, center = center)
+    drawCircle(color = BallFill, radius = radius, center = center)
+    drawCircle(color = BallRim, radius = radius, center = center, style = Stroke(width = 6f))
+    drawCircle(color = BallCore, radius = radius * 0.35f, center = center)
+
+    // Sound meter: how much input the microphone is hearing right now.
+    val meterWidth = width * 0.6f
+    val meterLeft = (width - meterWidth) / 2f
+    val meterTop = height - 46f
+    drawRect(
+        color = MeterTrack,
+        topLeft = Offset(meterLeft, meterTop),
+        size = Size(meterWidth, 16f),
+    )
+    drawRect(
+        color = if (soundDetected) MeterLoud else MeterQuiet,
+        topLeft = Offset(meterLeft, meterTop),
+        size = Size(meterWidth * soundMeterFill(soundLevel), 16f),
+    )
+}
+
+/**
+ * Space held = sound, released = silence. Keyboard input is a debug affordance for
+ * the emulator and desktop only; phones drive the game with the microphone.
+ */
+private fun handleDebugKey(event: KeyEvent, onDebugSound: (Boolean) -> Unit): Boolean {
+    if (event.key != Key.Spacebar) return false
+    return when (event.type) {
+        KeyEventType.KeyDown -> {
+            onDebugSound(true)
+            true
+        }
+        KeyEventType.KeyUp -> {
+            onDebugSound(false)
+            true
+        }
+        else -> false
+    }
+}
+
+/** `42.5` from milliseconds, without locale-dependent decimal separators. */
+internal fun formatTenths(millis: Long): String {
+    val tenths = Math.round(millis / 100.0) / 10.0
+    return tenths.toString()
+}
+
+/** Copy for the end-of-run banner: winning the timer reads differently from failing. */
+internal fun endBanner(endReason: EndReason?): String = when (endReason) {
+    EndReason.TIME_UP -> "TIME'S UP!"
+    EndReason.LEFT_BEHIND -> "LEFT BEHIND!"
+    null -> ""
+}
+
+/**
+ * 0..1 fill of the sound meter, so a screaming microphone can never draw past its
+ * track. Internal rather than private purely so tests can pin it down (AGENTS.md §5).
+ */
+internal fun soundMeterFill(level: Float): Float = level.coerceIn(0f, 1f)
