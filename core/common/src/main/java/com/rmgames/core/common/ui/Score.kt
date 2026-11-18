@@ -5,6 +5,7 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -30,7 +31,10 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.rmgames.core.common.theme.RmFonts
 import com.rmgames.core.common.theme.RmTheme
+import com.rmgames.core.common.theme.rmNumberStyle
+import androidx.compose.ui.text.rememberTextMeasurer
 
 /**
  * Hero result number (03 §3.3). Counts up from 0 over `RmMotion.durationCountUp`, then
@@ -43,6 +47,7 @@ fun ScoreCounter(
     modifier: Modifier = Modifier,
     isBest: Boolean = false,
     animate: Boolean = true,
+    format: (Long) -> String = { it.toString() },
 ) {
     val c = RmTheme.colors
     val m = RmTheme.motion
@@ -54,17 +59,29 @@ fun ScoreCounter(
         pop.snapTo(0.92f)
         pop.animateTo(1f, tween(m.durationBase, easing = m.spring))
     }
+    val maxSize = 120.sp
+    val measurer = rememberTextMeasurer()
     Column(
-        modifier.clearAndSetSemantics { contentDescription = "$score $unit" },
+        modifier.clearAndSetSemantics { contentDescription = "${format(score)} $unit" },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        Text(
-            countUpValue(score, progress.value).toString(),
-            style = RmTheme.score(120.sp),
-            color = if (isBest) c.primaryInk else c.onSurface,
-            modifier = Modifier.digitBox(120.sp).scale(pop.value),
-        )
+        BoxWithConstraints(contentAlignment = Alignment.Center) {
+            // Size for the final value (the widest the count-up gets) so the digits never
+            // wrap and the size doesn't jump while counting.
+            val fitted = remember(score, constraints.maxWidth) {
+                val width = measurer.measure(format(score), rmNumberStyle(RmFonts.Display, maxSize), maxLines = 1, softWrap = false).size.width
+                fitScoreFontSize(maxSize.value, width.toFloat(), constraints.maxWidth.toFloat()).sp
+            }
+            Text(
+                format(countUpValue(score, progress.value)),
+                style = RmTheme.score(fitted),
+                color = if (isBest) c.primaryInk else c.onSurface,
+                maxLines = 1,
+                softWrap = false,
+                modifier = Modifier.digitBox(fitted).scale(pop.value),
+            )
+        }
         Text(unit.uppercase(), style = MaterialTheme.typography.labelLarge, color = c.onSurfaceVariant)
     }
 }

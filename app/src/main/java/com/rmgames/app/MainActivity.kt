@@ -31,7 +31,7 @@ import com.rmgames.feature.game.escape.escapePorubaEntry
 import com.rmgames.feature.game.onion.onionRollEntry
 import com.rmgames.feature.game.soda.sodaShakeEntry
 import com.rmgames.feature.home.HomeRoute
-import com.rmgames.feature.session.SessionScreen
+import com.rmgames.feature.session.SessionRoute
 
 /** Phase 1b shell: registry-driven nav. Full flows (onboarding/result/history) land in Phase 2. */
 class MainActivity : ComponentActivity() {
@@ -103,7 +103,13 @@ fun RMGamesNav() {
             val gameId = backStack.arguments?.getString("gameId").orEmpty()
             val entry = registry.find(gameId)
             PermissionGate(entry) {
-                SessionScreen(entry)
+                SessionRoute(
+                    entry = entry,
+                    attempts = attempts,
+                    scores = scores,
+                    clock = clock,
+                    onExit = { nav.popBackStack("home", inclusive = false) },
+                )
             }
         }
     }

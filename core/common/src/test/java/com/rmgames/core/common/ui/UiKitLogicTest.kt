@@ -210,3 +210,27 @@ class RmClickTest {
         verify(exactly = 0) { haptic(); feedback.click(); action() }
     }
 }
+
+/** Regression: "4.27" at 120sp wrapped to two lines and spilled over the New-best stamp. */
+class ScoreFitTest {
+    @Test
+    fun `keeps the max size when the score fits`() {
+        assertEquals(120f, fitScoreFontSize(maxSizeSp = 120f, widthAtMaxPx = 500f, availablePx = 1000f), 0.001f)
+    }
+
+    @Test
+    fun `shrinks proportionally when the score is too wide`() {
+        // Text width scales linearly with font size: 1200px at 120sp into 900px → 90sp.
+        assertEquals(90f, fitScoreFontSize(maxSizeSp = 120f, widthAtMaxPx = 1200f, availablePx = 900f), 0.001f)
+    }
+
+    @Test
+    fun `never goes below the floor`() {
+        assertEquals(40f, fitScoreFontSize(maxSizeSp = 120f, widthAtMaxPx = 10_000f, availablePx = 100f, minSizeSp = 40f), 0.001f)
+    }
+
+    @Test
+    fun `zero measurements keep the max size`() {
+        assertEquals(120f, fitScoreFontSize(maxSizeSp = 120f, widthAtMaxPx = 0f, availablePx = 300f), 0.001f)
+    }
+}

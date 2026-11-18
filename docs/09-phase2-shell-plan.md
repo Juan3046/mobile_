@@ -76,7 +76,12 @@
   `HomeViewModel.state()`), `SeasonCalendar` (Season 1 = Mon 16 Nov 2026 12:00), debug
   `AttemptRepository.reset`, unplayable games kept out of the rotation, `RmTransitions` on the
   NavHost. Checked on device. Still in-memory attempts/scores (PR 6/10); Play does not consume
-  an attempt yet (PR 9, session); Settings gear and Seasons history are hidden until PR 11/13. Arcade/playful, high
+  an attempt yet (PR 9, session); Settings gear and Seasons history are hidden until PR 11/13.
+  **Status (2026-11-18): PR 9 done** — `SessionFlow` (Intro → 3-2-1 → Playing → Finished, Play
+  again, lock, abandon) replaces `SessionViewModel`; `SessionRoute` draws intro, countdown, host
+  score chip and the Result screen (03 §3.3). Play now spends the attempt (on Start). Fixed after
+  device testing: a wide score ("4.27" s) wrapped onto two lines and overlapped the New-best
+  stamp — `ScoreCounter` now stays on one line and shrinks to fit (`fitScoreFontSize`). Arcade/playful, high
   contrast, readable at a glance, portrait, dark-first with a light variant.
 - **Tokens**: colour scheme (brand + per-game accent colours), typography
   (one display font for titles/scores + one UI font), shapes, spacing, elevation,
@@ -136,7 +141,7 @@ paginated top-50 reads, security rules. Separate PRs after D.1–D.3 work offlin
 | 6 | DataStore attempts + settings repos | `:core:data` | 1 |
 | 7 | `:core:audio` (director, settings flow, focus, no main-thread work) | `:core:audio` | 6 |
 | 8 | Main screen (daily game, attempts, lock + countdown) — **done** (in-memory repos until 6) | `:feature:home`, `:app` nav | 4, 5, 6 |
-| 9 | Session: pre-run countdown, attempt consumption, result screen | `:feature:session` | 4, 6 |
+| 9 | Session: pre-run countdown, attempt consumption, result screen — **done** (in-memory repos until 6) | `:feature:session` | 4, 6 |
 | 10 | Room scores + daily best + local best | `:core:data` | 6 |
 | 11 | Settings screen | `:feature:settings`, `:app` nav | 4, 6, 7 |
 | 12 | Music & UI SFX wiring across screens | `:app`, features | 7, 8, 9 |

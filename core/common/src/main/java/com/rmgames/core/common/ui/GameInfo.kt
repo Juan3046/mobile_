@@ -27,3 +27,17 @@ fun gameDurationLabel(gameId: String, durationMs: Long): String = when (gameId.s
     "soda" -> "20 shakes"
     else -> "${durationMs / 1000} seconds"
 }
+
+/** A score ready to show: the number and its unit ("27" "points", "4.27" "seconds"). */
+data class ScoreText(val value: String, val unit: String)
+
+/**
+ * Formats a raw game score (what the game passed to `GameScope.onScore`) per its spec:
+ * Onion Roll = whole seconds survived, Soda Shake = centiseconds to pop (shown as
+ * seconds), everything else = points.
+ */
+fun gameScoreText(gameId: String, raw: Long): ScoreText = when (gameId.split('-').getOrNull(1)) {
+    "onion" -> ScoreText(formatPoints(raw), if (raw == 1L) "second" else "seconds")
+    "soda" -> ScoreText("%d.%02d".format(java.util.Locale.US, raw / 100, raw % 100), "seconds")
+    else -> ScoreText(formatPoints(raw), if (raw == 1L) "point" else "points")
+}

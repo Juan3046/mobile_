@@ -28,3 +28,28 @@ class GameInfoTest {
         assertEquals("20 shakes", gameDurationLabel("05-soda-shake", 10_000))
     }
 }
+
+class GameScoreTextTest {
+    @Test
+    fun `points games show the raw count`() {
+        assertEquals(ScoreText("27", "points"), gameScoreText("03-blink-sniper", 27))
+        assertEquals(ScoreText("1", "point"), gameScoreText("04-compass-chaos", 1))
+    }
+
+    @Test
+    fun `onion shows whole seconds survived`() {
+        assertEquals(ScoreText("62", "seconds"), gameScoreText("02-onion-roll", 62))
+    }
+
+    @Test
+    fun `soda shows centiseconds as seconds with two decimals`() {
+        assertEquals(ScoreText("4.27", "seconds"), gameScoreText("05-soda-shake", 427))
+        assertEquals(ScoreText("10.05", "seconds"), gameScoreText("05-soda-shake", 1005))
+        assertEquals(ScoreText("0.09", "seconds"), gameScoreText("05-soda-shake", 9))
+    }
+
+    @Test
+    fun `big point totals get separators`() {
+        assertEquals(ScoreText("1,250", "points"), gameScoreText("99-new", 1250))
+    }
+}

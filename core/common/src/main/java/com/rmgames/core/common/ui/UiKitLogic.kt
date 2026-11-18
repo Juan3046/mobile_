@@ -100,3 +100,13 @@ fun handleRmClick(enabled: Boolean, onClick: () -> Unit, feedback: UiFeedback, h
     feedback.click()
     onClick()
 }
+
+/**
+ * Font size that fits a one-line score into [availablePx]. Text width grows linearly
+ * with the font size, so one measurement at [maxSizeSp] is enough. Never above the max,
+ * never below [minSizeSp]. (Regression: "4.27" at 120sp wrapped onto two lines.)
+ */
+fun fitScoreFontSize(maxSizeSp: Float, widthAtMaxPx: Float, availablePx: Float, minSizeSp: Float = 40f): Float {
+    if (widthAtMaxPx <= 0f || availablePx <= 0f || widthAtMaxPx <= availablePx) return maxSizeSp
+    return (maxSizeSp * availablePx / widthAtMaxPx).coerceIn(minSizeSp, maxSizeSp)
+}

@@ -34,6 +34,14 @@ Implementation (Phase 2, Direction A — `HomeRoute`/`HomeScreen` in `:feature:h
 - Provisional day position + provisional points it would award.
 - Play again button (if attempts remain) else lock state (see 3.5).
 
+Implementation (Phase 2 — `SessionRoute` in `:feature:session`, run logic in `SessionFlow`):
+- Before each run: a "How to play" intro (GameCard + attempts + **Start**). Start spends the attempt; with none left the intro is locked.
+- 3-2-1 countdown overlay with haptics, then the game starts (frozen `SessionGameScope` contract unchanged); non-own-HUD games get a host score chip.
+- Back during the countdown or the run asks to confirm, then forfeits the attempt and records nothing.
+- On finish the game's end state holds ~1 s ("Run over"), then the Result: "New best" stamp + confetti when the run beat today's best, the score counting up (one line, shrinks to fit), daily best and attempts tiles, **Play again** (straight to the countdown) or the locked "Back at 12:00" + countdown, and Back to home.
+- A run belongs to the day it started even if it ends after 12:00. Runs with no score record nothing.
+- Provisional position/points: shown as a note until online ranking lands (plan 09 PR 16) — no local data to rank against yet.
+
 ## 3.4 Ranking / Seasons History
 - Tabs: **Season** (current standings with nicks + points, plus my day-by-day breakdown) and **History** (past seasons + all-time total).
 - Top-50 paginated reads (Firestore quota).
