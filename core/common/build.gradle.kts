@@ -27,6 +27,8 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
+    // RmTheme exposes Material 3 types (ColorScheme, Typography, Shapes) to every screen module.
+    api(libs.androidx.compose.material3)
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
