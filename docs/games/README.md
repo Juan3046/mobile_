@@ -6,13 +6,13 @@ and always take precedence unless a game doc explicitly documents an approved ex
 
 | # | File | Game | Status |
 |---|------|------|--------|
-| 01 | `01-escape-poruba.md` | Escape Poruba (2D arcade runner) | Defined |
+| 01 | `01-poruba-casino.md` | Poruba Casino (blackjack, front camera/head gestures) | Implemented — device tuning pending |
 | 02 | `02-onion-roll.md` | Onion Roll (gyroscope, checkout belt) | Defined |
 | 03 | `03-blink-sniper.md` | Blink Sniper (front camera, blink detection) | Defined |
-| 04 | `04-compass-chaos.md` | Compass Chaos (magnetometer, face direction) | Draft — needs duration, scoring, fallback |
-| 05 | `05-soda-shake.md` | Soda Shake (accelerometer, shake to 100%) | Draft — duration exception granted, needs scoring |
+| 04 | `04-compass-chaos.md` | Compass Chaos (magnetometer, face direction) | Defined |
+| 05 | `05-soda-shake.md` | Soda Shake (accelerometer, shake to 20) | Defined — duration exception |
 
-Season 1 needs 7 defined games: **5 / 7 drafted (3 defined, 2 draft)**.
+Season 1 needs 7 defined games: **5 / 7 defined**. Games 06–07 are intentionally deferred.
 
 ## Conventions
 
@@ -36,4 +36,4 @@ Every new game doc must define:
 6. **Persistence** — what is saved locally (MVP is local-only, offline).
 7. **Open Questions** — unresolved items, marked `[x]` when decided.
 
-See `01-escape-poruba.md` for a full example.
+See `01-poruba-casino.md` for the current Game 01 specification and integration notes.

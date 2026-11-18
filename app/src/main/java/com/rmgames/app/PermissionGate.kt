@@ -20,7 +20,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -41,11 +44,11 @@ class PermissionGateModel(
     initiallyGranted: Boolean,
 ) {
     /** True once the run may start: nothing required, or everything granted. */
-    var isContentVisible: Boolean = initiallyGranted || requiredPermissions.isEmpty()
+    var isContentVisible by mutableStateOf(initiallyGranted || requiredPermissions.isEmpty())
         private set
 
     /** True once the system dialog denied a permission — enables the settings hint. */
-    var wasDenied: Boolean = false
+    var wasDenied by mutableStateOf(false)
         private set
 
     fun onPermissionsResult(results: Map<String, Boolean>) {

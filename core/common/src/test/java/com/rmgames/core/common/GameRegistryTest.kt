@@ -19,10 +19,10 @@ class GameRegistryTest {
 
     @Test
     fun `find returns the entry registered for a known game id`() {
-        val entry = GameEntry(fakeGame("01-escape-poruba")) { }
+        val entry = GameEntry(fakeGame("01-poruba-casino")) { }
         val registry = GameRegistry(listOf(entry))
 
-        assertSame(entry, registry.find("01-escape-poruba"))
+        assertSame(entry, registry.find("01-poruba-casino"))
     }
 
     @Test
@@ -34,12 +34,12 @@ class GameRegistryTest {
 
     @Test
     fun `all exposes entries in registration order`() {
-        val first = GameEntry(fakeGame("01-escape-poruba")) { }
+        val first = GameEntry(fakeGame("01-poruba-casino")) { }
         val second = GameEntry(fakeGame("02-onion-roll")) { }
         val registry = GameRegistry(listOf(first, second))
 
         assertEquals(
-            listOf("01-escape-poruba", "02-onion-roll"),
+            listOf("01-poruba-casino", "02-onion-roll"),
             registry.all.map { it.game.id },
         )
     }
@@ -48,8 +48,8 @@ class GameRegistryTest {
     fun `duplicate game ids are rejected at construction`() {
         GameRegistry(
             listOf(
-                GameEntry(fakeGame("01-escape-poruba")) { },
-                GameEntry(fakeGame("01-escape-poruba")) { },
+                GameEntry(fakeGame("01-poruba-casino")) { },
+                GameEntry(fakeGame("01-poruba-casino")) { },
             ),
         )
     }

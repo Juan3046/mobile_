@@ -50,7 +50,7 @@ fall ends the run. There is no win state — score is pure survival time.
   passive: the belt ramp alone determines survival time (see Open Questions
   for the playtest caveat).
 - **Score = survived time in centiseconds** (win-equivalent max ≈ 8500, hard
-  ceiling 9000 at 90s). Daily best of the 2 attempts; the daily best ranks the day for position points (same mapping as `01-escape-poruba.md`).
+  ceiling 9000 at 90s). Daily best of the 2 attempts; the daily best ranks the day for position points (same global mapping as `01-poruba-casino.md`).
 - **No win state**: reaching 90s without falling is not expected; the run always
   ends in a fall.
 
@@ -95,7 +95,7 @@ playtest) driving:
 - **Flat cartoon**: clean bold shapes, friendly colors, readable silhouettes;
   the onion must pop against the belt and fruits.
 - Provisional procedural in-project sprites; code structured for easy replacement
-  later (same approach as `01-escape-poruba.md`). No external assets required.
+  later (same approach as `01-poruba-casino.md`). No external assets required.
 
 ## Fallback (missing sensor / permission denied)
 - Per global rule: **disable Play with a clear message** ("Onion Roll requires a
