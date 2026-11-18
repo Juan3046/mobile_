@@ -40,4 +40,24 @@ class SoundBarrierScreenTest {
         assertEquals(0.42f, soundMeterFill(0.42f), 1e-6f)
         assertTrue(soundMeterFill(0.6f) in 0f..1f)
     }
+
+    @Test
+    fun `the floor is drawn at the bottom of the screen and the ceiling at the top`() {
+        val height = 1000f
+        // Gravity pulls the ball to physics 0, which must read as the bottom edge.
+        assertEquals(height, screenY(0.0, height), 1e-4f)
+        assertEquals(0f, screenY(1.0, height), 1e-4f)
+        assertEquals(height / 2f, screenY(0.5, height), 1e-4f)
+    }
+
+    @Test
+    fun `a barrier opening is left open rather than covered by its bars`() {
+        val height = 1000f
+        val gapCenter = 0.5
+        val gapHalf = 0.17
+        val top = screenY(gapCenter + gapHalf, height)
+        val bottom = screenY(gapCenter - gapHalf, height)
+        assertTrue("the opening must run top-down on screen", bottom > top)
+        assertEquals((2 * gapHalf * height).toFloat(), bottom - top, 1e-3f)
+    }
 }

@@ -144,8 +144,8 @@ private fun DrawScope.drawCorridor(
         val barWidth = (barrier.width * width).toFloat()
         if (left > width || left + barWidth < 0f) return@forEach
 
-        val gapTop = ((barrier.gapCenter + barrier.gapHalf) * height).toFloat()
-        val gapBottom = ((barrier.gapCenter - barrier.gapHalf) * height).toFloat()
+        val gapTop = screenY(barrier.gapCenter + barrier.gapHalf, height)
+        val gapBottom = screenY(barrier.gapCenter - barrier.gapHalf, height)
 
         // Bar above the gap, from the ceiling down to it.
         drawRect(color = BarrierFill, topLeft = Offset(left, 0f), size = Size(barWidth, gapTop))
@@ -166,7 +166,7 @@ private fun DrawScope.drawCorridor(
     }
 
     // The ball: glow, body, rim and a small core so a spin would read if added later.
-    val center = Offset((ballX * width).toFloat(), (ballY * height).toFloat())
+    val center = Offset((ballX * width).toFloat(), screenY(ballY, height))
     val radius = (ballRadius * width).toFloat()
     drawCircle(color = BallFill.copy(alpha = 0.22f), radius = radius * 1.6f, center = center)
     drawCircle(color = BallFill, radius = radius, center = center)
@@ -226,3 +226,15 @@ internal fun endBanner(endReason: EndReason?): String = when (endReason) {
  * track. Internal rather than private purely so tests can pin it down (AGENTS.md §5).
  */
 internal fun soundMeterFill(level: Float): Float = level.coerceIn(0f, 1f)
+
+/**
+ * Maps a physics height onto screen pixels. The two axes point opposite ways —
+ * physics runs 0 = floor -> 1 = ceiling, pixels run 0 = top -> height = bottom —
+ * so every vertical draw (the ball and both bars of a barrier) must go through
+ * this single inversion, or gravity would pull the ball up and the bars would
+ * overlap and hide their gap (docs/games/06-sound-barrier.md).
+ *
+ * Internal rather than private purely so tests can pin it down (AGENTS.md §5).
+ */
+internal fun screenY(physicsY: Double, height: Float): Float =
+    ((1.0 - physicsY) * height).toFloat()
