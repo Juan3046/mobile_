@@ -70,6 +70,8 @@ data class OnionRollState(
     /** Time since the fall started (drives the "YOU LOST!" banner); 0 while running. */
     val fallElapsedMs: Long = 0L,
     val fruits: List<Fruit> = emptyList(),
+    /** Distinct fruit impacts this run (a new contact after a tick without one); drives hit sounds. */
+    val hits: Int = 0,
 ) {
     companion object {
         /** A run that has not started yet. */
@@ -108,6 +110,7 @@ class OnionRollEngine(
     private var knockVelocity = 0f
     private var nextSpawnAtMs = FIRST_SPAWN_AT_MS
     private var fallStartElapsedMs = 0L
+    private var inContact = false
 
     /**
      * Advances the simulation by [rawDtMs] (clamped to [MAX_TICK_MS] so a stalled
@@ -143,6 +146,7 @@ class OnionRollEngine(
 
         // Knockback glide + walking back home, never into a fruit ahead of the onion.
         var onionY = current.onionY
+        var hitThisTick = false
         if (live) {
             knockVelocity *= exp(-dtMs / KNOCK_TAU_MS)
             val moved = (onionY + (knockVelocity - RECOVERY_SPEED) * dtS).coerceAtLeast(ONION_Y)
@@ -163,6 +167,7 @@ class OnionRollEngine(
                 val hit = overlapsInX(onionX, fruit) && fruit.y <= onionY &&
                     abs(onionY - y) < ONION_HIT_HALF_H + fruit.type.hitHalfHeight
                 if (hit) {
+                    hitThisTick = true
                     onionY = y + fruit.type.hitHalfHeight + ONION_HIT_HALF_H + CONTACT_GAP
                     knockVelocity = maxOf(knockVelocity, beltSpeed + KNOCK_EXTRA_SPEED)
                 }
@@ -171,6 +176,10 @@ class OnionRollEngine(
         } else {
             current.fruits
         }
+
+        // A hit counts once per contact: consecutive ticks of pushing are one impact.
+        val hits = if (hitThisTick && !inContact) current.hits + 1 else current.hits
+        inContact = hitThisTick
 
         // Phase transitions; the score freezes at the moment of the fall.
         var phase = current.phase
@@ -208,6 +217,7 @@ class OnionRollEngine(
             fallProgress = fallProgress,
             fallElapsedMs = fallElapsedMs,
             fruits = fruits,
+            hits = hits,
         )
     }
 
@@ -218,6 +228,7 @@ class OnionRollEngine(
         knockVelocity = 0f
         nextSpawnAtMs = FIRST_SPAWN_AT_MS
         fallStartElapsedMs = 0L
+        inContact = false
     }
 
     private fun targetVelocity(tiltRate: Float, keySteer: Float?): Float =

@@ -392,4 +392,46 @@ class OnionRollEngineTest {
         assertTrue("onion should move past the drawn edge", e.state.value.onionX > grazingX)
         assertEquals(ONION_Y, e.state.value.onionY, 0.0001f) // and no knockback
     }
+    // --- hit counting (drives sound + vibration, docs/games/02 — Audio & Haptics) ---
+
+    @Test
+    fun `a fruit hitting the onion is counted as a hit`() {
+        val approaching = Fruit(FruitType.APPLE, x = laneCenter(1), y = 0.55f)
+        val e = engine(initial = OnionRollState.INITIAL.copy(fruits = listOf(approaching)), spawnFruits = false)
+
+        e.tickFor(400)
+
+        assertTrue("expected at least one hit, got ${e.state.value.hits}", e.state.value.hits >= 1)
+    }
+
+    @Test
+    fun `a pushing fruit counts distinct impacts, not every tick in contact`() {
+        val approaching = Fruit(FruitType.APPLE, x = laneCenter(1), y = 0.55f)
+        val e = engine(initial = OnionRollState.INITIAL.copy(fruits = listOf(approaching)), spawnFruits = false)
+
+        e.tickFor(400) // 25 ticks
+
+        assertTrue("expected only a few impacts, got ${e.state.value.hits}", e.state.value.hits <= 6)
+    }
+
+    @Test
+    fun `a fruit in another lane is not counted as a hit`() {
+        val passing = Fruit(FruitType.APPLE, x = laneCenter(0), y = 0.55f)
+        val e = engine(initial = OnionRollState.INITIAL.copy(fruits = listOf(passing)), spawnFruits = false)
+
+        e.tickFor(400)
+
+        assertEquals(0, e.state.value.hits)
+    }
+
+    @Test
+    fun `reset clears the hit count`() {
+        val approaching = Fruit(FruitType.APPLE, x = laneCenter(1), y = 0.55f)
+        val e = engine(initial = OnionRollState.INITIAL.copy(fruits = listOf(approaching)), spawnFruits = false)
+        e.tickFor(400)
+
+        e.reset()
+
+        assertEquals(0, e.state.value.hits)
+    }
 }

@@ -163,6 +163,33 @@ playtest) driving:
 - Drawing lives in `OnionRollArt.kt`, separate from the screen layout, so it
   can be swapped for bitmap sprites later.
 
+## Audio & Haptics
+Sound effects and vibration only — **no music** (per-minigame music is out of
+the MVP, `../06-out-of-scope-roadmap.md`). All sounds are **synthesized in code**
+(no audio files, no licensing), played on the media volume
+(`USAGE_GAME`), and they play in practice runs too.
+
+| Cue | When | Sound | Vibration |
+|---|---|---|---|
+| `HIT` | a fruit lands a new hit on the onion (at most one cue per 120 ms) | low "plof" thump (180 → 70 Hz, 120 ms) | 25 ms tap |
+| `TICK` | the score counter reaches a new whole second | soft high tick (1.5 kHz, 25 ms) | — |
+| `DANGER` | the onion is shoved past 60 % of the way to the end roller (`dangerLevel ≥ 0.6`); re-arms once back under 30 % | two short alarm beeps (880 Hz) | — |
+| `FALL` | the run ends (onion falls) | falling whistle (700 → 150 Hz) + short descending "sad" jingle, ≈ 1.6 s, fits the 2 s banner | 250 ms buzz |
+
+- The engine counts distinct impacts (`OnionRollState.hits`, a new contact
+  after at least one tick without contact); the screen turns state changes
+  into cues (`OnionRollCues`), so the cue rules are JVM-tested.
+- A restart (new run, debug RESTART, practice) re-syncs the detector without
+  firing cues.
+- **Playback never runs on the main thread**: the game loop shares it with
+  Compose, and AudioTrack restarts there froze the game ≈ 0.5 s on every
+  per-second tick (device playtest, 2026-11-18). Cues are queued to one
+  background audio thread (`AsyncCuePlayer`), which also builds the tracks and
+  drives the vibrator.
+- Vibration needs the install-time `android.permission.VIBRATE` (normal
+  permission, no runtime prompt), declared in the module manifest; devices
+  without a vibrator just skip it.
+
 ## Fallback (missing sensor / permission denied)
 - Per global rule: **disable Play with a clear message** ("Onion Roll requires a
   gyroscope sensor") and never record fake scores.
@@ -195,7 +222,10 @@ playtest) driving:
   `OnionRollGame` (16 ms loop on `hostScope`, gyro tilt rate → engine, whole-
   second scores, `onFinished(false)` after the fall animation and the 2 s
   "YOU LOST!" banner), `OnionRollScreen` (layout, HUD, banner + debug keys),
-  `OnionRollArt` (procedural belt/fruit/onion sprites).
+  `OnionRollArt` (procedural belt/fruit/onion sprites),
+  `OnionRollCues` (state → sound/vibration cues), `OnionRollSounds`
+  (pure PCM synthesis) and `OnionRollFeedback` (AudioTrack + Vibrator player).
 - `OnionRollVisuals` (pure presentation math: fall curves, face layout,
   loss-banner fade/pop, danger level and glow pulse).
-- Tests: `OnionRollEngineTest` + `OnionRollGameTest` + `OnionRollVisualsTest`.
+- Tests: `OnionRollEngineTest` + `OnionRollGameTest` + `OnionRollVisualsTest`
+  + `OnionRollCuesTest` + `OnionRollSoundsTest`.

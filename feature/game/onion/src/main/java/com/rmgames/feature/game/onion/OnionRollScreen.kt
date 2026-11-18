@@ -15,6 +15,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -34,6 +35,7 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -45,7 +47,8 @@ import kotlinx.coroutines.flow.StateFlow
  * Top-down view of the checkout belt (docs/games/02-onion-roll.md): ribbed belt,
  * the fixed end roller, the groceries and the onion (sprites in OnionRollArt.kt),
  * the red danger glow, the minimal HUD (score counter in seconds) and the
- * "YOU LOST!" banner once the onion falls.
+ * "YOU LOST!" banner once the onion falls. Sound effects and vibration follow
+ * the state through [CueDetector] → [OnionRollFeedback].
  *
  * Renders [OnionRollState] only — the [Game] object stays the sole gateway to the
  * host (docs/08). Debug keys (A/D, arrows) feed [onDebugSteer] and the RESTART
@@ -65,6 +68,15 @@ fun OnionRollScreen(
     val screenScope = rememberCoroutineScope()
     val focusRequester = remember { FocusRequester() }
     LaunchedEffect(Unit) { focusRequester.requestFocus() }
+
+    // Sound effects + vibration (docs/games/02 — Audio & Haptics); no music in the MVP.
+    val appContext = LocalContext.current.applicationContext
+    val feedback = remember { OnionRollFeedback(appContext) }
+    DisposableEffect(feedback) { onDispose { feedback.release() } }
+    LaunchedEffect(state) {
+        val detector = CueDetector()
+        state.collect { frame -> detector.next(frame).forEach(feedback::play) }
+    }
 
     Box(
         modifier = Modifier
