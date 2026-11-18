@@ -33,6 +33,13 @@ class SoundBarrierGameTest {
         }
     }
 
+    @Test
+    fun `the entry draws its own HUD so the host does not double-draw`() {
+        // The screen renders SCORE/TIME itself; without this flag :feature:session
+        // overlays its placeholder "score: N" and "Run finished ..." on top of it.
+        assertTrue(soundBarrierEntry(FakeSoundSensor()).drawsOwnHud)
+    }
+
     /**
      * Ball parked at the resting height (no gravity, no thrust) with every gap at
      * the same height, so a test only has to wait for the track to arrive.
@@ -64,6 +71,20 @@ class SoundBarrierGameTest {
     }
 
     @Test
+    fun `the ball starts at the horizontal centre of the screen`() = runTest {
+        val game = SoundBarrierGame(
+            FakeSoundSensor(),
+            config = testConfig(),
+            timeSource = { testScheduler.currentTime },
+        )
+        val scope = RecordingScope(backgroundScope)
+        game.start(scope)
+        testScheduler.runCurrent()
+
+        assertEquals(0.5, game.state.value.ballX, 0.0)
+    }
+
+    @Test
     fun `the run ends with a win when the 60 second timer expires`() = runTest {
         val game = SoundBarrierGame(
             FakeSoundSensor(),
@@ -84,8 +105,8 @@ class SoundBarrierGameTest {
 
     @Test
     fun `missing a gap ends the run as a loss that keeps the score`() = runTest {
-        // Gap down at 0.20 while the ball rests at 0.50 -> the first barrier always
-        // finishes passing outside its gap (about 2.94s in).
+        // Gap down at 0.20 while the ball rests at 0.50 -> the first barrier sweeps
+        // across the ball's hitbox and crashes it (about 1.9s in).
         val game = SoundBarrierGame(
             FakeSoundSensor(),
             config = testConfig(gapCenter = 0.20),
@@ -100,7 +121,7 @@ class SoundBarrierGameTest {
 
         assertEquals(listOf(false), scope.finishes)
         assertTrue(game.state.value.finished)
-        assertEquals(EndReason.LEFT_BEHIND, game.state.value.endReason)
+        assertEquals(EndReason.HIT, game.state.value.endReason)
         assertEquals(0, game.state.value.score)
     }
 
@@ -115,7 +136,7 @@ class SoundBarrierGameTest {
         game.start(scope)
         testScheduler.runCurrent()
 
-        // First barrier clears at ~2.94s; the next one is not due until ~4.56s.
+        // First barrier clears at ~2.21s; the next one is not due until ~3.83s.
         testScheduler.advanceTimeBy(3_100)
         testScheduler.runCurrent()
 

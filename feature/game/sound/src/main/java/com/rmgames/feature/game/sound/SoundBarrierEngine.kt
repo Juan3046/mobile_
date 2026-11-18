@@ -2,8 +2,8 @@ package com.rmgames.feature.game.sound
 
 import kotlin.random.Random
 
-/** Why the run ended. [LEFT_BEHIND] = a barrier finished passing outside its gap. */
-enum class EndReason { TIME_UP, LEFT_BEHIND }
+/** Why the run ended. [HIT] = the ball's hitbox touched a bar. */
+enum class EndReason { TIME_UP, HIT }
 
 /** One barrier as the UI draws it, normalized to the play box (0..1 on both axes). */
 data class BarrierUi(
@@ -25,10 +25,10 @@ data class SoundBarrierUiState(
     val remainingMs: Long = 60_000,
     /** Ball centre height: 0 = floor, 1 = ceiling. */
     val ballY: Double = 0.5,
-    /** Fixed horizontal position of the ball, 0..1 (mirrors the config). */
-    val ballX: Double = 0.25,
-    /** Ball radius, 0..1 (mirrors the config) so the screen can scale it. */
-    val ballRadius: Double = 0.030,
+    /** Fixed horizontal position of the ball, 0..1 (mirrors the config): the centre. */
+    val ballX: Double = 0.5,
+    /** Ball half-size on each normalized axis, 0..1 (mirrors the config). */
+    val ballRadius: Double = 0.015,
     /** Latest microphone level, 0..1 (before the loud threshold is applied). */
     val soundLevel: Float = 0f,
     /** True while the input counts as sound (mic over threshold or the debug key). */
@@ -48,10 +48,21 @@ data class SoundBarrierUiState(
  */
 data class SoundBarrierConfig(
     val durationMs: Long = 60_000,
-    /** Fixed horizontal position of the ball: 0 = left edge, 1 = right edge. */
-    val playerX: Double = 0.25,
-    /** Ball radius, also its floor/ceiling clearance. */
-    val playerRadius: Double = 0.030,
+    /** Fixed horizontal position of the ball: the centre of the screen. */
+    val playerX: Double = 0.5,
+    /**
+     * Half-size of the ball's hitbox on each normalized axis (widths on X, heights
+     * on Y), which is also its floor/ceiling clearance. The screen draws the ball
+     * as a circle of `playerRadius × box height`, so the hitbox sits inside what
+     * the player sees: vertical contact is exact and horizontal contact is
+     * never wider than the drawn ball.
+     */
+    val playerRadius: Double = 0.015,
+    /**
+     * Share of the vertical speed the ball keeps when it rebounds off the floor or
+     * the ceiling: 1.0 = a perfect bounce, 0.0 = it stops dead on contact.
+     */
+    val bounceRestitution: Double = 0.8,
     /** Downward acceleration while silent, in screen-heights / s². */
     val gravity: Double = 2.2,
     /** Upward acceleration while sound is detected, in screen-heights / s². */
@@ -88,13 +99,13 @@ private data class LiveBarrier(
 
 /**
  * Pure run logic for Sound Barrier (Strategy): track scroll, ball physics,
- * gap placement and pass resolution. Free of Android, Compose and coroutines, so
- * it runs on plain JUnit with an injected clock ([tick] takes the elapsed ms and
- * the current sound state explicitly).
+ * gap placement, hitboxes and pass resolution. Free of Android, Compose and
+ * coroutines, so it runs on plain JUnit with an injected clock ([tick] takes the
+ * elapsed ms and the current sound state explicitly).
  *
- * Rules: docs/games/06-sound-barrier.md — +1 when the ball is inside the gap at
- * the instant a barrier finishes passing, Game Over keeping the score otherwise,
- * contact during the sweep is free, and the run is a win when the 60s timer expires.
+ * Rules: docs/games/06-sound-barrier.md — the ball's hitbox touching a bar ends
+ * the run (Contact), +1 when the ball is inside the gap at the instant a barrier
+ * finishes passing it, and the run is a win when the 60s timer expires.
  */
 class SoundBarrierEngine(
     private val config: SoundBarrierConfig = SoundBarrierConfig(),
@@ -128,6 +139,9 @@ class SoundBarrierEngine(
     init {
         require(config.spacing > 0.0) { "spacing must be positive" }
         require(config.durationMs > 0) { "durationMs must be positive" }
+        require(config.bounceRestitution in 0.0..1.0) {
+            "bounceRestitution must be between 0 and 1"
+        }
     }
 
     /** Barriers as the UI should draw them right now. */
@@ -146,8 +160,9 @@ class SoundBarrierEngine(
 
     /**
      * Advances the world to [nowMs]: moves the ball, scrolls the track, spawns and
-     * resolves barriers, and ends the run when the timer expires or a barrier
-     * finishes passing outside its gap. Ignored once the run is over.
+     * resolves barriers, and ends the run when the timer expires, when a barrier
+     * finishes passing outside its gap or when a bar touches the ball. Ignored
+     * once the run is over.
      *
      * @param soundDetected true while the microphone counts as loud (or the debug
      * key is held); it is the only thing that pushes the ball up.
@@ -163,9 +178,14 @@ class SoundBarrierEngine(
         stepBall(elapsedMs, soundDetected)
         spawnBarriers()
         resolvePassedBarriers()
+        checkBarrierContact()
     }
 
-    /** Integrates one vertical step. The floor and the ceiling clamp the ball. */
+    /**
+     * Integrates one vertical step. The floor and the ceiling **bounce** the ball:
+     * contact reverses its speed instead of pinning it, so a fall rebounds upward
+     * and a shout rebounds downward (docs/games/06-sound-barrier.md — Boundaries).
+     */
     private fun stepBall(nowMs: Long, soundDetected: Boolean) {
         val dt = (nowMs - lastStepMs) / 1000.0
         lastStepMs = nowMs
@@ -177,8 +197,12 @@ class SoundBarrierEngine(
         val nextY = ballY + ballVelocity * dt
         val floor = config.playerRadius
         val ceiling = 1.0 - config.playerRadius
+
         ballY = nextY.coerceIn(floor, ceiling)
-        if (ballY == floor || ballY == ceiling) ballVelocity = 0.0
+        // Only a boundary the ball tried to cross reverses it; reaching a boundary
+        // exactly is not a collision. Restitution < 1 bleeds energy off, so a fall
+        // settles after a couple of rebounds instead of ringing forever.
+        if (ballY != nextY) ballVelocity = -ballVelocity * config.bounceRestitution
     }
 
     /** Keeps exactly one barrier per [SoundBarrierConfig.spacing] of track. */
@@ -222,8 +246,11 @@ class SoundBarrierEngine(
 
     /**
      * Resolves every barrier whose trailing edge has just crossed the ball:
-     * inside the gap scores a point, outside it ends the run. Contact while the
-     * barrier is still sweeping across the ball does nothing on its own.
+     * inside the gap scores a point, outside it ends the run. Checked *before*
+     * [checkBarrierContact] so the instant the trailing edge clears the ball the
+     * pass is scored instead of crashing into the back of the bar; with the
+     * default geometry a contact fires long before that, so this branch is only
+     * a guard that keeps a miss from ever scoring.
      */
     private fun resolvePassedBarriers() {
         val worldX = worldXAt(elapsedMs)
@@ -235,13 +262,42 @@ class SoundBarrierEngine(
             val insideGap = ballY >= barrier.gapCenter - barrier.gapHalf &&
                 ballY <= barrier.gapCenter + barrier.gapHalf
             if (!insideGap) {
-                end(EndReason.LEFT_BEHIND)
+                end(EndReason.HIT)
                 return
             }
             score++
             index++
         }
         if (index > 0) barriers = barriers.drop(index)
+    }
+
+    /**
+     * Ball ↔ bar hitboxes. The ball occupies [SoundBarrierConfig.playerRadius]
+     * around its centre on both normalized axes — the same convention the floor
+     * and the ceiling use — and a bar pair occupies everything except its gap, so
+     * any overlap means the ball is touching a bar and the corridor stops right
+     * there (docs/games/06-sound-barrier.md — Contact). Points already earned are
+     * kept, exactly like a missed gap.
+     */
+    private fun checkBarrierContact() {
+        if (barriers.isEmpty()) return
+        val worldX = worldXAt(elapsedMs)
+        val ballLeft = config.playerX - config.playerRadius
+        val ballRight = config.playerX + config.playerRadius
+        val ballTop = ballY + config.playerRadius
+        val ballBottom = ballY - config.playerRadius
+
+        for (barrier in barriers) {
+            val left = xOf(barrier, worldX)
+            if (left + config.barWidth < ballLeft || left > ballRight) continue
+
+            val gapTop = barrier.gapCenter + barrier.gapHalf
+            val gapBottom = barrier.gapCenter - barrier.gapHalf
+            if (ballTop > gapTop || ballBottom < gapBottom) {
+                end(EndReason.HIT)
+                return
+            }
+        }
     }
 
     private fun xOf(barrier: LiveBarrier, worldX: Double): Double =

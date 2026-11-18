@@ -27,9 +27,9 @@ class SoundBarrierScreenTest {
     }
 
     @Test
-    fun `the banner tells a win from being left behind`() {
+    fun `the banner tells a win from a crash`() {
         assertEquals("TIME'S UP!", endBanner(EndReason.TIME_UP))
-        assertEquals("LEFT BEHIND!", endBanner(EndReason.LEFT_BEHIND))
+        assertEquals("CRASH!", endBanner(EndReason.HIT))
         assertEquals("", endBanner(null))
     }
 
@@ -39,6 +39,18 @@ class SoundBarrierScreenTest {
         assertEquals(1f, soundMeterFill(4f), 1e-6f)
         assertEquals(0.42f, soundMeterFill(0.42f), 1e-6f)
         assertTrue(soundMeterFill(0.6f) in 0f..1f)
+    }
+
+    @Test
+    fun `a bar is rounded but never more than its rim can hold`() {
+        // The gap rim is drawn with the same radius as the bar it sits on, so the
+        // rounding of the bar must stay inside the rim strip, and a thin bar must
+        // never ask for a radius wider than itself.
+        for (barWidth in listOf(2f, 12f, 60f, 134f, 900f)) {
+            val radius = barCornerRadius(barWidth)
+            assertTrue("radius=$radius <= half of $barWidth", radius <= barWidth / 2f)
+            assertTrue("rim=$GAP_RIM must hold 2 x radius=$radius", GAP_RIM >= 2f * radius)
+        }
     }
 
     @Test

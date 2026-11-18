@@ -17,11 +17,14 @@ player literally shouts or claps to climb and goes quiet to drop.
 - **Objective**: pass as many barriers as possible within 60 seconds.
 - **Pass**: **+1 point**, awarded only when the ball is inside the gap at the
   instant the barrier finishes passing it.
-- **Fail**: a barrier finishes passing with the ball outside its gap → the run ends
-  immediately (the screen advanced and left you behind). Points already earned are
-  kept.
-- **Contact costs nothing**: bumping into a bar during the sweep does not damage,
-  bounce or penalise the ball — only where it sits when the sweep ends matters.
+- **Fail**: the ball's hitbox touches a bar → the run ends immediately (the
+  corridor stops advancing). A ball that reaches the pass instant outside its gap
+  is always touching a bar already, so that case resolves as the same crash.
+  Points already earned are kept.
+- **Hitboxes**: the ball and both bars of every barrier have hitboxes. The ball
+  occupies `playerRadius` around its centre on each normalized axis, and the bars
+  occupy everything except their gap — grazing the rim of an opening counts as
+  touching it.
 
 ## Controls & Sensors
 - **Microphone (`android.permission.RECORD_AUDIO`)**:
@@ -29,8 +32,11 @@ player literally shouts or claps to climb and goes quiet to drop.
     stored (see [Persistence](#persistence-local-only-mvp)).
   - Level at or above the noise threshold → the ball accelerates **upward**.
   - Below the threshold → gravity pulls the ball **downward**.
-- **Boundaries**: the floor and ceiling stop the ball and zero its vertical
-  velocity. Running out of sound never kills on its own — only a missed gap does.
+- **Boundaries**: the floor and the ceiling make the ball **bounce back** instead
+  of pinning it. On contact the vertical speed is reversed and scaled by the
+  restitution factor (`bounceRestitution`, **0.8** by default: the ball keeps 80 %
+  of its speed, so a fall settles after a couple of rebounds). Running out of sound
+  never kills on its own — only a missed gap does.
 - **Permission**: requires runtime `android.permission.RECORD_AUDIO`.
 - **Desktop / Emulator Debug Only**: holding `Space` counts as sound, releasing it
   as silence (stripped from release builds).
@@ -39,17 +45,20 @@ player literally shouts or claps to climb and goes quiet to drop.
 - **Orientation**: portrait only.
 - **Duration**: fixed **60-second timer** (within the global 30–90s rule).
 - **Scroll style**: the barrier track travels right-to-left on its own; the ball
-  keeps a fixed horizontal position and only moves vertically. No camera view.
+  keeps a fixed horizontal position **at the centre of the screen** and only
+  moves vertically. No camera view.
 
 ## Rules & Scoring
 - **One run = one attempt** (global 2-attempts/day rule; best of 2 counts).
 - **Pass detection**: a barrier has passed the ball when its **trailing edge**
   crosses the ball's horizontal position. At that instant:
   - ball centre inside the gap → **+1 point**, run continues;
-  - otherwise → **Game Over**, points banked.
-- **Contact**: overlapping a bar during the sweep has no effect at all — no
-  bounce, no damage, no score. The player has the whole length of the sweep to
-  correct their height.
+  - otherwise → **Game Over**, points banked (normally resolved earlier as a
+    crash, since a ball outside its gap is already touching a bar).
+- **Contact**: the ball's hitbox touching a bar at **any moment** ends the run
+  immediately — the corridor stops advancing and the score is banked. There is no
+  bounce off the bars and no damage model: touching one is simply the end. The
+  player has the whole length of the sweep to line the ball up with the opening.
 - **Target movement**: barriers travel right to left; each one has its own gap
   size and vertical placement.
 - **Win / Finish State**: the timer reaches `0.0s` (`TIME'S UP!`) — the run ends as
@@ -74,8 +83,8 @@ Continuous time-based ramp over the 60-second run:
   counts as loud (this doubles as the "is the mic hearing me?" feedback).
 
 ## Game Over & Results Flow
-- **On a missed gap**: the corridor freezes, the ball drops out of frame and the
-  final score is shown (retained points).
+- **On a crash (the ball touches a bar)**: the corridor freezes and the final
+  score is shown (retained points).
 - **On Timer Expiration (60s)**: `TIME'S UP!` + final score summary.
 - **Retry**: respects remaining daily attempts (lock + countdown if 0 remain).
 
@@ -100,5 +109,4 @@ Continuous time-based ramp over the 60-second run:
 ## Open Questions
 - [ ] Noise threshold calibration (ambient noise, mic sensitivity, hysteresis so a
       single sample does not flicker the ball) during playtests.
-- [ ] Whether the floor and ceiling should bounce the ball instead of clamping it.
 - [ ] Whether a barrier that is *never* reached before `TIME'S UP!` should score.

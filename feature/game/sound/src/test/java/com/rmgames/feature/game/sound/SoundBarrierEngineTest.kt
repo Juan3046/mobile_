@@ -3,6 +3,7 @@ package com.rmgames.feature.game.sound
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Test
 import kotlin.random.Random
 
@@ -39,6 +40,7 @@ class SoundBarrierEngineTest {
         thrust: Double = 0.0,
         maxRiseSpeed: Double = 1.4,
         spawnX: Double = 1.15,
+        bounceRestitution: Double = 0.8,
     ) = SoundBarrierConfig(
         durationMs = durationMs,
         startSpeed = startSpeed,
@@ -52,6 +54,7 @@ class SoundBarrierEngineTest {
         thrust = thrust,
         maxRiseSpeed = maxRiseSpeed,
         spawnX = spawnX,
+        bounceRestitution = bounceRestitution,
     )
 
     private fun engine(config: SoundBarrierConfig = testConfig()) =
@@ -68,6 +71,26 @@ class SoundBarrierEngineTest {
         while (t < untilMs) {
             t = minOf(t + stepMs, untilMs)
             engine.tick(t, soundDetected = soundDetected)
+        }
+    }
+
+    /**
+     * Ticks 10 ms at a time until [condition] holds. The cap turns "this never
+     * happens" into a fast, readable failure instead of a suite that hangs (a rule
+     * that stops being reachable must not be able to freeze the build).
+     */
+    private fun tickUntil(
+        engine: SoundBarrierEngine,
+        soundDetected: Boolean,
+        maxTicks: Int = 10_000,
+        condition: () -> Boolean,
+    ) {
+        var ticks = 0
+        while (!condition()) {
+            if (++ticks > maxTicks) {
+                fail("condition never met after $maxTicks ticks (ballY=${engine.ballY}, v=${engine.ballVelocity})")
+            }
+            engine.tick(engine.elapsedMs + 10, soundDetected = soundDetected)
         }
     }
 
@@ -102,7 +125,10 @@ class SoundBarrierEngineTest {
     fun `barriers are spaced evenly along the track`() {
         val engine = engine(testConfig(spacing = 0.30))
 
-        runTo(engine, 20_000)
+        // The ball sits in the middle now, so at most three barriers are alive at
+        // once (the visible window is spawnX - playerX + barWidth = 0.75 widths).
+        // 15.1s is right after a spawn: worldX 5.13 holds 4.517 / 4.817 / 5.117.
+        runTo(engine, 15_100)
 
         val xs = engine.snapshot().map { it.x }.sorted()
         assertTrue("expected several barriers, got ${xs.size}", xs.size >= 3)
@@ -135,18 +161,57 @@ class SoundBarrierEngineTest {
     }
 
     @Test
-    fun `the floor and the ceiling stop the ball without ending the run`() {
-        val config = testConfig(gravity = 9.0, thrust = 9.0, spawnX = 1_000.0)
+    fun `the floor bounces the ball back up instead of pinning it`() {
+        val config = testConfig(gravity = 9.0, thrust = 0.0, spawnX = 1_000.0)
         val engine = SoundBarrierEngine(config, Random(seed = 42))
         engine.tick(0, soundDetected = false)
 
-        runTo(engine, 3_000)
-        assertEquals(config.playerRadius, engine.ballY, 1e-9)
-        assertFalse("hitting the floor must not kill", engine.isFinished)
+        // Fall until the ball actually touches the floor.
+        tickUntil(engine, soundDetected = false) { engine.ballY <= config.playerRadius + 1e-9 }
+        val touching = engine.ballY
+        engine.tick(engine.elapsedMs + 10, soundDetected = false)
 
-        runTo(engine, 6_000, soundDetected = true)
-        assertEquals(1.0 - config.playerRadius, engine.ballY, 1e-9)
-        assertFalse("hitting the ceiling must not kill", engine.isFinished)
+        assertTrue("expected to leave the floor, y=${engine.ballY}", engine.ballY > touching)
+        assertTrue("expected an upward bounce, v=${engine.ballVelocity}", engine.ballVelocity > 0.0)
+        assertFalse("bouncing off the floor must not kill", engine.isFinished)
+        assertTrue(engine.ballY <= 1.0 - config.playerRadius)
+    }
+
+    @Test
+    fun `the ceiling bounces the ball back down instead of pinning it`() {
+        val config = testConfig(gravity = 0.0, thrust = 9.0, spawnX = 1_000.0)
+        val engine = SoundBarrierEngine(config, Random(seed = 42))
+        engine.tick(0, soundDetected = false)
+
+        // Rise until the ball actually touches the ceiling (sound is what lifts it).
+        tickUntil(engine, soundDetected = true) { engine.ballY >= 1.0 - config.playerRadius - 1e-9 }
+        val touching = engine.ballY
+        engine.tick(engine.elapsedMs + 10, soundDetected = true)
+
+        assertTrue("expected to leave the ceiling, y=${engine.ballY}", engine.ballY < touching)
+        assertTrue("expected a downward bounce, v=${engine.ballVelocity}", engine.ballVelocity < 0.0)
+        assertFalse("bouncing off the ceiling must not kill", engine.isFinished)
+        assertTrue(engine.ballY >= config.playerRadius)
+    }
+
+    @Test
+    fun `a bounce keeps the ball inside the corridor at any strength`() {
+        // A perfectly elastic bounce must still not let the ball escape the box.
+        val config = testConfig(
+            gravity = 9.0,
+            thrust = 9.0,
+            spawnX = 1_000.0,
+            bounceRestitution = 1.0,
+        )
+        val engine = SoundBarrierEngine(config, Random(seed = 42))
+        engine.tick(0, soundDetected = false)
+
+        runTo(engine, 10_000, soundDetected = false)
+
+        val floor = config.playerRadius
+        val ceiling = 1.0 - config.playerRadius
+        assertTrue("y=${engine.ballY}", engine.ballY >= floor && engine.ballY <= ceiling)
+        assertFalse(engine.isFinished)
     }
 
     // --- Scoring -------------------------------------------------------------
@@ -156,64 +221,45 @@ class SoundBarrierEngineTest {
         val engine = engine()
         engine.tick(0, soundDetected = false)
 
-        // World travel to finish passing: spawnX - (playerX - barWidth) = 1.00
-        // widths at 0.34 widths/s -> the first barrier clears at ~2.94s.
-        runTo(engine, 4_000)
+        // World travel to finish passing: spawnX - (playerX - barWidth) = 0.75
+        // widths at 0.34 widths/s -> the first barrier clears at ~2.21s, while
+        // the next one is not due until ~3.82s.
+        runTo(engine, 3_000)
 
         assertEquals(1, engine.score)
         assertFalse(engine.isFinished)
     }
 
     @Test
-    fun `a barrier passing with the ball outside the gap ends the run`() {
-        // Gap down at 0.20, ball parked at 0.50 -> never inside.
+    fun `touching a bar ends the run while it is still sweeping past`() {
+        // Gap down at 0.20, ball parked at 0.50 -> the bar sweeps straight across
+        // the ball's hitbox. Hitting it must stop the corridor before the barrier
+        // even finishes passing (docs/games/06-sound-barrier.md — Contact).
         val engine = engine(testConfig(gapCenterMin = 0.20, gapCenterMax = 0.20))
         engine.tick(0, soundDetected = false)
 
-        runTo(engine, 4_000)
+        runTo(engine, 2_000)
 
-        assertTrue(engine.isFinished)
-        assertEquals(EndReason.LEFT_BEHIND, engine.endReason)
+        assertTrue("the run must end on contact", engine.isFinished)
+        assertEquals(EndReason.HIT, engine.endReason)
         assertEquals(0, engine.score)
     }
 
     @Test
-    fun `overlapping a barrier does not end the run before it has finished passing`() {
-        val engine = engine(testConfig(gapCenterMin = 0.20, gapCenterMax = 0.20))
-        engine.tick(0, soundDetected = false)
-
-        // Leading edge reaches the ball at 0.90 widths -> ~2.65s; the trailing edge
-        // only clears it at 1.00 widths -> ~2.94s. In between the ball sits inside
-        // the barrier and nothing may happen (spec: contact costs nothing).
-        runTo(engine, 2_700)
-
-        val barrier = engine.snapshot().first()
-        assertTrue("barrier should have reached the ball", barrier.x <= 0.25)
-        assertTrue("barrier should not have left yet", barrier.x + barrier.width > 0.25)
-        assertEquals(0, engine.score)
-        assertFalse("contact must not kill mid-sweep", engine.isFinished)
-
-        runTo(engine, 4_000)
-        assertTrue(engine.isFinished)
-        assertEquals(EndReason.LEFT_BEHIND, engine.endReason)
-    }
-
-    @Test
-    fun `leaving the gap before the barrier finishes passing forfeits the point`() {
-        // The ball starts inside the gap and only climbs out while the barrier is
-        // still sweeping past: the position at the end of the sweep is what counts.
+    fun `climbing out of the gap while the barrier sweeps crashes the run`() {
+        // The ball starts inside the gap and pushes its way into the upper bar
+        // while the barrier is still crossing it: the hitbox decides, not the
+        // instant the sweep ends.
         val engine = engine(testConfig(thrust = 50.0, maxRiseSpeed = 2.0))
         engine.tick(0, soundDetected = false)
-        runTo(engine, 2_700)
+        runTo(engine, 1_900)
         assertEquals(0.5, engine.ballY, 1e-9)
-        assertEquals(0, engine.score)
-        assertFalse(engine.isFinished)
+        assertFalse("still sweeping, still alive", engine.isFinished)
 
-        engine.tick(2_750, soundDetected = true)
-        runTo(engine, 4_000, soundDetected = true)
+        runTo(engine, 2_200, soundDetected = true)
 
         assertTrue(engine.isFinished)
-        assertEquals(EndReason.LEFT_BEHIND, engine.endReason)
+        assertEquals(EndReason.HIT, engine.endReason)
         assertEquals(0, engine.score)
     }
 

@@ -137,6 +137,9 @@ fun soundBarrierEntry(sensor: SoundSensor): GameEntry {
     val game = SoundBarrierGame(sensor)
     return GameEntry(
         game = game,
+        // The screen draws its own SCORE/TIME and end-of-run banner, so the host
+        // must not overlay its placeholder readouts on top of them.
+        drawsOwnHud = true,
         requiredPermissions = listOf(Manifest.permission.RECORD_AUDIO),
     ) { SoundBarrierScreen(game) }
 }
