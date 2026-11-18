@@ -81,7 +81,11 @@
   again, lock, abandon) replaces `SessionViewModel`; `SessionRoute` draws intro, countdown, host
   score chip and the Result screen (03 §3.3). Play now spends the attempt (on Start). Fixed after
   device testing: a wide score ("4.27" s) wrapped onto two lines and overlapped the New-best
-  stamp — `ScoreCounter` now stays on one line and shrinks to fit (`fitScoreFontSize`). Arcade/playful, high
+  stamp — `ScoreCounter` now stays on one line and shrinks to fit (`fitScoreFontSize`).
+  **Status (2026-11-18): PR 6 done** — attempts, daily bests (60 days) and settings persist on device
+  through `SnapshotStore` → `DataStoreSnapshotStore` (+ versioned codecs), loaded at startup by
+  `AppContainer`/`RmApplication` in `:app`. Built to swap in a cloud store without touching screens
+  (docs/04 "Data layer"). Verified on device: attempts and best survive a force-stop. Arcade/playful, high
   contrast, readable at a glance, portrait, dark-first with a light variant.
 - **Tokens**: colour scheme (brand + per-game accent colours), typography
   (one display font for titles/scores + one UI font), shapes, spacing, elevation,
@@ -138,7 +142,7 @@ paginated top-50 reads, security rules. Separate PRs after D.1–D.3 work offlin
 | 3 | `RmTheme` tokens + fonts — **done** | `:core:common`, `:app` | 2 |
 | 4 | UI kit components (+ screenshot-free unit tests for logic) — **done** | `:core:common` | 3 |
 | 5 | Seeded season shuffle selector | `:core:data` | 1 |
-| 6 | DataStore attempts + settings repos | `:core:data` | 1 |
+| 6 | DataStore attempts + settings repos — **done** (+ daily bests) | `:core:data` | 1 |
 | 7 | `:core:audio` (director, settings flow, focus, no main-thread work) | `:core:audio` | 6 |
 | 8 | Main screen (daily game, attempts, lock + countdown) — **done** (in-memory repos until 6) | `:feature:home`, `:app` nav | 4, 5, 6 |
 | 9 | Session: pre-run countdown, attempt consumption, result screen — **done** (in-memory repos until 6) | `:feature:session` | 4, 6 |

@@ -36,6 +36,7 @@ import com.rmgames.core.common.ui.RmTopBar
 import com.rmgames.core.common.ui.SeasonStrip
 import com.rmgames.core.common.ui.SectionHeader
 import com.rmgames.core.common.ui.gameDurationLabel
+import com.rmgames.core.common.ui.gameScoreText
 import com.rmgames.core.common.ui.gameSensor
 import com.rmgames.core.common.ui.rememberRemaining
 import com.rmgames.core.data.AttemptRepository
@@ -142,7 +143,8 @@ fun HomeScreen(
         ) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 AttemptsPips(state.attemptsLeft, total = state.attemptsTotal)
-                Text("Best today: ${state.bestToday ?: "—"}", style = MaterialTheme.typography.bodySmall, color = c.onSurfaceVariant)
+                val best = state.bestToday?.let { gameScoreText(state.gameId, it) }
+                Text("Best today: ${best?.let { "${it.value} ${it.unit}" } ?: "—"}", style = MaterialTheme.typography.bodySmall, color = c.onSurfaceVariant)
             }
             if (state.locked) {
                 RmButton("Back at 12:00", {}, Modifier.fillMaxWidth(), size = RmButtonSize.Xl, icon = RmIcons.Lock, enabled = false)

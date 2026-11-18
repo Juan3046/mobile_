@@ -7,7 +7,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -17,9 +21,6 @@ import androidx.navigation.compose.rememberNavController
 import com.rmgames.core.common.GameRegistry
 import com.rmgames.core.common.theme.RmTheme
 import com.rmgames.core.common.ui.RmTransitions
-import com.rmgames.core.data.DayClock
-import com.rmgames.core.data.InMemoryAttemptRepository
-import com.rmgames.core.data.InMemoryScoreRepository
 import android.content.pm.ApplicationInfo
 import com.rmgames.core.sensors.AndroidAccelerometerSensor
 import com.rmgames.core.sensors.AndroidCompassSensor
@@ -33,15 +34,19 @@ import com.rmgames.feature.game.soda.sodaShakeEntry
 import com.rmgames.feature.home.HomeRoute
 import com.rmgames.feature.session.SessionRoute
 
-/** Phase 1b shell: registry-driven nav. Full flows (onboarding/result/history) land in Phase 2. */
+/** App shell: loads the persisted state, then the registry-driven nav (Main → session → Result). */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val container = (application as RmApplication).container
         setContent {
             // Direction A "Chunky Cabinet" (docs/09 §2A). Surface paints the themed background.
             RmTheme {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    RMGamesNav()
+                    // Saved attempts/scores/settings load from disk (a few ms) before the first screen.
+                    var ready by remember { mutableStateOf(container.isLoaded) }
+                    LaunchedEffect(container) { container.load(); ready = true }
+                    if (ready) RMGamesNav(container)
                 }
             }
         }
@@ -71,13 +76,13 @@ private fun rememberGameRegistry(): GameRegistry {
 }
 
 @Composable
-fun RMGamesNav() {
+fun RMGamesNav(container: AppContainer) {
     val nav = rememberNavController()
     val registry = rememberGameRegistry()
-    // Shared for the whole app. In-memory until the DataStore/Room repos land (plan 09 PR 6, 10).
-    val attempts = remember { InMemoryAttemptRepository() }
-    val scores = remember { InMemoryScoreRepository() }
-    val clock = remember { DayClock() }
+    // App-wide, persisted repositories (AppContainer chooses where they are stored).
+    val attempts = container.attempts
+    val scores = container.scores
+    val clock = container.clock
     val context = LocalContext.current
     val debuggable = remember { (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0 }
     NavHost(
