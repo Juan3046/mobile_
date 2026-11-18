@@ -40,6 +40,7 @@ dependencies {
     implementation(project(":core:vision"))
     implementation(project(":feature:home"))
     implementation(project(":feature:session"))
+    implementation(project(":feature:settings"))
     implementation(project(":feature:game:escape"))
     implementation(project(":feature:game:onion"))
     implementation(project(":feature:game:blink"))

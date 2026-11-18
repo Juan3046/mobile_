@@ -15,7 +15,7 @@ Also visible (per global rules):
 - Debug reset-attempts button (test phase only).
 
 Implementation (Phase 2, Direction A — `HomeRoute`/`HomeScreen` in `:feature:home`):
-- Top bar with the "RM GAMES" wordmark; settings gear only once the Settings screen exists.
+- Top bar with the "RM GAMES" wordmark and the settings gear (→ §3.6).
 - Season strip (season N, day d of 7, the player's season points).
 - "Today's game" header with a countdown chip ("Ends in HH:MM:SS"; "Next game in" when locked).
 - `GameCard`: thumbnail (generated fallback until each game ships art), sensor chip, duration, title, how-to (the game's `description`).
@@ -48,6 +48,16 @@ Implementation (Phase 2 — `SessionRoute` in `:feature:session`, run logic in `
 
 ## 3.5 Locked / No-Attempts State
 - Not a separate screen: Play disabled + countdown to next 12:00 noon + best of the day.
+
+## 3.6 Settings
+Opened from the gear on the Main screen (`SettingsRoute` in `:feature:settings`, plan 09 Decision 3). Groups, each a card of list rows:
+- **Sound**: Music volume (slider, saved on release; 0 % = off) and Sound effects (on/off). Applied by `:core:audio` (plan 09 PR 7).
+- **Feedback**: Vibration (on/off) — already drives button and countdown haptics (`LocalUiFeedback`).
+- **Player**: Nick, read-only. Until onboarding exists (PR 15) it explains the nick is chosen once and never editable.
+- **Privacy**: everything is stored only on this phone; no account, no personal data (update when online ranking lands).
+- **Credits & licences**: every bundled asset with its licence — must match `CREDITS.md` (unit-tested).
+- **Debug** (debug builds only): reset today's attempts.
+- App version at the bottom. Settings persist through `SettingsRepository` (docs/04 "Data layer").
 
 ## Reserved / To Define
 - [ ] Game screen per minigame (HUD per `games/` spec; timer; sensor feedback).

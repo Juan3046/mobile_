@@ -85,7 +85,12 @@
   **Status (2026-11-18): PR 6 done** — attempts, daily bests (60 days) and settings persist on device
   through `SnapshotStore` → `DataStoreSnapshotStore` (+ versioned codecs), loaded at startup by
   `AppContainer`/`RmApplication` in `:app`. Built to swap in a cloud store without touching screens
-  (docs/04 "Data layer"). Verified on device: attempts and best survive a force-stop. Arcade/playful, high
+  (docs/04 "Data layer"). Verified on device: attempts and best survive a force-stop.
+  **Status (2026-11-18): PR 11 done** — new `:feature:settings` (03 §3.6): music volume, SFX, vibration
+  (live: drives `LocalUiFeedback` haptics), nick placeholder, privacy note, credits (synced with
+  `CREDITS.md` by a test), debug reset, version. Gear on Main. Kit gained `RmListItem`,
+  `RmListDivider`, `RmSwitch`, `RmSlider`. Music/SFX values take effect when `:core:audio` lands (PR 7).
+  Not built: "force daily game" debug (the Main debug launcher already opens any game). Arcade/playful, high
   contrast, readable at a glance, portrait, dark-first with a light variant.
 - **Tokens**: colour scheme (brand + per-game accent colours), typography
   (one display font for titles/scores + one UI font), shapes, spacing, elevation,
@@ -147,7 +152,7 @@ paginated top-50 reads, security rules. Separate PRs after D.1–D.3 work offlin
 | 8 | Main screen (daily game, attempts, lock + countdown) — **done** (in-memory repos until 6) | `:feature:home`, `:app` nav | 4, 5, 6 |
 | 9 | Session: pre-run countdown, attempt consumption, result screen — **done** (in-memory repos until 6) | `:feature:session` | 4, 6 |
 | 10 | Room scores + daily best + local best | `:core:data` | 6 |
-| 11 | Settings screen | `:feature:settings`, `:app` nav | 4, 6, 7 |
+| 11 | Settings screen — **done** (sound applies with 7) | `:feature:settings`, `:app` nav | 4, 6, 7 |
 | 12 | Music & UI SFX wiring across screens | `:app`, features | 7, 8, 9 |
 | 13 | Ranking / Seasons History (local data first) | `:feature:ranking` | 10 |
 | 14 | App icon, splash, edge-to-edge | `:app` | 3 |

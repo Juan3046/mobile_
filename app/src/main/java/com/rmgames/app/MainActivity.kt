@@ -33,6 +33,11 @@ import com.rmgames.feature.game.onion.onionRollEntry
 import com.rmgames.feature.game.soda.sodaShakeEntry
 import com.rmgames.feature.home.HomeRoute
 import com.rmgames.feature.session.SessionRoute
+import com.rmgames.feature.settings.SettingsRoute
+import com.rmgames.core.common.ui.LocalUiFeedback
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import android.content.Context
 
 /** App shell: loads the persisted state, then the registry-driven nav (Main → session → Result). */
 class MainActivity : ComponentActivity() {
@@ -46,7 +51,12 @@ class MainActivity : ComponentActivity() {
                     // Saved attempts/scores/settings load from disk (a few ms) before the first screen.
                     var ready by remember { mutableStateOf(container.isLoaded) }
                     LaunchedEffect(container) { container.load(); ready = true }
-                    if (ready) RMGamesNav(container)
+                    if (ready) {
+                        val settings by container.settings.settings.collectAsStateWithLifecycle()
+                        CompositionLocalProvider(LocalUiFeedback provides uiFeedbackFor(settings)) {
+                            RMGamesNav(container)
+                        }
+                    }
                 }
             }
         }
@@ -102,6 +112,17 @@ fun RMGamesNav(container: AppContainer) {
                 clock = clock,
                 onPlay = { gameId -> nav.navigate("session/$gameId") },
                 debugTools = debuggable,
+                onSettings = { nav.navigate("settings") },
+            )
+        }
+        composable("settings") {
+            SettingsRoute(
+                repository = container.settings,
+                appVersion = remember { appVersion(context) },
+                onBack = { nav.popBackStack() },
+                onResetAttempts = if (debuggable) {
+                    { attempts.reset(clock.dayIndex()) }
+                } else null,
             )
         }
         composable("session/{gameId}") { backStack ->
@@ -119,3 +140,6 @@ fun RMGamesNav(container: AppContainer) {
         }
     }
 }
+
+private fun appVersion(context: Context): String =
+    runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull().orEmpty()

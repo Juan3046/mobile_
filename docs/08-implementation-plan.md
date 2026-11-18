@@ -31,6 +31,8 @@ Shared (frozen in Phase 1a — built together, no cross-module edits afterwards)
                              Seasons History button, attempts indicator, debug reset)
 :feature:session            game host: timer, 1 run = 1 attempt, best-of-2,
                              lock + countdown, result screen
+:feature:settings           settings screen (sound, vibration, nick, privacy,
+                             credits & licences, debug) — Phase 2
 ```
 
 Ownership: **P1 Escape · P2 Onion · P3 Blink · P4 Compass + Soda.** Shared modules
