@@ -11,11 +11,15 @@
     <application
         android:name=".RmApplication"
         android:label="RM Games"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:theme="@style/Theme.RmGames"
         android:supportsRtl="true">
+        <!-- Starts on the splash theme; MainActivity swaps to Theme.RmGames (plan 09 PR 14). -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:theme="@style/Theme.RmGames.Starting"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

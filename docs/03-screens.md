@@ -2,6 +2,8 @@
 
 > Portrait only, English copy. Flow: onboarding (first launch) → main → game → result; main → ranking/history.
 
+Launch: the system splash (app icon on the theme background) stays until saved attempts, scores and settings are loaded. Screens draw edge-to-edge, content kept clear of the status and navigation bars.
+
 ## 3.1 Main Screen (defined)
 Required elements:
 1. Game title.

@@ -1,6 +1,13 @@
 package com.rmgames.app
 
+import android.content.res.Configuration
 import android.os.Bundle
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.activity.ComponentActivity
@@ -45,8 +52,13 @@ import android.content.Context
 /** App shell: loads the persisted state, then the registry-driven nav (Main → session → Result). */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         val container = (application as RmApplication).container
+        // Splash (plan 09 PR 14): must be installed before super.onCreate; stays until the
+        // saved state is in memory. Loading starts here, not only from the composition.
+        installSplashScreen().setKeepOnScreenCondition { AppChrome.shouldKeepSplash(container.isLoaded) }
+        super.onCreate(savedInstanceState)
+        lifecycleScope.launch { container.load() }
+        enableEdgeToEdge(systemBarStyle(), systemBarStyle())
         // Music pauses in the background and resumes in the foreground (plan 09 §2B).
         lifecycle.addObserver(LifecycleEventObserver { _, event ->
             when (event) {
@@ -58,7 +70,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             // Direction A "Chunky Cabinet" (docs/09 §2A). Surface paints the themed background.
             RmTheme {
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                // Edge-to-edge: screens stay inside the safe area; behind the bars the
+                // window background and bar scrims show the same RmTheme background colour.
+                Surface(modifier = Modifier.fillMaxSize().safeDrawingPadding(), color = MaterialTheme.colorScheme.background) {
                     // Saved attempts/scores/settings load from disk (a few ms) before the first screen.
                     var ready by remember { mutableStateOf(container.isLoaded) }
                     LaunchedEffect(container) { container.load(); ready = true }
@@ -74,6 +88,16 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+        }
+    }
+
+    /** Bars painted with the RmTheme background; icons follow the light/dark theme. */
+    private fun systemBarStyle(): SystemBarStyle {
+        val night = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        return if (AppChrome.lightBarIcons(darkTheme = night == Configuration.UI_MODE_NIGHT_YES)) {
+            SystemBarStyle.dark(AppChrome.DARK_BAR_SCRIM)
+        } else {
+            SystemBarStyle.light(AppChrome.LIGHT_BAR_SCRIM, AppChrome.DARK_BAR_SCRIM)
         }
     }
 }

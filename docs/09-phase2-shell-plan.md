@@ -11,7 +11,7 @@
 | Area | State |
 |---|---|
 | Games | 4 of 5 playable (Onion, Blink, Compass, Soda); Escape is still the Phase 0 skeleton. |
-| `:app` | `MaterialTheme` default, `home` + `session/{gameId}` routes, permission gate. No `res/` (no app icon, no splash, no theme XML). |
+| `:app` | `MaterialTheme` default, `home` + `session/{gameId}` routes, permission gate. No `res/` (no app icon, no splash, no theme XML). *(Phase 2 since: RmTheme, icon, splash, edge-to-edge, persisted repos — see Status notes.)* |
 | `:feature:home` | Phase 1b launcher: a plain list of all games with PLAY buttons. |
 | `:feature:session` | Host for one run + placeholder `score: N` / `Run finished` texts. No timer, attempts or result screen. |
 | `:core:data` | Pure stubs: `DayClock` (noon boundary), `DailyGameSelector` (`day % count`), in-memory attempts, score/season interfaces. No Room, DataStore or Firebase yet. |
@@ -103,7 +103,17 @@
   pure `SeasonHistory.build` from `ScoreRepository.history()`. Uses the 60-day DataStore bests
   instead of Room (PR 10 still pending for longer history). Points/standings wait for stream E; the
   Main season strip now hides points until then. Kit gained `RmTabs` and a calendar icon. Verified by
-  unit tests, build and previews — not yet seen on a device (user away). Arcade/playful, high
+  unit tests, build and previews — not yet seen on a device (user away).
+  **Status (2026-11-18): PR 14 done** — `:app` chrome: adaptive launcher icon (`mipmap-anydpi-v26`,
+  vector layers: deep-plum background, hot-pink arcade button with dark outline + hard ledge and a
+  light play triangle inside the 66dp safe zone, single-colour monochrome layer for Android 13
+  themed icons); AndroidX SplashScreen (`core-splashscreen` 1.0.1, `Theme.RmGames.Starting` →
+  `Theme.RmGames`, icon on `rm_background`, kept until `AppContainer.isLoaded`); edge-to-edge via
+  `enableEdgeToEdge` with bars painted in the RmTheme background (light/dark icons per theme) and
+  `safeDrawingPadding()` on the root `Surface`, so no feature screen changed. Rules live in
+  `AppChrome` (JVM-tested); a resource test checks the icon layers, palette, safe zone, manifest
+  and starting theme. Verified: unit tests + `:app:assembleDebug`. Not checked on a device yet.
+  Arcade/playful, high
   contrast, readable at a glance, portrait, dark-first with a light variant.
 - **Tokens**: colour scheme (brand + per-game accent colours), typography
   (one display font for titles/scores + one UI font), shapes, spacing, elevation,
@@ -168,7 +178,7 @@ paginated top-50 reads, security rules. Separate PRs after D.1–D.3 work offlin
 | 11 | Settings screen — **done** (sound applies with 7) | `:feature:settings`, `:app` nav | 4, 6, 7 |
 | 12 | Music & UI SFX wiring across screens | `:app`, features | 7, 8, 9 |
 | 13 | Ranking / Seasons History (local data first) — **done** (bests from DataStore, 60 days) | `:feature:ranking` | 10 |
-| 14 | App icon, splash, edge-to-edge | `:app` | 3 |
+| 14 | App icon, splash, edge-to-edge — **done** | `:app` | 3 |
 | 15 | Firebase: auth + nick onboarding | `:core:data`, `:feature:onboarding` | 8 |
 | 16 | Firebase: daily-best upload + ranking reads | `:core:data`, `:feature:ranking` | 13, 15 |
 | 17 | Thumbnails contract + fallback (Decision 5); owners add theirs | `:core:common`, games | 4 |

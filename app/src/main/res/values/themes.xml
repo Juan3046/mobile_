@@ -1,13 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Window theme behind Compose. No action bar: RmTopBar draws the app's own bars.
-         Bar colours match RmPalette.Light.background (docs/09 §2A). Splash + edge-to-edge
-         land in plan 09 PR 14. -->
+         Bar colours match RmPalette.Light.background (docs/09 §2A); MainActivity then goes
+         edge-to-edge with the same colours (AppChrome, plan 09 PR 14). -->
     <style name="Theme.RmGames" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@color/rm_background</item>
         <item name="android:statusBarColor">@color/rm_background</item>
         <item name="android:navigationBarColor">@color/rm_background</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:windowLightNavigationBar">true</item>
+    </style>
+
+    <!-- Launch theme (AndroidX SplashScreen): the icon foreground on the app background,
+         kept until the saved state is loaded, then Theme.RmGames. -->
+    <style name="Theme.RmGames.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/rm_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.RmGames</item>
     </style>
 </resources>

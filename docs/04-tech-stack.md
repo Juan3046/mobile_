@@ -8,6 +8,7 @@
 - **Storage (MVP)**: local-first (Room/DataStore cache, offline by default) + **Firebase Spark plan (free, no billing)** for the shared scoreboard.
 - **Backend (free only)**: Firestore (50K reads / 20K writes per day quota) + Anonymous Auth. No Cloud Functions, no phone auth (both require Blaze) — seasons and daily game are resolved deterministically on-device.
 - **UI**: Jetpack Compose + Material 3, themed by `RmTheme` in `:core:common` (`com.rmgames.core.common.theme`) — Direction A "Chunky Cabinet", dark-first with a light variant; spec in `design-system/`. Screens use `RmTheme.colors / dimens / motion` and `MaterialTheme` roles, never raw colour or size literals, and build from the UI kit in `com.rmgames.core.common.ui` (`RmButton`, `GameCard`, `AttemptsPips`, …).
+- **App chrome** (`:app`): adaptive launcher icon (vector layers + monochrome), AndroidX SplashScreen (`androidx.core:core-splashscreen`) kept until saved data loads, edge-to-edge (`enableEdgeToEdge` + safe-drawing insets on the root surface).
 - **Fonts**: Bungee, Rubik and JetBrains Mono, bundled in `:core:common` `res/font` under the SIL OFL 1.1 (see `CREDITS.md`).
 - **Testing (TDD mandatory)**: JUnit + MockK for unit tests, Espresso for UI tests. No CI — tests run locally (`:module:testDebugUnitTest`) and must be green before opening a PR.
 
