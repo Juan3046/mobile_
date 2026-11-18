@@ -14,7 +14,9 @@ A stationary crosshair is fixed in the center of the screen. Targets ("dianas") 
 ## Controls & Sensors
 - **Front-Facing Camera (`CameraX` + ML Kit Face Detection)**:
   - Detects eye-open probability (`leftEyeOpenProbability` and `rightEyeOpenProbability`).
-  - A blink is triggered when both eye probabilities drop below the detection threshold (e.g. $< 0.25$) and then return above it (or instantly upon eye closure with a minimum cooldown).
+  - A blink is triggered when **both** eye probabilities drop below the detection threshold and then return above it (or instantly upon eye closure with a minimum cooldown).
+  - **Decided (playtest)**: the threshold stays at **0.5**, and the face counts as *open* as soon as **either** eye is at or above it. ML Kit reports the two eyes very unevenly off a webcam — an eye at `0.03` while the other reads `1.00`, for seconds at a time — so requiring *both* eyes to be open used to report open faces as closed and swallow the blink that followed. Consequence: a wink (one eye only) is **not** a trigger.
+  - **Decided (playtest)**: frames are analysed at **320×240**. ML Kit's per-frame time is what caps the sampling rate, and sampling has to stay faster than a blink (200–400 ms) or the closed-eye state is never observed and no shot fires. The 640×480 default managed only **2.78 samples/s** (median 327 ms between them) and caught **6** blinks in a 48.6 s run; at 320×240 it manages **8.57 samples/s** (median 88 ms) and catches **14**.
 - **Shot Mechanism**: Blinking fires an arrow instantly toward the center crosshair.
 - **Cooldown**: A short firing cooldown (e.g. 300 ms) prevents accidental multi-firing from a single prolonged blink.
 - **Permission**: Requires runtime `android.permission.CAMERA`.
@@ -78,4 +80,4 @@ Continuous time-based ramp over the 60-second run:
 
 ## Open Questions
 - [x] Decided: Fixed 60-second timer; retain accumulated points on bomb hit; real-time camera thumbnail in corner; targets travel left-to-right across lanes; instant raycast arrow shot on blink detection; score = total points earned.
-- [ ] ML Kit eye detection threshold tuning (e.g. `< 0.25` open probability) during initial implementation playtests.
+- [x] Decided (emulator playtests, 2026-11-17): threshold stays at **0.5** under the "both eyes below it" rule. Measured webcam readings — open faces logged as `1.00 / 0.03`, `0.98 / 0.23`, `1.00 / 0.11` (the old "both eyes must be open" rule reported all of them CLOSED) versus real blinks at `0.26 / 0.17`, `0.33 / 0.40`, `0.06 / 0.45` — mean a `< 0.25` threshold would have swallowed the `0.26` and `0.33` blinks, while `0.5` separates the two populations cleanly.
