@@ -21,6 +21,8 @@ import com.rmgames.feature.game.compass.compassChaosEntry
 import com.rmgames.feature.game.escape.escapePorubaEntry
 import com.rmgames.feature.game.onion.onionRollEntry
 import com.rmgames.feature.game.soda.sodaShakeEntry
+import com.rmgames.feature.game.sound.AndroidSoundSensor
+import com.rmgames.feature.game.sound.soundBarrierEntry
 import com.rmgames.feature.home.HomeScreen
 import com.rmgames.feature.session.SessionScreen
 
@@ -37,7 +39,7 @@ class MainActivity : ComponentActivity() {
 }
 
 /**
- * Composition root: the single place the five games are wired into the
+ * Composition root: the single place the six games are wired into the
  * [GameRegistry]. Game authors never edit this file — each module owns its frozen
  * `<game>Entry(...)` factory (docs/08-implementation-plan.md — Game Hosting Contract).
  */
@@ -53,6 +55,7 @@ private fun rememberGameRegistry(): GameRegistry {
                 blinkSniperEntry(MlKitBlinkDetector(context, lifecycleOwner)),
                 compassChaosEntry(AndroidCompassSensor(context)),
                 sodaShakeEntry(AndroidAccelerometerSensor(context)),
+                soundBarrierEntry(AndroidSoundSensor()),
             ),
         )
     }

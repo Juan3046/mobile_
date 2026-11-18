@@ -25,7 +25,7 @@
    - Your `@Composable` screen: renders your game's state only — the `Game` object is the single gateway to the host (screens never call `onScore`/`onFinished` directly).
    - Your frozen factory `xxxEntry(...)`: the sensor/detector parameter is injected by `:app` — receive it, hand it to your `Game`, never change the signature.
 4. **Test first** (`AGENTS.md` §5): JVM unit tests using the fakes (`FakeGyroscopeSensor`, `FakeAccelerometerSensor`, `FakeCompassSensor`, `FakeBlinkDetector`) — red → green. Then run the **full suite** before opening the PR: `./gradlew testDebugUnitTest` (JDK 17 — see "How to Build" in `README.md`). Red tests block the PR.
-5. **Run on a device**: install the app → the home screen lists all five games → PLAY runs yours through the session host (score readout on top). Blink's camera permission is requested automatically by the `:app` gate.
+5. **Run on a device**: install the app → the home screen lists all six games → PLAY runs yours through the session host (score readout on top). Blink's camera permission is requested automatically by the `:app` gate.
 6. **PR**: English, small (your module only), one reviewer, squash-merge. Update your `docs/games/0X-*.md` in the same PR whenever rules, scoring or controls change.
 
 ## Agent Rules

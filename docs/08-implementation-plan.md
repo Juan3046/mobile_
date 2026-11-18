@@ -9,6 +9,7 @@ Games (one owner each — Phase 1b):
 :feature:game:blink         P3 — Game 03 (front camera → :core:vision)
 :feature:game:compass       P4 — Game 04 (magnetometer)
 :feature:game:soda          P4 — Game 05 (accelerometer)
+:feature:game:sound         P3 — Game 06 (microphone, added in Phase 1b)
 
 Shared (frozen in Phase 1a — built together, no cross-module edits afterwards):
 :app                        shell: MainActivity, NavHost, DI, navigation routes,
@@ -33,10 +34,10 @@ Shared (frozen in Phase 1a — built together, no cross-module edits afterwards)
                              lock + countdown, result screen
 ```
 
-Ownership: **P1 Escape · P2 Onion · P3 Blink · P4 Compass + Soda.** Shared modules
-are frozen after Phase 1a (built together); Phase 2 integration owners are assigned
-when Phase 2 starts. Games 06–07 (still undefined) go to whoever finishes first.
-One reviewer per PR.
+Ownership: **P1 Escape · P2 Onion · P3 Blink + Sound Barrier · P4 Compass + Soda.**
+Shared modules are frozen after Phase 1a (built together); Phase 2 integration
+owners are assigned when Phase 2 starts. Game 07 (still undefined) goes to whoever
+finishes first. One reviewer per PR.
 
 ## Contract (frozen in Phase 0, lives in `:core:common`)
 
@@ -78,7 +79,7 @@ class GameRegistry(entries: List<GameEntry>) {  // Registry, built once in :app
 }
 ```
 
-- `:app` builds the `GameRegistry` from the five entries and the NavHost resolves
+- `:app` builds the `GameRegistry` from the six entries and the NavHost resolves
   `session/{gameId}` through `find(...)` — **no route hardcoded per game**.
 - The per-game entry factories are **frozen** (each module owns its own):
 

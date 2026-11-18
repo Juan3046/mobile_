@@ -45,6 +45,7 @@ dependencies {
     implementation(project(":feature:game:blink"))
     implementation(project(":feature:game:compass"))
     implementation(project(":feature:game:soda"))
+    implementation(project(":feature:game:sound"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.ktx)
