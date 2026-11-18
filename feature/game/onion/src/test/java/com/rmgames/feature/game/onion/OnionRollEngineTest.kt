@@ -18,13 +18,13 @@ class OnionRollEngineTest {
     private fun engine(
         initial: OnionRollState = OnionRollState.INITIAL,
         seed: Int = 42,
-        fallAtMs: Long = 82_000L,
-        hardCapMs: Long = 90_000L,
+        timeLimitMs: Long? = null,
+        spawnFruits: Boolean = true,
     ) = OnionRollEngine(
         initialState = initial,
         random = Random(seed),
-        fallAtMs = fallAtMs,
-        hardCapMs = hardCapMs,
+        timeLimitMs = timeLimitMs,
+        spawnFruits = spawnFruits,
     )
 
     private fun OnionRollEngine.tickFor(totalMs: Long, omegaZ: Float = 0f, keySteer: Float? = null) {
@@ -45,42 +45,71 @@ class OnionRollEngineTest {
         assertEquals(Phase.RUNNING, state.phase)
         assertEquals(0.5f, state.onionX, 0.001f)
         assertTrue(state.fruits.isEmpty())
-        assertEquals(0L, state.scoreCentis)
-        assertEquals(0f, state.progress, 0.0001f)
+        assertEquals(0L, state.scoreSeconds)
+        assertEquals(0f, state.intensity, 0.0001f)
     }
 
     @Test
-    fun `score is reported in centiseconds`() {
-        val e = engine()
+    fun `score is whole seconds survived`() {
+        val e = engine(spawnFruits = false)
 
         e.tickFor(1_500)
+        assertEquals(1L, e.state.value.scoreSeconds)
 
-        assertEquals(150L, e.state.value.scoreCentis)
+        e.tickFor(1_000)
+        assertEquals(2L, e.state.value.scoreSeconds)
     }
 
     @Test
-    fun `the run falls at the target window and freezes the score`() {
-        val e = engine()
+    fun `the belt is endless - with no hits the run never ends`() {
+        val e = engine(spawnFruits = false)
 
-        e.tickFor(82_500)
+        e.tickFor(200_000) // well past the old 82 s fall and 90 s cap
+
+        assertEquals(Phase.RUNNING, e.state.value.phase)
+        assertEquals(200L, e.state.value.scoreSeconds)
+        assertEquals(ONION_Y, e.state.value.onionY, 0.0001f)
+    }
+
+    @Test
+    fun `being shoved past the end roller ends the run and freezes the score`() {
+        val atEdge = OnionRollState.INITIAL.copy(elapsedMs = 30_000L, onionY = END_OF_BELT_Y + 0.005f)
+        val e = engine(initial = atEdge, spawnFruits = false)
+
+        e.tick(16, 0f, null)
         assertEquals(Phase.FALLING, e.state.value.phase)
-        assertEquals(8_200L, e.state.value.scoreCentis)
-        assertTrue(e.state.value.progress >= 1f)
+        assertEquals(30L, e.state.value.scoreSeconds)
 
-        e.tickFor(700)
+        e.tickFor(2_000)
         assertEquals(Phase.DONE, e.state.value.phase)
-        assertEquals(8_200L, e.state.value.scoreCentis)
+        assertEquals(30L, e.state.value.scoreSeconds)
     }
 
     @Test
-    fun `the hard cap forces a fall even if the target window is pushed out`() {
-        val e = engine(fallAtMs = 95_000L)
+    fun `the loss banner holds after the fall animation before the run is done`() {
+        val e = engine(spawnFruits = false, timeLimitMs = 5_000L)
+        e.tickFor(5_000)
+        assertEquals(Phase.FALLING, e.state.value.phase)
 
-        e.tickFor(89_000)
+        e.tickFor(800) // fall animation (700 ms) is over…
+        assertEquals(1f, e.state.value.fallProgress, 0.0001f)
+        assertEquals(Phase.FALLING, e.state.value.phase) // …but "YOU LOST!" is still up
+        assertTrue(e.state.value.fallElapsedMs in 700L..900L)
+
+        e.tickFor(1_300)
+        assertEquals(Phase.DONE, e.state.value.phase)
+    }
+
+    @Test
+    fun `an optional time limit ends the run (tests only - production is endless)`() {
+        val e = engine(spawnFruits = false, timeLimitMs = 10_000L)
+
+        e.tickFor(9_984)
         assertEquals(Phase.RUNNING, e.state.value.phase)
 
-        e.tickFor(1_500)
+        e.tickFor(32)
         assertEquals(Phase.FALLING, e.state.value.phase)
+        assertEquals(10L, e.state.value.scoreSeconds)
     }
 
     // --- steering (gyroscope rate model) ---
@@ -122,7 +151,7 @@ class OnionRollEngineTest {
         e.tickFor(100, omegaZ = -50f) // violent twist
 
         val moved = e.state.value.onionX - 0.5f
-        assertTrue("moved $moved — expected a small, capped advance", moved < 0.12f)
+        assertTrue("moved $moved — expected a capped advance", moved < 0.2f)
         assertTrue("moved $moved — expected to actually move", moved > 0.03f)
     }
 
@@ -160,8 +189,49 @@ class OnionRollEngineTest {
     // --- belt ramp ---
 
     @Test
+    fun `belt starts 50 percent faster than the 0_286 tuning`() {
+        val e = engine(spawnFruits = false)
+
+        e.tick(16, 0f, null)
+
+        assertEquals(0.286f * 1.5f, e.state.value.beltSpeed, 0.002f)
+    }
+
+    @Test
+    fun `belt accelerates 10 percent faster than the 45 s ramp`() {
+        val e = engine(spawnFruits = false)
+
+        e.tickFor(60_000)
+
+        // 0.429 * (1 + 60 / 40.9)^1.3 ≈ 1.388 (the 45 s ramp gave ≈ 1.291)
+        assertEquals(1.388f, e.state.value.beltSpeed, 0.01f)
+    }
+
+    @Test
+    fun `belt speed keeps ramping without limit`() {
+        val e = engine(spawnFruits = false)
+        e.tickFor(90_000)
+        val at90 = e.state.value.beltSpeed
+
+        e.tickFor(60_000)
+
+        assertTrue("at90=$at90 at150=${e.state.value.beltSpeed}", e.state.value.beltSpeed > at90 * 1.3f)
+    }
+
+    @Test
+    fun `traffic intensity ramps up and saturates at 82 s`() {
+        val e = engine(spawnFruits = false)
+        e.tickFor(41_000)
+        val mid = e.state.value.intensity
+        assertTrue("mid=$mid", mid > 0.2f && mid < 0.5f)
+
+        e.tickFor(80_000)
+        assertEquals(1f, e.state.value.intensity, 0.0001f)
+    }
+
+    @Test
     fun `belt speed ramps up as the run progresses`() {
-        val e = engine()
+        val e = engine(spawnFruits = false) // an idle onion would be knocked off early
 
         e.tickFor(2_000)
         val early = e.state.value.beltSpeed
@@ -189,7 +259,7 @@ class OnionRollEngineTest {
         val random = Random(7)
 
         repeat(300) {
-            val lanes = OnionRollEngine.chooseSpawnLanes(progress = 0.9f, random = random)
+            val lanes = OnionRollEngine.chooseSpawnLanes(intensity = 0.9f, random = random)
             assertTrue(lanes.isNotEmpty())
             assertTrue("filled every lane: $lanes", lanes.distinct().size < LANES)
         }
@@ -200,7 +270,7 @@ class OnionRollEngineTest {
         val random = Random(7)
 
         repeat(100) {
-            assertEquals(1, OnionRollEngine.chooseSpawnLanes(progress = 0.2f, random = random).size)
+            assertEquals(1, OnionRollEngine.chooseSpawnLanes(intensity = 0.2f, random = random).size)
         }
     }
 
@@ -212,27 +282,114 @@ class OnionRollEngineTest {
         val start = OnionRollState.INITIAL.copy(onionX = laneCenter(0), fruits = listOf(wall))
         val e = engine(initial = start)
 
-        e.tickFor(600, omegaZ = -5f) // hard right
+        e.tickFor(350, omegaZ = -5f) // hard right, while the fruit is still alongside
 
-        val blockedAt = laneCenter(1) - FruitType.APPLE.halfWidth - ONION_HALF_W
+        // Hitboxes are 80 % of the sprites, so the onion stops past the drawn edge.
+        val blockedAt = laneCenter(1) - FruitType.APPLE.hitHalfWidth - ONION_HIT_HALF_W
         assertEquals(blockedAt, e.state.value.onionX, 0.01f)
+        assertTrue(blockedAt > laneCenter(1) - FruitType.APPLE.halfWidth - ONION_HALF_W)
     }
 
     @Test
-    fun `a fruit stops against the onion and rides on once the onion dodges`() {
+    fun `steering is responsive — a moderate tilt crosses a full lane`() {
+        val e = engine()
+
+        // ~15° tilted over 0.25 s ≈ 1.05 rad/s
+        e.tickFor(250, omegaZ = -1.05f)
+        e.tickFor(200)
+
+        val moved = e.state.value.onionX - 0.5f
+        assertTrue("moved $moved — a 15° tilt should move about one lane (1/3)", moved > 0.3f)
+    }
+
+    // --- knockback (head-on hits cost ground) ---
+
+    @Test
+    fun `a fruit hitting the onion knocks it back toward the end of the belt`() {
         val approaching = Fruit(FruitType.APPLE, x = laneCenter(1), y = 0.55f)
-        val e = engine(initial = OnionRollState.INITIAL.copy(fruits = listOf(approaching)))
+        val e = engine(initial = OnionRollState.INITIAL.copy(fruits = listOf(approaching)), spawnFruits = false)
 
-        e.tickFor(300) // assertions run before the first spawn (600 ms)
-        val pausedY = e.state.value.fruits.single().y
-        assertTrue("fruit should stop just above the onion, was at $pausedY", pausedY < ONION_Y)
-        assertTrue("…and not far above it", pausedY > 0.5f)
+        e.tickFor(400)
 
-        e.tickFor(250)
-        assertEquals(pausedY, e.state.value.fruits.single().y, 0.0001f)
+        val s = e.state.value
+        assertTrue("onion should be knocked back, was at ${s.onionY}", s.onionY > ONION_Y + 0.03f)
+        assertTrue("the fruit keeps riding past where it used to stop", s.fruits.single().y > 0.58f)
+    }
 
-        e.tickFor(1_500, omegaZ = -1f) // dodge right
-        assertTrue(e.state.value.onionX > 0.6f)
-        assertTrue("fruit should ride on after the dodge", e.state.value.fruits.maxBy { it.y }.y > pausedY)
+    @Test
+    fun `a knocked-back onion never overlaps the fruit`() {
+        val approaching = Fruit(FruitType.BANANA, x = laneCenter(1), y = 0.50f)
+        val e = engine(initial = OnionRollState.INITIAL.copy(fruits = listOf(approaching)), spawnFruits = false)
+
+        repeat(60) {
+            e.tick(16, 0f, null)
+            val s = e.state.value
+            s.fruits.forEach { f ->
+                val overlapY = kotlin.math.abs(s.onionY - f.y) < ONION_HIT_HALF_H + f.type.hitHalfHeight - 0.001f
+                val overlapX = kotlin.math.abs(s.onionX - f.x) < ONION_HIT_HALF_W + f.type.hitHalfWidth - 0.001f
+                assertTrue("onion overlaps fruit at tick $it: $s", !(overlapX && overlapY))
+            }
+        }
+    }
+
+    @Test
+    fun `a fruit in another lane does not knock the onion`() {
+        val passing = Fruit(FruitType.APPLE, x = laneCenter(0), y = 0.55f)
+        val e = engine(initial = OnionRollState.INITIAL.copy(fruits = listOf(passing)), spawnFruits = false)
+
+        e.tickFor(1_000)
+
+        assertEquals(ONION_Y, e.state.value.onionY, 0.0001f)
+    }
+
+    @Test
+    fun `once clear the onion walks back to its home row`() {
+        val e = engine(initial = OnionRollState.INITIAL.copy(onionY = 0.78f), spawnFruits = false)
+
+        e.tickFor(1_000)
+        val y = e.state.value.onionY
+        assertTrue("expected recovery, was at $y", y < 0.78f && y > ONION_Y)
+
+        e.tickFor(5_000)
+        assertEquals(ONION_Y, e.state.value.onionY, 0.0001f)
+    }
+
+    @Test
+    fun `repeated hits shove the onion over the end roller`() {
+        val chaser = Fruit(FruitType.APPLE, x = laneCenter(1), y = 0.70f)
+        val start = OnionRollState.INITIAL.copy(onionY = 0.82f, fruits = listOf(chaser))
+        val e = engine(initial = start, spawnFruits = false)
+
+        e.tickFor(1_500) // never dodges
+
+        assertEquals(Phase.FALLING, e.state.value.phase)
+    }
+
+    // --- hitboxes ---
+
+    @Test
+    fun `hitboxes are 80 percent of the drawn size`() {
+        assertEquals(ONION_HALF_W * 0.8f, ONION_HIT_HALF_W, 0.0001f)
+        assertEquals(ONION_HALF_H * 0.8f, ONION_HIT_HALF_H, 0.0001f)
+        FruitType.entries.forEach {
+            assertEquals(it.halfWidth * 0.8f, it.hitHalfWidth, 0.0001f)
+            assertEquals(it.halfHeight * 0.8f, it.hitHalfHeight, 0.0001f)
+        }
+    }
+
+    @Test
+    fun `sprites that only graze each other do not collide`() {
+        // Drawn boxes overlap by 0.01 sideways; hitboxes are still apart.
+        val apple = Fruit(FruitType.APPLE, x = laneCenter(1), y = ONION_Y)
+        val grazingX = laneCenter(1) - FruitType.APPLE.halfWidth - ONION_HALF_W + 0.01f
+        val e = engine(
+            initial = OnionRollState.INITIAL.copy(onionX = grazingX, fruits = listOf(apple)),
+            spawnFruits = false,
+        )
+
+        e.tickFor(300, keySteer = 0.3f) // nudge right: still free to move
+
+        assertTrue("onion should move past the drawn edge", e.state.value.onionX > grazingX)
+        assertEquals(ONION_Y, e.state.value.onionY, 0.0001f) // and no knockback
     }
 }

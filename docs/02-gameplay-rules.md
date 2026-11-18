@@ -15,6 +15,9 @@
 - **Standard games last 30–90 seconds.**
 - **Approved exception: Soda Shake (05)** — short variable-length single round (ends at 20 shakes).
 - **Approved exception: Compass Chaos (04)** — fixed 20s round.
+- **Approved exception: Onion Roll (02)** — endless survival run with no time
+  cap (approved after playtest, 2026-11-10); the ever-accelerating belt ends
+  every run. Score = whole seconds survived. See `games/02-onion-roll.md`.
 - **Portrait orientation only.**
 - **No pause.** Timer keeps running; leaving the game forfeits the attempt.
 - Short rules, intuitive gameplay; each game shows a brief how-to-play.
