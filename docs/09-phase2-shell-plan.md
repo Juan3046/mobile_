@@ -121,6 +121,12 @@
   Onion: onion on the belt with fruit; Blink: target + crosshair + bomb; Compass: spinning dial;
   Soda: shaking can with fizz. A wiring test requires every registered game to ship one. Verified by
   unit tests + build only — no device/emulator available (SDK system images are incomplete).
+  **Device check (2026-11-18, evening)** — splash, Main, Seasons history and all intros seen on the
+  phone. Fixed: (1) history showed a debug-launched game's score as "today" — `SeasonHistory.build`
+  now only counts the day's daily game (`dailyGameId`, regression-tested); (2) the history repeated
+  "Season N · day d of 7" — `SeasonStrip(showLabels = false)`; (3) Onion and Compass thumbnails were
+  clipped at the box edge; (4) the launcher/splash mark (rounded rectangle + play) read like a
+  video-player logo — redrawn as a round arcade push-button on its ledge.
   Arcade/playful, high
   contrast, readable at a glance, portrait, dark-first with a light variant.
 - **Tokens**: colour scheme (brand + per-game accent colours), typography

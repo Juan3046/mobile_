@@ -34,8 +34,20 @@ data class SeasonHistory(val current: SeasonSummary, val past: List<PastSeason>,
         private val dayFormat = DateTimeFormatter.ofPattern("EEE d MMM", Locale.US)
         private val dayMonth = DateTimeFormatter.ofPattern("d MMM", Locale.US)
 
-        fun build(todayIndex: Long, history: List<DailyBest>, titles: Map<String, String>): SeasonHistory {
-            val inSeasons = history.filter { SeasonCalendar.seasonDay(it.dayIndex).season >= 1 }
+        /**
+         * @param dailyGameId the day's daily game, when known: only its best counts for that day
+         * (debug-launched runs of other games are ignored). Null = any game that day counts.
+         */
+        fun build(
+            todayIndex: Long,
+            history: List<DailyBest>,
+            titles: Map<String, String>,
+            dailyGameId: (Long) -> String? = { null },
+        ): SeasonHistory {
+            val inSeasons = history.filter { b ->
+                SeasonCalendar.seasonDay(b.dayIndex).season >= 1 &&
+                    dailyGameId(b.dayIndex).let { daily -> daily == null || daily == b.gameId }
+            }
             val byDay = inSeasons.groupBy { it.dayIndex }
             val today = SeasonCalendar.seasonDay(todayIndex)
             val currentSeason = today.season.coerceAtLeast(1)

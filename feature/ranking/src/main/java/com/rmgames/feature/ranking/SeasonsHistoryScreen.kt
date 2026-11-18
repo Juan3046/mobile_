@@ -42,11 +42,17 @@ import com.rmgames.core.data.ScoreRepository
  * from the Main screen's "Seasons history" button.
  */
 @Composable
-fun SeasonsHistoryRoute(scores: ScoreRepository, clock: DayClock, games: List<Game>, onBack: () -> Unit) {
+fun SeasonsHistoryRoute(
+    scores: ScoreRepository,
+    clock: DayClock,
+    games: List<Game>,
+    onBack: () -> Unit,
+    dailyGameId: (Long) -> String? = { null },
+) {
     val feedback = LocalUiFeedback.current
     LaunchedEffect(Unit) { feedback.scene(AudioScene.Menu) }
     val history = remember(scores, clock, games) {
-        SeasonHistory.build(clock.dayIndex(), scores.history(), games.associate { it.id to it.title })
+        SeasonHistory.build(clock.dayIndex(), scores.history(), games.associate { it.id to it.title }, dailyGameId)
     }
     SeasonsHistoryScreen(history, onBack)
 }
@@ -75,7 +81,7 @@ private fun SeasonTab(s: SeasonSummary) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("SEASON ${s.season}", style = MaterialTheme.typography.headlineMedium, color = c.onSurface)
         Text("${s.dateRange} · days run noon to noon", style = MaterialTheme.typography.bodyMedium, color = c.onSurfaceVariant)
-        SeasonStrip(s.season, todayIndex, points = null)
+        SeasonStrip(s.season, todayIndex, points = null, showLabels = false)
     }
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         StatTile("Days played", "${s.daysPlayed} / ${s.days.size}", Modifier.weight(1f))

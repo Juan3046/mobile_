@@ -44,18 +44,18 @@ internal fun OnionRollThumbnail() {
         val bottom = beltTop
         val r = h * 0.2f
         val body = Path().apply {
-            moveTo(cx, h * 0.12f)
-            cubicTo(cx + r * 0.2f, h * 0.24f, cx + r * 1.15f, bottom - r * 1.4f, cx + r * 1.05f, bottom - r * 0.6f)
+            moveTo(cx, h * 0.2f)
+            cubicTo(cx + r * 0.2f, h * 0.3f, cx + r * 1.15f, bottom - r * 1.4f, cx + r * 1.05f, bottom - r * 0.6f)
             cubicTo(cx + r * 0.95f, bottom, cx - r * 0.95f, bottom, cx - r * 1.05f, bottom - r * 0.6f)
-            cubicTo(cx - r * 1.15f, bottom - r * 1.4f, cx - r * 0.2f, h * 0.24f, cx, h * 0.12f)
+            cubicTo(cx - r * 1.15f, bottom - r * 1.4f, cx - r * 0.2f, h * 0.3f, cx, h * 0.2f)
             close()
         }
         drawPath(body, OnionSkin)
         drawPath(body, Ink, style = Stroke(line))
         listOf(-0.45f, 0f, 0.45f).forEach { k ->
-            drawLine(Ink.copy(alpha = 0.5f), Offset(cx + r * k * 0.5f, h * 0.3f), Offset(cx + r * k, bottom - r * 0.25f), strokeWidth = line * 0.5f, cap = StrokeCap.Round)
+            drawLine(Ink.copy(alpha = 0.5f), Offset(cx + r * k * 0.5f, h * 0.36f), Offset(cx + r * k, bottom - r * 0.25f), strokeWidth = line * 0.5f, cap = StrokeCap.Round)
         }
-        drawLine(Sprout, Offset(cx, h * 0.12f), Offset(cx - w * 0.02f, h * 0.03f), strokeWidth = line * 1.2f, cap = StrokeCap.Round)
-        drawLine(Sprout, Offset(cx, h * 0.12f), Offset(cx + w * 0.025f, h * 0.04f), strokeWidth = line * 1.2f, cap = StrokeCap.Round)
+        drawLine(Sprout, Offset(cx, h * 0.2f), Offset(cx - w * 0.02f, h * 0.1f), strokeWidth = line * 1.2f, cap = StrokeCap.Round)
+        drawLine(Sprout, Offset(cx, h * 0.2f), Offset(cx + w * 0.025f, h * 0.11f), strokeWidth = line * 1.2f, cap = StrokeCap.Round)
     }
 }

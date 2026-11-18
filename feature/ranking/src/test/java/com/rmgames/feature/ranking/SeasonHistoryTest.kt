@@ -91,4 +91,25 @@ class SeasonHistoryTest {
     fun `days not played have no game`() {
         assertNull(build(wednesday, emptyList()).current.days[0].gameTitle)
     }
+
+    /** Regression (device, 18 Nov): a debug-launched Onion run showed as today's game instead of Soda. */
+    @Test
+    fun `only the day's daily game counts, other games played that day are ignored`() {
+        val daily = { d: Long -> if (d == wednesday) "05-soda-shake" else "03-blink-sniper" }
+        val h = SeasonHistory.build(
+            wednesday,
+            listOf(
+                DailyBest(wednesday, "02-onion-roll", 4),
+                DailyBest(wednesday, "05-soda-shake", 1132),
+                DailyBest(day(2026, 11, 17), "02-onion-roll", 9), // debug play only → not played
+            ),
+            titles,
+            dailyGameId = daily,
+        )
+        assertEquals("Soda Shake", h.current.days[2].gameTitle)
+        assertEquals(1132L, h.current.days[2].best)
+        assertEquals(DayState.Missed, h.current.days[1].state)
+        assertEquals(1, h.current.daysPlayed)
+        assertEquals(1, h.allTime.daysPlayed)
+    }
 }

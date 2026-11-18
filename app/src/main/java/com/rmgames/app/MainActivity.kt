@@ -44,6 +44,7 @@ import com.rmgames.feature.home.HomeRoute
 import com.rmgames.feature.session.SessionRoute
 import com.rmgames.feature.settings.SettingsRoute
 import com.rmgames.feature.ranking.SeasonsHistoryRoute
+import com.rmgames.core.data.DailyGameSelector
 import com.rmgames.core.common.ui.LocalUiFeedback
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -162,6 +163,8 @@ fun RMGamesNav(container: AppContainer) {
                 clock = clock,
                 games = registry.all.map { it.game },
                 onBack = { nav.popBackStack() },
+                // Same rule as the Main screen: today's game comes from the daily rotation.
+                dailyGameId = { day -> DailyGameSelector.select(day, dailyRotation(registry.all.map { it.game }).map { it.id }) },
             )
         }
         composable("settings") {

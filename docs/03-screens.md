@@ -51,6 +51,7 @@ Implementation (Phase 2 — `SessionRoute` in `:feature:session`, run logic in `
 Implementation, local data first (`SeasonsHistoryRoute` in `:feature:ranking`, plan 09 PR 13; opened from "Seasons history" on Main):
 - **Season** tab: season number, dates (noon-to-noon days), season strip, days played, and a day-by-day list (date · game · best, "Not played", "Today", "Upcoming").
 - **History** tab: all-time days played and seasons played, past seasons (dates, days played), newest first; empty state until Season 1 ends.
+- Only the day's daily game counts for that day (debug-launched runs of other games are ignored).
 - Built from the player's own daily bests (`ScoreRepository.history()`, last 60 days on device). Positions, season points and other players' standings show "—"/a note until the online ranking lands (stream E); the season strip hides points until then.
 
 ## 3.5 Locked / No-Attempts State

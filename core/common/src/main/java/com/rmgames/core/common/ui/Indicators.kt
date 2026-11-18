@@ -125,10 +125,10 @@ fun StatTile(
 
 /** 7-day season progress with today highlighted, plus the player's season points (null hides them). */
 @Composable
-fun SeasonStrip(season: Int, todayIndex: Int, points: Long?, modifier: Modifier = Modifier) {
+fun SeasonStrip(season: Int, todayIndex: Int, points: Long?, modifier: Modifier = Modifier, showLabels: Boolean = true) {
     val c = RmTheme.colors
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        if (showLabels) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             val style = MaterialTheme.typography.labelLarge.copy(fontSize = 13.sp)
             Text(buildAnnotatedString {
                 withStyle(SpanStyle(color = c.onSurface, fontWeight = FontWeight.Bold)) { append("Season $season") }

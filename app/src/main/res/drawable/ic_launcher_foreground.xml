@@ -1,22 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Launcher icon foreground (also the splash icon). Direction A signature: a hot-pink
-     arcade button with a dark outline sitting on a hard dark ledge, white play triangle.
-     108dp canvas; the whole mark stays inside the 66dp safe zone (21..87). -->
+<!-- Launcher icon foreground (also the splash icon). Direction A signature: a round
+     hot-pink arcade button seen from the front, dark outline, sitting on a hard dark
+     ledge, with a light play triangle. Round on purpose (an arcade push-button), so it
+     never reads as a video-player logo. 108dp canvas; everything stays inside the 66dp
+     safe zone (21..87). -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Outline + ledge: one dark body, 2.5 units around the face and 7.5 below it. -->
+    <!-- Outline + ledge: one dark capsule, 2.5 units around the face and 7 below it. -->
     <path
         android:fillColor="#FF07050A"
-        android:pathData="M40,32 H68 A12,12 0 0 1 80,44 V69 A12,12 0 0 1 68,81 H40 A12,12 0 0 1 28,69 V44 A12,12 0 0 1 40,32 Z" />
-    <!-- Button face (RmPalette.Dark.primary). -->
+        android:pathData="M29.5,52 A24.5,24.5 0 0 1 78.5,52 V59 A24.5,24.5 0 0 1 29.5,59 Z" />
+    <!-- Round button face (RmPalette.Dark.primary). -->
     <path
         android:fillColor="#FFFF5D8F"
-        android:pathData="M40,34.5 H68 A9.5,9.5 0 0 1 77.5,44 V64 A9.5,9.5 0 0 1 68,73.5 H40 A9.5,9.5 0 0 1 30.5,64 V44 A9.5,9.5 0 0 1 40,34.5 Z" />
+        android:pathData="M32,52 A22,22 0 1 1 76,52 A22,22 0 1 1 32,52 Z" />
     <!-- Play triangle (RmPalette.Dark.onBackground), optically centred on the face. -->
     <path
         android:fillColor="#FFF6F1FA"
-        android:pathData="M49,44 L65,54 L49,64 Z" />
+        android:pathData="M48,41 L64,52 L48,63 Z" />
 </vector>

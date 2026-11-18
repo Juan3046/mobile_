@@ -27,12 +27,12 @@ internal fun CompassChaosThumbnail() {
         val w = size.width
         val h = size.height
         val line = h * 0.03f
-        val c = Offset(w * 0.5f, h * 0.52f)
-        val r = h * 0.38f
+        val c = Offset(w * 0.5f, h * 0.5f)
+        val r = h * 0.33f
         // Spin arrows around the dial.
         listOf(200f, 20f).forEach { start ->
-            drawArc(Ink, start, 70f, useCenter = false, topLeft = Offset(c.x - r * 1.25f, c.y - r * 1.25f),
-                size = androidx.compose.ui.geometry.Size(r * 2.5f, r * 2.5f), style = Stroke(line, cap = StrokeCap.Round))
+            drawArc(Ink, start, 70f, useCenter = false, topLeft = Offset(c.x - r * 1.22f, c.y - r * 1.22f),
+                size = androidx.compose.ui.geometry.Size(r * 2.44f, r * 2.44f), style = Stroke(line, cap = StrokeCap.Round))
         }
         // Dial with cardinal ticks.
         drawCircle(Face, r, c)
