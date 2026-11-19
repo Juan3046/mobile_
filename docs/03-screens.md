@@ -31,6 +31,12 @@ Implementation (Phase 2, Direction A — `HomeRoute`/`HomeScreen` in `:feature:h
 - Nick input + Continue button. Rules: 3–12 chars (letters/numbers/underscore), unique (rejected if taken), set once, never editable.
 - Requires connection (one-time Firestore uniqueness reservation); results bind to the Anonymous Auth UID from then on.
 
+Implementation (`NickOnboardingRoute` in `:feature:onboarding`, rules in `NickClaim` in `:core:data`):
+- Start destination is `onboarding` while `PlayerRepository.nick` is null; Continue → Main, and the screen never shows again.
+- Live counter (n/12) and rule hint; errors in plain words: "3–12 characters", "Only letters, numbers and _", "That nick is taken — try another", "No connection. Choosing a nick needs internet once." Uniqueness ignores case (`nickKey`).
+- Uniqueness goes through the `NickRegistry` seam. **Until Firebase is connected it is `LocalNickRegistry`** (accepts any valid nick on this device); the Firebase registry replaces it in `AppContainer` only.
+- Settings → Player shows the nick (read-only).
+
 ## 3.3 Result Screen (after each run)
 - Run score, daily best, remaining attempts.
 - Provisional day position + provisional points it would award.

@@ -9,6 +9,11 @@ import com.rmgames.core.data.DayClock
 import com.rmgames.core.data.PersistentAttemptRepository
 import com.rmgames.core.data.PersistentScoreRepository
 import com.rmgames.core.data.SettingsRepository
+import com.rmgames.core.data.LocalNickRegistry
+import com.rmgames.core.data.NickClaim
+import com.rmgames.core.data.NickRegistry
+import com.rmgames.core.data.PlayerRepository
+import com.rmgames.core.data.store.PlayerCodec
 import com.rmgames.core.data.store.AttemptsCodec
 import com.rmgames.core.data.store.DataStoreSnapshotStore
 import com.rmgames.core.data.store.ScoresCodec
@@ -43,6 +48,14 @@ class AppContainer(context: Context) {
     val attempts = PersistentAttemptRepository(DataStoreSnapshotStore(dataStore, "attempts", AttemptsCodec), ioScope, logError)
     val scores = PersistentScoreRepository(DataStoreSnapshotStore(dataStore, "daily_bests", ScoresCodec), ioScope, logError)
     val settings = SettingsRepository(DataStoreSnapshotStore(dataStore, "settings", SettingsCodec), ioScope, logError)
+    val players = PlayerRepository(DataStoreSnapshotStore(dataStore, "player", PlayerCodec), ioScope, logError)
+
+    /**
+     * Nick uniqueness (docs/03 §3.2). Local stand-in until Firebase is connected: replace with
+     * the Firebase registry (anonymous auth + `nicks/{key}` transaction) — nothing else changes.
+     */
+    private val nickRegistry: NickRegistry = LocalNickRegistry()
+    val nickClaim = NickClaim(nickRegistry, players)
 
     /**
      * App-wide music and UI sounds (plan 09 PR 7). Synthesized in code; all AudioTrack work
@@ -67,6 +80,7 @@ class AppContainer(context: Context) {
         attempts.load()
         scores.load()
         settings.load()
+        players.load()
         isLoaded = true
     }
 }

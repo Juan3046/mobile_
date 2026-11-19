@@ -52,6 +52,7 @@ import com.rmgames.core.data.SettingsRepository
 fun SettingsRoute(
     repository: SettingsRepository,
     appVersion: String,
+    nick: String? = null,
     onBack: () -> Unit,
     onResetAttempts: (() -> Unit)? = null,
 ) {
@@ -61,6 +62,7 @@ fun SettingsRoute(
     SettingsScreen(
         settings = settings,
         appVersion = appVersion,
+        nick = nick,
         onChange = { change -> repository.update(change) },
         onBack = onBack,
         onResetAttempts = onResetAttempts,
@@ -72,6 +74,7 @@ fun SettingsRoute(
 fun SettingsScreen(
     settings: Settings,
     appVersion: String,
+    nick: String? = null,
     onChange: ((Settings) -> Settings) -> Unit,
     onBack: () -> Unit,
     onResetAttempts: (() -> Unit)? = null,
@@ -107,7 +110,7 @@ fun SettingsScreen(
                 }
             }
             Group("Player") {
-                RmListItem("Nick", supporting = "Chosen once when online ranking arrives. It can't be changed later.", icon = RmIcons.User)
+                RmListItem(nick ?: "Nick", supporting = if (nick != null) "Your nick · set once, can't be changed" else "Not chosen yet", icon = RmIcons.User)
             }
             Group("Privacy") {
                 RmListItem(

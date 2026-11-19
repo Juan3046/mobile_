@@ -44,6 +44,7 @@ import com.rmgames.feature.home.HomeRoute
 import com.rmgames.feature.session.SessionRoute
 import com.rmgames.feature.settings.SettingsRoute
 import com.rmgames.feature.ranking.SeasonsHistoryRoute
+import com.rmgames.feature.onboarding.NickOnboardingRoute
 import com.rmgames.core.data.DailyGameSelector
 import com.rmgames.core.common.ui.LocalUiFeedback
 import androidx.compose.runtime.CompositionLocalProvider
@@ -138,12 +139,18 @@ fun RMGamesNav(container: AppContainer) {
     val debuggable = remember { (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0 }
     NavHost(
         navController = nav,
-        startDestination = "home",
+        // First launch: choose a nick before anything else (docs/03 §3.2).
+        startDestination = remember { if (container.players.nick.value == null) "onboarding" else "home" },
         enterTransition = { RmTransitions.enter() },
         exitTransition = { RmTransitions.exit() },
         popEnterTransition = { RmTransitions.enter() },
         popExitTransition = { RmTransitions.popExit() },
     ) {
+        composable("onboarding") {
+            NickOnboardingRoute(container.nickClaim) {
+                nav.navigate("home") { popUpTo("onboarding") { inclusive = true } }
+            }
+        }
         composable("home") {
             HomeRoute(
                 games = dailyRotation(registry.all.map { it.game }),
@@ -173,6 +180,7 @@ fun RMGamesNav(container: AppContainer) {
             SettingsRoute(
                 repository = container.settings,
                 appVersion = remember { appVersion(context) },
+                nick = container.players.nick.value,
                 onBack = { nav.popBackStack() },
                 onResetAttempts = if (debuggable) {
                     { attempts.reset(clock.dayIndex()) }

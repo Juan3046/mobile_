@@ -66,3 +66,17 @@ object SettingsCodec : SnapshotCodec<Settings> {
 
     private fun Boolean.bit() = if (this) "1" else "0"
 }
+
+/** Player profile: `v1|nick=monica_rc` (`v1|` before onboarding). Nicks are [A-Za-z0-9_] only. */
+object PlayerCodec : SnapshotCodec<com.rmgames.core.data.PlayerProfile> {
+    override fun encode(value: com.rmgames.core.data.PlayerProfile) =
+        "v1|" + (value.nick?.let { "nick=$it" } ?: "")
+
+    override fun decode(text: String): com.rmgames.core.data.PlayerProfile? {
+        if (!text.startsWith("v1|")) return null
+        val body = text.removePrefix("v1|")
+        if (body.isEmpty()) return com.rmgames.core.data.PlayerProfile(null)
+        val nick = body.removePrefix("nick=").takeIf { body.startsWith("nick=") && com.rmgames.core.data.NickValidator.isValid(it) }
+        return nick?.let { com.rmgames.core.data.PlayerProfile(it) }
+    }
+}

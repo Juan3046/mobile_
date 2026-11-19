@@ -138,6 +138,13 @@
   all-time best per game. Result shows a "Personal best" stamp when a run beats every earlier day
   (else the record under the score); the History tab lists personal bests per game. One storage
   technology and one cloud seam (`SnapshotStore`) instead of adding Room + KSP.
+  **Status (2026-11-19): PR 15 part 1 done** — nick onboarding (03 §3.2) built offline-first:
+  `PlayerRepository` (DataStore, `PlayerCodec`), `NickClaim` (validation, case-insensitive key, set
+  once), `NickRegistry` seam with `LocalNickRegistry` for now, `:feature:onboarding` screen as the
+  start destination until a nick exists, nick shown in Settings. **Part 2 (needs the user's Firebase
+  project + `google-services.json`)**: Firebase BoM + google-services plugin, `FirebaseNickRegistry`
+  (Anonymous Auth, Firestore transaction on `nicks/{nickKey}` = { uid }), security rules, swap in
+  `AppContainer`.
   Arcade/playful, high
   contrast, readable at a glance, portrait, dark-first with a light variant.
 - **Tokens**: colour scheme (brand + per-game accent colours), typography
@@ -204,7 +211,7 @@ paginated top-50 reads, security rules. Separate PRs after D.1–D.3 work offlin
 | 12 | Music & UI SFX wiring across screens — **done** in PR 7 (games' own SFX/haptics: see Status) | `:app`, features | 7, 8, 9 |
 | 13 | Ranking / Seasons History (local data first) — **done** (bests from DataStore, 60 days) | `:feature:ranking` | 10 |
 | 14 | App icon, splash, edge-to-edge — **done** | `:app` | 3 |
-| 15 | Firebase: auth + nick onboarding | `:core:data`, `:feature:onboarding` | 8 |
+| 15 | Firebase: auth + nick onboarding — **UI + rules done**, Firebase adapter waits for the project | `:core:data`, `:feature:onboarding` | 8 |
 | 16 | Firebase: daily-best upload + ranking reads | `:core:data`, `:feature:ranking` | 13, 15 |
 | 17 | Thumbnails contract + fallback (Decision 5); owners add theirs — **done** (all 5 drawn) | `:core:common`, games | 4 |
 
