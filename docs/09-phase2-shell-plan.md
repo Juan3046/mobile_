@@ -24,16 +24,16 @@
    *per-minigame* soundtracks. Proposal: allow **app-level music** — one menu
    theme + one shared in-game loop + short stingers (new best, lock) — and keep
    dedicated per-game soundtracks post-MVP. Update `06` and `02` (Audio rules).
-2. **DECISION — "Random" daily game.** `01-product-overview.md` fixes
+2. **DECIDED (2026-11-19): seeded shuffle per season** (implemented in `DailyGameSelector`, PR 5). Original proposal: **DECISION — "Random" daily game.** `01-product-overview.md` fixes
    `index = daysSinceEpoch % gameCount` (a visible fixed cycle). Proposal:
    **seeded shuffle per season** — each 7-day season shuffles the game list with
    the season index as seed, so the daily game *looks* random, is still the same
    on every device and offline, and no game repeats inside a season while
    `gameCount ≥ 7`. Update `01` + `DailyGameSelector` docs.
-3. **DECISION — Settings screen** (new `03-screens.md` §3.6): music volume,
+3. **DECIDED (2026-11-18): Settings screen as proposed** (built in PR 11; the debug "force daily game" was dropped — the Main debug launcher opens any game). Original proposal: **DECISION — Settings screen** (new `03-screens.md` §3.6): music volume,
    SFX on/off, vibration on/off, nick (read-only), credits & licences, privacy
    note; debug section (reset attempts, force daily game) in debug builds only.
-4. **DECISION — Ownership.** P2 owns the Phase 2 shell: `:app` nav, `:feature:home`,
+4. **DECIDED (2026-11-18): P2 owns the Phase 2 shell** (the user, with Claude, in one session; game modules stay with their owners except the agreed thumbnails). Original proposal: **DECISION — Ownership.** P2 owns the Phase 2 shell: `:app` nav, `:feature:home`,
    `:feature:session` (timer, attempts, result), `:core:common` theme/UI kit,
    `:core:data`, and a new `:core:audio`. Update `08-implementation-plan.md`
    (ownership + "Phase 2 starts for the shell while 1b continues") and the
@@ -42,7 +42,7 @@
    backward-compatible `thumbnail: @Composable () -> Unit = {}` (same pattern as
    `drawsOwnHud`); each game owner fills theirs later; the shell shows a
    generated fallback (title + colour + icon) until then.
-6. **DECISION — Asset sources & licences.** Fonts: Google Fonts under OFL,
+6. **DECIDED (2026-11-18): fonts = Google Fonts OFL bundled; all app audio synthesized in code** (no third-party audio; `CREDITS.md` + Settings credits, kept in sync by a test). Original proposal: **DECISION — Asset sources & licences.** Fonts: Google Fonts under OFL,
    bundled in `res/font`. Music/SFX: CC0 or royalty-free with a written licence,
    or generated with a tool whose terms grant commercial use; every file listed
    in a `CREDITS.md` + the Settings credits page. No copyrighted material.
@@ -179,7 +179,7 @@ paginated top-50 reads, security rules. Separate PRs after D.1–D.3 work offlin
 
 | # | PR | Module(s) | Depends on |
 |---|---|---|---|
-| 1 | Docs: decisions 1–6 + ownership + this plan | `docs/`, `AGENTS.md` | team OK |
+| 1 | Docs: decisions 1–6 + ownership + this plan — **done** | `docs/`, `AGENTS.md` | team OK |
 | 2 | Visual direction mockups (not code) — `design-system/` — **done** | — | 1 |
 | 3 | `RmTheme` tokens + fonts — **done** | `:core:common`, `:app` | 2 |
 | 4 | UI kit components (+ screenshot-free unit tests for logic) — **done** | `:core:common` | 3 |
@@ -190,7 +190,7 @@ paginated top-50 reads, security rules. Separate PRs after D.1–D.3 work offlin
 | 9 | Session: pre-run countdown, attempt consumption, result screen — **done** (in-memory repos until 6) | `:feature:session` | 4, 6 |
 | 10 | Room scores + daily best + local best | `:core:data` | 6 |
 | 11 | Settings screen — **done** (sound applies with 7) | `:feature:settings`, `:app` nav | 4, 6, 7 |
-| 12 | Music & UI SFX wiring across screens | `:app`, features | 7, 8, 9 |
+| 12 | Music & UI SFX wiring across screens — **done** in PR 7 (games' own SFX/haptics: see Status) | `:app`, features | 7, 8, 9 |
 | 13 | Ranking / Seasons History (local data first) — **done** (bests from DataStore, 60 days) | `:feature:ranking` | 10 |
 | 14 | App icon, splash, edge-to-edge — **done** | `:app` | 3 |
 | 15 | Firebase: auth + nick onboarding | `:core:data`, `:feature:onboarding` | 8 |

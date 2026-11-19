@@ -39,7 +39,9 @@ Shared (frozen in Phase 1a — built together, no cross-module edits afterwards)
                              credits & licences, debug) — Phase 2
 ```
 
-Ownership: **P1 Escape · P2 Onion · P3 Blink · P4 Compass + Soda.** Shared modules
+Ownership: **P1 Escape · P2 Onion · P3 Blink · P4 Compass + Soda.** Phase 2 shell
+(`:app`, `:feature:home|session|settings|ranking`, `:core:common` theme/UI kit, `:core:data`,
+`:core:audio`): **P2** (docs/09 Decision 4). Shared modules
 are frozen after Phase 1a (built together); Phase 2 integration owners are assigned
 when Phase 2 starts. Games 06–07 (still undefined) go to whoever finishes first.
 One reviewer per PR.
