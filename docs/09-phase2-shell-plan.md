@@ -96,8 +96,9 @@
   rules, unit-tested) and `AndroidAudioBackend` (static AudioTracks on an "rm-audio" thread, volume
   fades). Screens reach it through `UiFeedback.cue/scene` (no dependency on the module); `:app`
   wires Settings and foreground. Checked on device (focus + playing track via adb; listened by the
-  user). Not done: the `FeedbackSettings` flow for games — games still ignore the SFX/vibration
-  switches for their own sounds.
+  user). Games' own feedback (2026-11-19): `UiFeedback.sfxEnabled` joins `hapticsEnabled` (filled from
+  Settings in `:app`) instead of a separate `FeedbackSettings` flow; Onion Roll — the only game with
+  its own sounds/vibration — applies both through `cueOutput` (JVM-tested).
   **Status (2026-11-18): PR 13 done (local)** — new `:feature:ranking`: Seasons history with Season
   (day by day: game + best) and History (past seasons, all-time days/seasons) tabs, built by the
   pure `SeasonHistory.build` from `ScoreRepository.history()`. Uses the 60-day DataStore bests

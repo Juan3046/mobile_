@@ -93,6 +93,8 @@ enum class AudioScene { Menu, Game, Silent }
  */
 interface UiFeedback {
     val hapticsEnabled: Boolean get() = true
+    /** The Sound effects switch — games apply it to their own sounds. */
+    val sfxEnabled: Boolean get() = true
     fun cue(cue: UiCue) {}
     fun scene(scene: AudioScene) {}
     fun click() = cue(UiCue.Click)

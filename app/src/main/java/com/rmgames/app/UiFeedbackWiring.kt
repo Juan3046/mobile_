@@ -16,6 +16,7 @@ internal fun uiFeedbackFor(
     scene: (AudioScene) -> Unit,
 ): UiFeedback = object : UiFeedback {
     override val hapticsEnabled: Boolean = settings.vibrationEnabled
+    override val sfxEnabled: Boolean = settings.sfxEnabled
     override fun cue(cue: UiCue) = play(cue)
     override fun scene(scene: AudioScene) = scene(scene)
 }

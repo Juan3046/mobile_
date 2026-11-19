@@ -17,6 +17,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import com.rmgames.core.common.ui.LocalUiFeedback
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -73,6 +75,12 @@ fun OnionRollScreen(
     val appContext = LocalContext.current.applicationContext
     val feedback = remember { OnionRollFeedback(appContext) }
     DisposableEffect(feedback) { onDispose { feedback.release() } }
+    // Honour the app's Settings for this game's own sounds and vibration.
+    val appFeedback = LocalUiFeedback.current
+    SideEffect {
+        feedback.sfxEnabled = appFeedback.sfxEnabled
+        feedback.hapticsEnabled = appFeedback.hapticsEnabled
+    }
     LaunchedEffect(state) {
         val detector = CueDetector()
         state.collect { frame -> detector.next(frame).forEach(feedback::play) }

@@ -164,6 +164,7 @@ playtest) driving:
   can be swapped for bitmap sprites later.
 
 ## Audio & Haptics
+- The app's Settings apply: Sound effects off silences these cues and Vibration off stops the haptics (`cueOutput`, read from `LocalUiFeedback`).
 Sound effects and vibration only — **no music** (per-minigame music is out of
 the MVP, `../06-out-of-scope-roadmap.md`). All sounds are **synthesized in code**
 (no audio files, no licensing), played on the media volume

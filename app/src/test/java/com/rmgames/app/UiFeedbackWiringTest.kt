@@ -33,4 +33,10 @@ class UiFeedbackWiringTest {
         feedback(Settings()).scene(AudioScene.Game)
         assertEquals(listOf(AudioScene.Game), scenes)
     }
+
+    @Test
+    fun `games see the sound effects switch`() {
+        assertTrue(feedback(Settings(sfxEnabled = true)).sfxEnabled)
+        assertFalse(feedback(Settings(sfxEnabled = false)).sfxEnabled)
+    }
 }

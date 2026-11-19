@@ -26,7 +26,7 @@
 ## Audio
 - **App-level audio is in the MVP** (plan 09 Decision 1, decided 2026-11-18): one menu music loop + short UI sounds (click, 3-2-1 tick, "go", new-best fanfare). Dedicated per-game soundtracks stay post-MVP (`06`).
 - **Synthesized in code** (`:core:audio` `SoundBook`): no audio files, so no licences to track (Decision 6). Any sound can later be replaced by a licensed file without touching screens.
-- Rules (`AudioDirector`): music plays only on menu screens (Main, Settings, intro, Result) at the Settings volume (0 % = off); it fades out during the countdown and the run (games keep their own sounds) and returns on the Result; it pauses in the background and respects audio focus (another app's sound silences or ducks it). UI sounds obey the Sound effects switch; haptics obey Vibration.
+- Rules (`AudioDirector`): music plays only on menu screens (Main, Settings, intro, Result) at the Settings volume (0 % = off); it fades out during the countdown and the run (games keep their own sounds) and returns on the Result; it pauses in the background and respects audio focus (another app's sound silences or ducks it). UI sounds obey the Sound effects switch; haptics obey Vibration. **Games' own sounds and vibrations obey the same switches**: they read `LocalUiFeedback.current.sfxEnabled` / `.hapticsEnabled` (Onion Roll does; any new game with its own feedback must too).
 - All audio work runs on its own thread, never the main thread.
 
 ## Controls
