@@ -219,4 +219,14 @@ class SessionFlowTest {
         assertFalse(s.isPersonalBest)
         assertEquals(27L, s.personalBest)
     }
+
+    @Test
+    fun `a better second run on the first day is a daily best, not a personal best`() {
+        val f = flow()
+        f.playTo(20)
+        val s = f.playTo(27)
+        assertTrue(s.isNewBest)
+        assertFalse(s.isPersonalBest)
+        assertEquals(27L, s.personalBest)
+    }
 }

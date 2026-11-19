@@ -103,7 +103,9 @@ class SessionFlow(
     fun onFinished(win: Boolean) {
         if (phase != SessionPhase.Playing) return
         val score = liveScore
-        val previousPersonal = scores.personalBest(game.id, game.higherWins)?.best
+        // Best of every EARLIER day (today's earlier run only counts as the daily best).
+        val previousPersonal = scores.history().filter { it.gameId == game.id && it.dayIndex != runDay }
+            .let { days -> if (game.higherWins) days.maxOfOrNull { it.best } else days.minOfOrNull { it.best } }
         val previous = scores.best(runDay, game.id)
         val best = if (practice) previous else score?.let { scores.submit(runDay, game.id, it, game.higherWins) } ?: previous
         val improved = !practice && score != null && (previous == null ||
