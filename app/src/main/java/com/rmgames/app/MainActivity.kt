@@ -134,6 +134,7 @@ fun RMGamesNav(container: AppContainer) {
     val scores = container.scores
     val clock = container.clock
     val context = LocalContext.current
+    val todaysGame: (Long) -> String = { day -> DailyGameSelector.select(day, dailyRotation(registry.all.map { it.game }).map { it.id }) }
     val debuggable = remember { (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0 }
     NavHost(
         navController = nav,
@@ -163,8 +164,9 @@ fun RMGamesNav(container: AppContainer) {
                 clock = clock,
                 games = registry.all.map { it.game },
                 onBack = { nav.popBackStack() },
-                // Same rule as the Main screen: today's game comes from the daily rotation.
-                dailyGameId = { day -> DailyGameSelector.select(day, dailyRotation(registry.all.map { it.game }).map { it.id }) },
+                // Today's game from the current rotation; past days use what was recorded
+                // (practice runs never record, so stored bests are always the daily game).
+                dailyGameId = { day -> if (day == clock.dayIndex()) todaysGame(day) else null },
             )
         }
         composable("settings") {
@@ -187,6 +189,8 @@ fun RMGamesNav(container: AppContainer) {
                     scores = scores,
                     clock = clock,
                     onExit = { nav.popBackStack("home", inclusive = false) },
+                    // Only today's game counts; any other game (debug launcher) is a practice run.
+                    practice = gameId != todaysGame(clock.dayIndex()),
                 )
             }
         }

@@ -9,6 +9,7 @@
 - **Shared ranking upload:** the daily best is written to Firestore once per day per player (each UID writes only its own doc); attempts enforcement stays local.
 - UI must give **feedback on remaining attempts** (e.g., "1 attempt left").
 - **Exhausted state: lock + countdown.** When attempts are used up, Play is disabled; show last/best score + countdown to next daily game.
+- **Practice runs (debug only)**: the Main screen's debug launcher can open any game; a game that is not today's runs as a practice run — no attempt used, no score recorded — so stored scores and the Seasons history only ever contain real daily runs.
 - **Reset attempts button**: debug-only, resets today's attempt counter only. Past scores and seasons are untouched. Lives on the main screen as a small `Reset attempts (debug)` control; easy to remove/disable for release.
 
 ## Duration & Format

@@ -34,6 +34,8 @@ data class RunSummary(
     val attemptsLeft: Int,
     val attemptsTotal: Int,
     val nextResetMillis: Long,
+    /** Debug practice run: nothing was spent or recorded. */
+    val practice: Boolean = false,
 )
 
 /**
@@ -50,10 +52,15 @@ class SessionFlow(
     private val attempts: AttemptRepository,
     private val scores: ScoreRepository,
     private val clock: DayClock,
+    /**
+     * Practice run (debug launcher, a game that is not today's): spends no attempt and
+     * records no score, so only real daily runs ever reach the scores and the history.
+     */
+    private val practice: Boolean = false,
     private val now: () -> Long = System::currentTimeMillis,
 ) {
     var phase: SessionPhase by mutableStateOf(
-        if (attempts.remaining(clock.dayIndex(now())) > 0) SessionPhase.Intro else SessionPhase.Locked,
+        if (practice || attempts.remaining(clock.dayIndex(now())) > 0) SessionPhase.Intro else SessionPhase.Locked,
     )
         private set
 
@@ -69,7 +76,7 @@ class SessionFlow(
     fun start(): Boolean {
         if (phase is SessionPhase.Countdown || phase == SessionPhase.Playing) return false
         runDay = clock.dayIndex(now())
-        if (!attempts.consume(runDay)) {
+        if (!practice && !attempts.consume(runDay)) {
             phase = SessionPhase.Locked
             return false
         }
@@ -93,8 +100,8 @@ class SessionFlow(
         if (phase != SessionPhase.Playing) return
         val score = liveScore
         val previous = scores.best(runDay, game.id)
-        val best = score?.let { scores.submit(runDay, game.id, it, game.higherWins) } ?: previous
-        val improved = score != null && (previous == null ||
+        val best = if (practice) previous else score?.let { scores.submit(runDay, game.id, it, game.higherWins) } ?: previous
+        val improved = !practice && score != null && (previous == null ||
             if (game.higherWins) score > previous else score < previous)
         phase = SessionPhase.Finished(
             RunSummary(
@@ -105,6 +112,7 @@ class SessionFlow(
                 attemptsLeft = attempts.remaining(runDay),
                 attemptsTotal = MAX_ATTEMPTS_PER_DAY,
                 nextResetMillis = clock.nextResetMillis(now()),
+                practice = practice,
             ),
         )
     }

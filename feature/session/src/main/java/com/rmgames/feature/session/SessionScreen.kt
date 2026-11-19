@@ -82,12 +82,13 @@ fun SessionRoute(
     scores: ScoreRepository,
     clock: DayClock,
     onExit: () -> Unit,
+    practice: Boolean = false,
 ) {
     if (entry == null) {
         NotFound(onExit)
         return
     }
-    val flow = remember(entry) { SessionFlow(entry.game, attempts, scores, clock) }
+    val flow = remember(entry) { SessionFlow(entry.game, attempts, scores, clock, practice = practice) }
     var run by remember(entry) { mutableStateOf<SessionGameScope?>(null) }
     var showLeave by remember { mutableStateOf(false) }
     val phase = flow.phase
@@ -129,7 +130,7 @@ fun SessionRoute(
 
     when (phase) {
         SessionPhase.Intro, SessionPhase.Locked ->
-            IntroScreen(entry.game, entry.thumbnail, flow.attemptsLeft(), locked = phase == SessionPhase.Locked, onStart = ::startRun, onClose = onExit)
+            IntroScreen(entry.game, entry.thumbnail, flow.attemptsLeft(), locked = phase == SessionPhase.Locked, practice = practice, onStart = ::startRun, onClose = onExit)
         is SessionPhase.Finished -> {
             var showResult by remember(phase) { mutableStateOf(false) }
             LaunchedEffect(phase) {
@@ -168,7 +169,7 @@ private fun NotFound(onExit: () -> Unit) {
 
 /** How-to + Start (plan 09 §2D.2). Start spends the attempt. */
 @Composable
-private fun IntroScreen(game: Game, thumbnail: (@Composable () -> Unit)?, attemptsLeft: Int, locked: Boolean, onStart: () -> Unit, onClose: () -> Unit) {
+private fun IntroScreen(game: Game, thumbnail: (@Composable () -> Unit)?, attemptsLeft: Int, locked: Boolean, practice: Boolean, onStart: () -> Unit, onClose: () -> Unit) {
     val c = RmTheme.colors
     val d = RmTheme.dimens
     Column(Modifier.fillMaxSize().background(c.background)) {
@@ -186,6 +187,7 @@ private fun IntroScreen(game: Game, thumbnail: (@Composable () -> Unit)?, attemp
             AttemptsPips(attemptsLeft)
             Text(
                 if (locked) "No attempts left today. A new game starts at 12:00."
+                else if (practice) "Practice run (debug): this is not today's game, so no attempt is used and nothing is recorded."
                 else "Starting uses 1 attempt. Runs can't be paused.",
                 style = MaterialTheme.typography.bodyMedium, color = c.onSurfaceVariant,
             )
@@ -241,11 +243,11 @@ private fun ResultScreen(game: Game, s: RunSummary, onPlayAgain: () -> Unit, onH
     val c = RmTheme.colors
     val d = RmTheme.dimens
     val runNumber = (s.attemptsTotal - s.attemptsLeft).coerceAtLeast(1)
-    val locked = s.attemptsLeft <= 0
+    val locked = !s.practice && s.attemptsLeft <= 0
     val remaining by rememberRemaining(s.nextResetMillis)
     val unit = gameScoreText(game.id, s.score ?: 0).unit
     Column(Modifier.fillMaxSize().background(c.background)) {
-        RmTopBar("${game.title} · run $runNumber of ${s.attemptsTotal}", navigationIcon = RmIcons.Close, navigationLabel = "Back to home", onNavigate = onHome)
+        RmTopBar(if (s.practice) "${game.title} · practice" else "${game.title} · run $runNumber of ${s.attemptsTotal}", navigationIcon = RmIcons.Close, navigationLabel = "Back to home", onNavigate = onHome)
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = d.gutter),
             verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -275,8 +277,9 @@ private fun ResultScreen(game: Game, s: RunSummary, onPlayAgain: () -> Unit, onH
             }
             RmCard(Modifier.fillMaxWidth()) {
                 Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text("PROVISIONAL RANKING", style = MaterialTheme.typography.labelSmall, color = c.onSurfaceVariant)
-                    Text("Your best of the day decides your position. Position and season points show here once online ranking arrives.",
+                    Text(if (s.practice) "PRACTICE RUN" else "PROVISIONAL RANKING", style = MaterialTheme.typography.labelSmall, color = c.onSurfaceVariant)
+                    Text(if (s.practice) "Debug practice: this score is not saved and no attempt was used."
+                        else "Your best of the day decides your position. Position and season points show here once online ranking arrives.",
                         style = MaterialTheme.typography.bodyMedium, color = c.onSurface)
                 }
             }

@@ -171,4 +171,26 @@ class SessionFlowTest {
         assertTrue(f.start())
         assertEquals(SessionPhase.Countdown(3), f.phase)
     }
+
+    // ---- practice runs (debug launcher, a game that is not today's) ----
+
+    private fun practice() = SessionFlow(FakeGame(), attempts, scores, clock, practice = true) { now }
+
+    @Test
+    fun `practice runs spend no attempt and record nothing`() {
+        val s = practice().playTo(27)
+        assertTrue(s.practice)
+        assertEquals(2, attempts.remaining(day))
+        assertNull(scores.best(day, "03-blink-sniper"))
+        assertFalse(s.isNewBest)
+        assertEquals(27L, s.score)
+    }
+
+    @Test
+    fun `practice is allowed even with no attempts left`() {
+        attempts.consume(day); attempts.consume(day)
+        val f = practice()
+        assertEquals(SessionPhase.Intro, f.phase)
+        assertTrue(f.start())
+    }
 }

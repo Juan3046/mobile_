@@ -127,6 +127,11 @@
   "Season N · day d of 7" — `SeasonStrip(showLabels = false)`; (3) Onion and Compass thumbnails were
   clipped at the box edge; (4) the launcher/splash mark (rounded rectangle + play) read like a
   video-player logo — redrawn as a round arcade push-button on its ledge.
+  **Status (2026-11-19): PR 5 done** — `DailyGameSelector` is a seeded shuffle per season
+  (Decision 2): sorted ids, `Random(seed + season)`, no repeat inside a season until all played,
+  no same game across a season boundary. Changing the rotation used to rewrite the history's past
+  days, so debug-launched runs of a non-daily game are now **practice runs** (`SessionFlow
+  practice = true`: no attempt, nothing recorded) and the history only uses the rotation for today.
   Arcade/playful, high
   contrast, readable at a glance, portrait, dark-first with a light variant.
 - **Tokens**: colour scheme (brand + per-game accent colours), typography
@@ -183,7 +188,7 @@ paginated top-50 reads, security rules. Separate PRs after D.1–D.3 work offlin
 | 2 | Visual direction mockups (not code) — `design-system/` — **done** | — | 1 |
 | 3 | `RmTheme` tokens + fonts — **done** | `:core:common`, `:app` | 2 |
 | 4 | UI kit components (+ screenshot-free unit tests for logic) — **done** | `:core:common` | 3 |
-| 5 | Seeded season shuffle selector | `:core:data` | 1 |
+| 5 | Seeded season shuffle selector — **done** | `:core:data` | 1 |
 | 6 | DataStore attempts + settings repos — **done** (+ daily bests) | `:core:data` | 1 |
 | 7 | `:core:audio` (director, settings flow, focus, no main-thread work) — **done** | `:core:audio` | 6 |
 | 8 | Main screen (daily game, attempts, lock + countdown) — **done** (in-memory repos until 6) | `:feature:home`, `:app` nav | 4, 5, 6 |
