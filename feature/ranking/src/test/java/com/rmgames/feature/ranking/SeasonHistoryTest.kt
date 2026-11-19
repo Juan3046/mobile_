@@ -112,4 +112,21 @@ class SeasonHistoryTest {
         assertEquals(1, h.current.daysPlayed)
         assertEquals(1, h.allTime.daysPlayed)
     }
+
+    @Test
+    fun `personal bests per game follow each game's rule`() {
+        val h = SeasonHistory.build(
+            wednesday,
+            listOf(
+                DailyBest(day(2026, 11, 16), "05-soda-shake", 900),
+                DailyBest(day(2026, 11, 17), "05-soda-shake", 845),
+                DailyBest(day(2026, 11, 18), "03-blink-sniper", 27),
+            ),
+            titles,
+            higherWins = { it != "05-soda-shake" },
+        )
+        assertEquals(listOf("Blink Sniper", "Soda Shake"), h.personalBests.map { it.gameTitle })
+        assertEquals(845L, h.personalBests[1].best)
+        assertEquals("Tue 17 Nov", h.personalBests[1].dateLabel)
+    }
 }

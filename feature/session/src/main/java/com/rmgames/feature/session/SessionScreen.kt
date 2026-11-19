@@ -137,7 +137,7 @@ fun SessionRoute(
                 delay(END_HOLD_MS)
                 showResult = true
                 feedback.scene(AudioScene.Menu)
-                if (phase.summary.isNewBest) feedback.cue(UiCue.NewBest)
+                if (phase.summary.isNewBest || phase.summary.isPersonalBest) feedback.cue(UiCue.NewBest)
             }
             if (showResult) ResultScreen(entry.game, phase.summary, onPlayAgain = ::startRun, onHome = onExit)
             else RunStage(entry, phase, flow.liveScore)
@@ -253,9 +253,9 @@ private fun ResultScreen(game: Game, s: RunSummary, onPlayAgain: () -> Unit, onH
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
-                if (s.isNewBest) Confetti(Modifier.fillMaxWidth().height(160.dp))
+                if (s.isNewBest || s.isPersonalBest) Confetti(Modifier.fillMaxWidth().height(160.dp))
                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    if (s.isNewBest) NewBestStamp()
+                    if (s.isPersonalBest) NewBestStamp(text = "Personal best") else if (s.isNewBest) NewBestStamp()
                     if (s.score != null) {
                         ScoreCounter(s.score, unit, isBest = s.isNewBest, format = { gameScoreText(game.id, it).value })
                     } else {
@@ -264,6 +264,11 @@ private fun ResultScreen(game: Game, s: RunSummary, onPlayAgain: () -> Unit, onH
                     }
                     if (!s.isNewBest && s.dailyBest != null && s.score != null) {
                         Text("Your best today stays at ${gameScoreText(game.id, s.dailyBest).value}",
+                            style = MaterialTheme.typography.bodyMedium, color = c.onSurfaceVariant, textAlign = TextAlign.Center)
+                    }
+                    if (!s.isPersonalBest && s.personalBest != null && s.score != null) {
+                        val pb = gameScoreText(game.id, s.personalBest)
+                        Text("Personal best: ${pb.value} ${pb.unit}",
                             style = MaterialTheme.typography.bodyMedium, color = c.onSurfaceVariant, textAlign = TextAlign.Center)
                     }
                 }

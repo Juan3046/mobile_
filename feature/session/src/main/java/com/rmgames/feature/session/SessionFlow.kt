@@ -36,6 +36,10 @@ data class RunSummary(
     val nextResetMillis: Long,
     /** Debug practice run: nothing was spent or recorded. */
     val practice: Boolean = false,
+    /** Best daily best ever for this game (after this run). */
+    val personalBest: Long? = null,
+    /** This run beat every earlier day (not shown for the very first score). */
+    val isPersonalBest: Boolean = false,
 )
 
 /**
@@ -99,6 +103,7 @@ class SessionFlow(
     fun onFinished(win: Boolean) {
         if (phase != SessionPhase.Playing) return
         val score = liveScore
+        val previousPersonal = scores.personalBest(game.id, game.higherWins)?.best
         val previous = scores.best(runDay, game.id)
         val best = if (practice) previous else score?.let { scores.submit(runDay, game.id, it, game.higherWins) } ?: previous
         val improved = !practice && score != null && (previous == null ||
@@ -113,6 +118,9 @@ class SessionFlow(
                 attemptsTotal = MAX_ATTEMPTS_PER_DAY,
                 nextResetMillis = clock.nextResetMillis(now()),
                 practice = practice,
+                personalBest = scores.personalBest(game.id, game.higherWins)?.best,
+                isPersonalBest = !practice && score != null && previousPersonal != null &&
+                    if (game.higherWins) score > previousPersonal else score < previousPersonal,
             ),
         )
     }

@@ -10,6 +10,11 @@ interface ScoreRepository {
     fun best(dayIndex: Long, gameId: String): Long?
     /** Every stored daily best, oldest day first (feeds the Seasons history). */
     fun history(): List<DailyBest>
+
+    /** The best daily best ever for [gameId] by the game's rule (earliest day wins ties). */
+    fun personalBest(gameId: String, higherWins: Boolean): DailyBest? =
+        history().filter { it.gameId == gameId }
+            .let { if (higherWins) it.maxByOrNull(DailyBest::best) else it.minByOrNull(DailyBest::best) }
 }
 
 /** The best run of one day's game. */

@@ -64,13 +64,13 @@ class PersistentRepositoriesTest {
     }
 
     @Test
-    fun `scores older than the retention window are pruned`() = runTest {
+    fun `the full history is kept, years back`() = runTest {
         val store = InMemorySnapshotStore(mapOf((1L to "g") to 5L))
-        PersistentScoreRepository(store, backgroundScope).apply { load(); submit(100, "g", 7, higherWins = true) }
+        PersistentScoreRepository(store, backgroundScope).apply { load(); submit(1000, "g", 7, higherWins = true) }
         runCurrent()
         val restarted = PersistentScoreRepository(store, backgroundScope).apply { load() }
-        assertNull(restarted.best(1, "g"))
-        assertEquals(7L, restarted.best(100, "g"))
+        assertEquals(5L, restarted.best(1, "g"))
+        assertEquals(7L, restarted.best(1000, "g"))
     }
 
     // ---- settings ----

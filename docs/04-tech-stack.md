@@ -16,7 +16,7 @@
 - Repositories (`:core:data`): `AttemptRepository`, `ScoreRepository`, `SettingsRepository`. Screens call them synchronously; the state lives in memory (instant, offline-first) and every change is written through in the background.
 - **Where data lives is one seam: `SnapshotStore<T>`** (`read()` / `write()` of the whole snapshot). Today each repository uses `DataStoreSnapshotStore` (one entry in the app's Preferences DataStore, `rm_games.preferences_pb`), encoded by a versioned `SnapshotCodec` (`v1|…`; unreadable data → defaults, never a crash).
 - **Moving something to the cloud** = implement `SnapshotStore<T>` on the remote API (e.g. a Firestore document per player), or a store that writes local + remote and reads the newest, and pass it to the repository in `AppContainer` (`:app`). Screens, rules and tests stay the same; the codecs can be reused for the remote payload.
-- Attempts stay local by product rule (docs/02); daily bests (→ shared ranking, stream E) and settings are the cloud candidates. The full score history moves to Room in plan 09 PR 10.
+- Attempts stay local by product rule (docs/02); daily bests (→ shared ranking, stream E) and settings are the cloud candidates. Daily bests keep the full history in the same DataStore entry (no Room — plan 09 PR 10 decision), and personal bests are computed from it.
 - Storage failures are logged and never block play: the in-memory state stays authoritative and the next write retries.
 
 ## Constraints

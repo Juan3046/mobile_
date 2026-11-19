@@ -29,4 +29,16 @@ class ScoreHistoryTest {
             repo.history(),
         )
     }
+
+    @Test
+    fun `personal best is the best daily best ever, by the game's rule`() {
+        val repo = InMemoryScoreRepository()
+        repo.submit(10, "03-blink-sniper", 27, higherWins = true)
+        repo.submit(11, "03-blink-sniper", 31, higherWins = true)
+        repo.submit(12, "05-soda-shake", 900, higherWins = false)
+        repo.submit(13, "05-soda-shake", 845, higherWins = false)
+        assertEquals(DailyBest(11, "03-blink-sniper", 31), repo.personalBest("03-blink-sniper", higherWins = true))
+        assertEquals(DailyBest(13, "05-soda-shake", 845), repo.personalBest("05-soda-shake", higherWins = false))
+        assertEquals(null, repo.personalBest("02-onion-roll", higherWins = true))
+    }
 }

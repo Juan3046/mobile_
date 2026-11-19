@@ -20,8 +20,6 @@ import kotlinx.coroutines.flow.update
 /** Days of attempts kept: yesterday and today are enough for the noon boundary. */
 private const val ATTEMPT_DAYS_KEPT = 2L
 
-/** Days of daily bests kept on device; the full history arrives with Room/ranking (PR 10/13). */
-const val SCORE_DAYS_KEPT = 60L
 
 class PersistentAttemptRepository(
     store: SnapshotStore<Map<Long, Int>>,
@@ -80,8 +78,7 @@ class PersistentScoreRepository(
                 higherWins -> maxOf(current, value)
                 else -> minOf(current, value)
             }
-            bests[key] = next
-            bests.keys.removeAll { it.first <= dayIndex - SCORE_DAYS_KEPT }
+            bests[key] = next // full history kept: ~25 bytes per day, years fit in a few KB
             next
         }
         writer.schedule()

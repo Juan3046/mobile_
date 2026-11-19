@@ -24,12 +24,20 @@ data class PastSeason(val season: Int, val dateRange: String, val daysPlayed: In
 
 data class AllTime(val daysPlayed: Int, val seasonsPlayed: Int)
 
+/** The best day ever for one game. */
+data class PersonalBestRow(val gameId: String, val gameTitle: String, val best: Long, val dayIndex: Long, val dateLabel: String)
+
 /**
  * Seasons history built from the player's own daily bests (docs/03 §3.4, local data
  * first — plan 09 PR 13). Points and other players' standings come with the online
  * ranking (stream E); until then the screen shows what was played and the bests.
  */
-data class SeasonHistory(val current: SeasonSummary, val past: List<PastSeason>, val allTime: AllTime) {
+data class SeasonHistory(
+    val current: SeasonSummary,
+    val past: List<PastSeason>,
+    val allTime: AllTime,
+    val personalBests: List<PersonalBestRow> = emptyList(),
+) {
     companion object {
         private val dayFormat = DateTimeFormatter.ofPattern("EEE d MMM", Locale.US)
         private val dayMonth = DateTimeFormatter.ofPattern("d MMM", Locale.US)
@@ -43,6 +51,7 @@ data class SeasonHistory(val current: SeasonSummary, val past: List<PastSeason>,
             history: List<DailyBest>,
             titles: Map<String, String>,
             dailyGameId: (Long) -> String? = { null },
+            higherWins: (gameId: String) -> Boolean = { true },
         ): SeasonHistory {
             val inSeasons = history.filter { b ->
                 SeasonCalendar.seasonDay(b.dayIndex).season >= 1 &&
@@ -81,6 +90,10 @@ data class SeasonHistory(val current: SeasonSummary, val past: List<PastSeason>,
                     daysPlayed = inSeasons.map { it.dayIndex }.distinct().size,
                     seasonsPlayed = bySeason.size,
                 ),
+                personalBests = inSeasons.groupBy { it.gameId }.map { (id, days) ->
+                    val best = if (higherWins(id)) days.maxBy { it.best } else days.minBy { it.best }
+                    PersonalBestRow(id, titles[id] ?: id, best.best, best.dayIndex, LocalDate.ofEpochDay(best.dayIndex).format(dayFormat))
+                }.sortedBy { it.gameTitle },
             )
         }
 

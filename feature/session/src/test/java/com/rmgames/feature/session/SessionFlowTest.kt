@@ -193,4 +193,30 @@ class SessionFlowTest {
         assertEquals(SessionPhase.Intro, f.phase)
         assertTrue(f.start())
     }
+
+    // ---- personal best (all-time, across days) ----
+
+    @Test
+    fun `beating every earlier day is a personal best`() {
+        scores.submit(day - 3, "03-blink-sniper", 20, higherWins = true)
+        val s = flow().playTo(27)
+        assertTrue(s.isPersonalBest)
+        assertEquals(27L, s.personalBest)
+    }
+
+    @Test
+    fun `a daily best below an earlier day is not a personal best`() {
+        scores.submit(day - 3, "03-blink-sniper", 40, higherWins = true)
+        val s = flow().playTo(27)
+        assertTrue(s.isNewBest)
+        assertFalse(s.isPersonalBest)
+        assertEquals(40L, s.personalBest)
+    }
+
+    @Test
+    fun `the very first score is not celebrated as a personal best`() {
+        val s = flow().playTo(27)
+        assertFalse(s.isPersonalBest)
+        assertEquals(27L, s.personalBest)
+    }
 }

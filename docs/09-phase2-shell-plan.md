@@ -133,6 +133,11 @@
   no same game across a season boundary. Changing the rotation used to rewrite the history's past
   days, so debug-launched runs of a non-daily game are now **practice runs** (`SessionFlow
   practice = true`: no attempt, nothing recorded) and the history only uses the rotation for today.
+  **Status (2026-11-19): PR 10 done without Room** (user decision): the DataStore daily bests keep
+  the full history (no 60-day pruning; ~25 bytes/day) and `ScoreRepository.personalBest` gives the
+  all-time best per game. Result shows a "Personal best" stamp when a run beats every earlier day
+  (else the record under the score); the History tab lists personal bests per game. One storage
+  technology and one cloud seam (`SnapshotStore`) instead of adding Room + KSP.
   Arcade/playful, high
   contrast, readable at a glance, portrait, dark-first with a light variant.
 - **Tokens**: colour scheme (brand + per-game accent colours), typography
@@ -194,7 +199,7 @@ paginated top-50 reads, security rules. Separate PRs after D.1–D.3 work offlin
 | 7 | `:core:audio` (director, settings flow, focus, no main-thread work) — **done** | `:core:audio` | 6 |
 | 8 | Main screen (daily game, attempts, lock + countdown) — **done** (in-memory repos until 6) | `:feature:home`, `:app` nav | 4, 5, 6 |
 | 9 | Session: pre-run countdown, attempt consumption, result screen — **done** (in-memory repos until 6) | `:feature:session` | 4, 6 |
-| 10 | Room scores + daily best + local best | `:core:data` | 6 |
+| 10 | ~~Room~~ full score history + personal bests — **done on DataStore** (decided 2026-11-19) | `:core:data` | 6 |
 | 11 | Settings screen — **done** (sound applies with 7) | `:feature:settings`, `:app` nav | 4, 6, 7 |
 | 12 | Music & UI SFX wiring across screens — **done** in PR 7 (games' own SFX/haptics: see Status) | `:app`, features | 7, 8, 9 |
 | 13 | Ranking / Seasons History (local data first) — **done** (bests from DataStore, 60 days) | `:feature:ranking` | 10 |

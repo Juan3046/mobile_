@@ -41,6 +41,7 @@ Implementation (Phase 2 — `SessionRoute` in `:feature:session`, run logic in `
 - 3-2-1 countdown overlay with haptics, then the game starts (frozen `SessionGameScope` contract unchanged); non-own-HUD games get a host score chip.
 - Back during the countdown or the run asks to confirm, then forfeits the attempt and records nothing.
 - On finish the game's end state holds ~1 s ("Run over"), then the Result: "New best" stamp + confetti when the run beat today's best, the score counting up (one line, shrinks to fit), daily best and attempts tiles, **Play again** (straight to the countdown) or the locked "Back at 12:00" + countdown, and Back to home.
+- **Personal best**: when a run beats every earlier day for that game, the stamp reads "Personal best" (confetti + fanfare); otherwise the record is shown under the score. Not shown for the very first score.
 - A run belongs to the day it started even if it ends after 12:00. Runs with no score record nothing.
 - Provisional position/points: shown as a note until online ranking lands (plan 09 PR 16) — no local data to rank against yet.
 
@@ -50,9 +51,9 @@ Implementation (Phase 2 — `SessionRoute` in `:feature:session`, run logic in `
 
 Implementation, local data first (`SeasonsHistoryRoute` in `:feature:ranking`, plan 09 PR 13; opened from "Seasons history" on Main):
 - **Season** tab: season number, dates (noon-to-noon days), season strip, days played, and a day-by-day list (date · game · best, "Not played", "Today", "Upcoming").
-- **History** tab: all-time days played and seasons played, past seasons (dates, days played), newest first; empty state until Season 1 ends.
+- **History** tab: all-time days played and seasons played, **personal bests** per game (score + date), past seasons (dates, days played), newest first; empty state until Season 1 ends.
 - Only the day's daily game counts for that day (debug-launched runs of other games are ignored).
-- Built from the player's own daily bests (`ScoreRepository.history()`, last 60 days on device). Positions, season points and other players' standings show "—"/a note until the online ranking lands (stream E); the season strip hides points until then.
+- Built from the player's own daily bests (`ScoreRepository.history()`, full history on device). Positions, season points and other players' standings show "—"/a note until the online ranking lands (stream E); the season strip hides points until then.
 
 ## 3.5 Locked / No-Attempts State
 - Not a separate screen: Play disabled + countdown to next 12:00 noon + best of the day.

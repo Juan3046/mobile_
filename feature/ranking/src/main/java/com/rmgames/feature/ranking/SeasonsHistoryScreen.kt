@@ -52,7 +52,8 @@ fun SeasonsHistoryRoute(
     val feedback = LocalUiFeedback.current
     LaunchedEffect(Unit) { feedback.scene(AudioScene.Menu) }
     val history = remember(scores, clock, games) {
-        SeasonHistory.build(clock.dayIndex(), scores.history(), games.associate { it.id to it.title }, dailyGameId)
+        val rules = games.associate { it.id to it.higherWins }
+        SeasonHistory.build(clock.dayIndex(), scores.history(), games.associate { it.id to it.title }, dailyGameId) { rules[it] ?: true }
     }
     SeasonsHistoryScreen(history, onBack)
 }
@@ -117,6 +118,20 @@ private fun HistoryTab(h: SeasonHistory) {
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         StatTile("Days played", "${h.allTime.daysPlayed}", Modifier.weight(1f), caption = "all time")
         StatTile("Seasons", "${h.allTime.seasonsPlayed}", Modifier.weight(1f), caption = "with at least one day")
+    }
+    if (h.personalBests.isNotEmpty()) {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            SectionHeader("Personal bests")
+            RmCard(Modifier.fillMaxWidth()) {
+                Column(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                    h.personalBests.forEachIndexed { i, pb ->
+                        if (i > 0) RmListDivider(inset = false)
+                        val score = gameScoreText(pb.gameId, pb.best)
+                        RmListItem(pb.gameTitle, supporting = "${score.value} ${score.unit} · ${pb.dateLabel}", icon = RmIcons.Trophy)
+                    }
+                }
+            }
+        }
     }
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         SectionHeader("Past seasons")
