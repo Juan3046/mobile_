@@ -43,6 +43,7 @@ import com.rmgames.feature.game.compass.compassChaosEntry
 import com.rmgames.feature.game.casino.porubaCasinoEntry
 import com.rmgames.feature.game.onion.onionRollEntry
 import com.rmgames.feature.game.soda.sodaShakeEntry
+import com.rmgames.feature.game.rush.classRushEntry
 import com.rmgames.feature.home.HomeRoute
 import com.rmgames.feature.session.SessionRoute
 import com.rmgames.feature.settings.SettingsRoute
@@ -128,6 +129,7 @@ private fun rememberGameRegistry(): GameRegistry {
                 blinkSniperEntry(MlKitBlinkDetector(context, lifecycleOwner)),
                 compassChaosEntry(AndroidCompassSensor(context)),
                 sodaShakeEntry(AndroidAccelerometerSensor(context)),
+                classRushEntry(AndroidAccelerometerSensor(context)),
             ),
         )
     }

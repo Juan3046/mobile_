@@ -15,6 +15,7 @@ fun gameSensor(gameId: String): GameSensor? = when (gameId.split('-').getOrNull(
     "blink" -> GameSensor("Front camera", RmIcons.Camera)
     "compass" -> GameSensor("Compass", RmIcons.Compass)
     "soda" -> GameSensor("Shake", RmIcons.Shake)
+    "class" -> GameSensor("Tilt", RmIcons.Tilt)
     else -> null
 }
 
@@ -67,6 +68,15 @@ fun gameHowTo(gameId: String): HowTo? = when (gameId.split('-').getOrNull(1)) {
         ),
         goal = "Pop the can as fast as you can.",
     )
+    "class" -> HowTo(
+        listOf(
+            "Hold the phone comfortably: that pose is neutral.",
+            "Tilt it forward to hop ahead, back to hop back, sideways to step.",
+            "Dodge cars and trams (a red light warns). On the pond, stay on the ice.",
+            "Don't stand still: 6 seconds without progress ends the run.",
+        ),
+        goal = "Cross as many rows as you can in 60 seconds.",
+    )
     else -> null
 }
 
@@ -92,6 +102,7 @@ data class ScoreText(val value: String, val unit: String)
 fun gameScoreText(gameId: String, raw: Long): ScoreText = when (gameId.split('-').getOrNull(1)) {
     "onion" -> ScoreText(formatPoints(raw), if (raw == 1L) "second" else "seconds")
     "poruba" -> ScoreText(formatPoints(raw), if (raw == 1L) "banana" else "bananas")
+    "class" -> ScoreText(formatPoints(raw), if (raw == 1L) "row" else "rows")
     "soda" -> ScoreText("%d.%02d".format(java.util.Locale.US, raw / 100, raw % 100), "seconds")
     else -> ScoreText(formatPoints(raw), if (raw == 1L) "point" else "points")
 }

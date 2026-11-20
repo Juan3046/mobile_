@@ -12,6 +12,7 @@ internal fun requiredSensors(gameId: String): List<SensorType> = when (gameId.sp
     "blink" -> listOf(SensorType.FRONT_CAMERA)
     "compass" -> listOf(SensorType.MAGNETOMETER)
     "soda" -> listOf(SensorType.ACCELEROMETER)
+    "class" -> listOf(SensorType.ACCELEROMETER)
     else -> emptyList()
 }
 

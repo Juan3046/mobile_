@@ -9,6 +9,7 @@ Games (one owner each — Phase 1b):
 :feature:game:blink         P3 — Game 03 (front camera → :core:vision)
 :feature:game:compass       P4 — Game 04 (magnetometer)
 :feature:game:soda          P4 — Game 05 (accelerometer)
+:feature:game:rush          P2 — Game 06 Class Rush (accelerometer tilt; added 2026-11-20)
 
 Shared (frozen in Phase 1a — built together, no cross-module edits afterwards):
 :app                        shell: MainActivity, NavHost, DI, navigation routes,
