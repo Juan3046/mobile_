@@ -322,10 +322,10 @@ internal fun formatTenths(millis: Long): String {
     return tenths.toString()
 }
 
-/** Copy for the end-of-run banner: winning the timer reads differently from crashing. */
+/** Copy for the end-of-run banner: winning the timer reads differently from being pushed off screen. */
 internal fun endBanner(endReason: EndReason?): String = when (endReason) {
     EndReason.TIME_UP -> "TIME'S UP!"
-    EndReason.HIT -> "CRASH!"
+    EndReason.LEFT_BEHIND -> "LEFT BEHIND!"
     null -> ""
 }
 

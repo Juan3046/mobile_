@@ -108,7 +108,7 @@ class SoundBarrierGame(
             elapsedMs = engine.elapsedMs,
             remainingMs = (engine.durationMs - engine.elapsedMs).coerceAtLeast(0L),
             ballY = engine.ballY,
-            ballX = config.playerX,
+            ballX = engine.ballX,
             ballRadius = config.playerRadius,
             soundLevel = soundLevel,
             soundDetected = soundDetected(),

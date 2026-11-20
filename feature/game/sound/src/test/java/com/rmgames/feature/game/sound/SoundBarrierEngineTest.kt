@@ -14,7 +14,8 @@ import kotlin.random.Random
  * Spec: docs/games/06-sound-barrier.md — the track advances on its own, the ball
  * rises while sound is detected and falls while silent, a barrier scores +1 only
  * when the ball is inside the gap at the instant the barrier finishes passing it,
- * and missing that instant ends the run keeping the score.
+ * a bar that touches the ball carries it backwards (left) and the run ends only
+ * when the ball is pushed off the screen.
  */
 class SoundBarrierEngineTest {
 
@@ -231,39 +232,66 @@ class SoundBarrierEngineTest {
     }
 
     @Test
-    fun `touching a bar ends the run while it is still sweeping past`() {
+    fun `touching a bar pushes the ball backwards instead of ending the run`() {
         // Gap down at 0.20, ball parked at 0.50 -> the bar sweeps straight across
-        // the ball's hitbox. Hitting it must stop the corridor before the barrier
-        // even finishes passing (docs/games/06-sound-barrier.md — Contact).
+        // the ball's hitbox. Contact must carry the ball backwards (left), never
+        // kill it on the spot (docs/games/06-sound-barrier.md — Contact).
         val engine = engine(testConfig(gapCenterMin = 0.20, gapCenterMax = 0.20))
         engine.tick(0, soundDetected = false)
 
-        runTo(engine, 2_000)
+        runTo(engine, 2_600)
 
-        assertTrue("the run must end on contact", engine.isFinished)
-        assertEquals(EndReason.HIT, engine.endReason)
+        assertFalse("contact must not end the run", engine.isFinished)
+        assertTrue("expected the ball pushed left, x=${engine.ballX}", engine.ballX < 0.5)
         assertEquals(0, engine.score)
     }
 
     @Test
-    fun `climbing out of the gap while the barrier sweeps crashes the run`() {
+    fun `climbing out of the gap while the barrier sweeps pushes the ball back`() {
         // The ball starts inside the gap and pushes its way into the upper bar
-        // while the barrier is still crossing it: the hitbox decides, not the
-        // instant the sweep ends.
+        // while the barrier is still crossing it: the leading face carries it
+        // backwards instead of ending the run.
         val engine = engine(testConfig(thrust = 50.0, maxRiseSpeed = 2.0))
         engine.tick(0, soundDetected = false)
         runTo(engine, 1_900)
         assertEquals(0.5, engine.ballY, 1e-9)
         assertFalse("still sweeping, still alive", engine.isFinished)
 
-        runTo(engine, 2_200, soundDetected = true)
+        runTo(engine, 2_400, soundDetected = true)
 
-        assertTrue(engine.isFinished)
-        assertEquals(EndReason.HIT, engine.endReason)
+        assertFalse("contact must not end the run", engine.isFinished)
+        assertTrue("expected the ball pushed left, x=${engine.ballX}", engine.ballX < 0.5)
+        assertEquals(0, engine.score)
+    }
+
+    @Test
+    fun `being carried off the left edge ends the run keeping the score`() {
+        // Never aligned: the bar keeps carrying the ball backwards until the whole
+        // ball leaves the screen, which is the only contact-driven way to lose.
+        val engine = engine(testConfig(gapCenterMin = 0.20, gapCenterMax = 0.20))
+        engine.tick(0, soundDetected = false)
+
+        runTo(engine, 5_000)
+
+        assertTrue("the run must end once the ball is off screen", engine.isFinished)
+        assertEquals(EndReason.LEFT_BEHIND, engine.endReason)
         assertEquals(0, engine.score)
     }
 
     // --- Difficulty ----------------------------------------------------------
+
+    @Test
+    fun `the first barrier takes about three seconds to arrive`() {
+        // Onboarding pace (playtest feedback): at the old0.34 widths/s the first
+        // sweep reached the ball at ~1.9s, too fast to even hear the mic.
+        val config = SoundBarrierConfig()
+        val secondsToBall = (config.spawnX - config.playerX) / config.startSpeed
+
+        assertTrue(
+            "first barrier reaches the ball at ${secondsToBall}s",
+            secondsToBall >= 3.0,
+        )
+    }
 
     @Test
     fun `the track scrolls faster near the end of the run`() {

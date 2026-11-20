@@ -27,9 +27,9 @@ class SoundBarrierScreenTest {
     }
 
     @Test
-    fun `the banner tells a win from a crash`() {
+    fun `the banner tells a win from being pushed off screen`() {
         assertEquals("TIME'S UP!", endBanner(EndReason.TIME_UP))
-        assertEquals("CRASH!", endBanner(EndReason.HIT))
+        assertEquals("LEFT BEHIND!", endBanner(EndReason.LEFT_BEHIND))
         assertEquals("", endBanner(null))
     }
 

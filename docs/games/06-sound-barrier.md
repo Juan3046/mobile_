@@ -17,14 +17,13 @@ player literally shouts or claps to climb and goes quiet to drop.
 - **Objective**: pass as many barriers as possible within 60 seconds.
 - **Pass**: **+1 point**, awarded only when the ball is inside the gap at the
   instant the barrier finishes passing it.
-- **Fail**: the ball's hitbox touches a bar → the run ends immediately (the
-  corridor stops advancing). A ball that reaches the pass instant outside its gap
-  is always touching a bar already, so that case resolves as the same crash.
-  Points already earned are kept.
+- **Fail**: a bar that touches the ball carries it **backwards (left)**; the run
+  ends only when the ball is pushed completely off the screen (banner
+  `LEFT BEHIND!`). Points already earned are kept.
 - **Hitboxes**: the ball and both bars of every barrier have hitboxes. The ball
   occupies `playerRadius` around its centre on each normalized axis, and the bars
   occupy everything except their gap — grazing the rim of an opening counts as
-  touching it.
+  touching it, which pushes the ball back rather than ending the run.
 
 ## Controls & Sensors
 - **Microphone (`android.permission.RECORD_AUDIO`)**:
@@ -36,7 +35,7 @@ player literally shouts or claps to climb and goes quiet to drop.
   of pinning it. On contact the vertical speed is reversed and scaled by the
   restitution factor (`bounceRestitution`, **0.8** by default: the ball keeps 80 %
   of its speed, so a fall settles after a couple of rebounds). Running out of sound
-  never kills on its own — only a missed gap does.
+  never kills on its own; the ball only loses when a bar pushes it off the screen.
 - **Permission**: requires runtime `android.permission.RECORD_AUDIO`.
 - **Desktop / Emulator Debug Only**: holding `Space` counts as sound, releasing it
   as silence (stripped from release builds).
@@ -45,20 +44,21 @@ player literally shouts or claps to climb and goes quiet to drop.
 - **Orientation**: portrait only.
 - **Duration**: fixed **60-second timer** (within the global 30–90s rule).
 - **Scroll style**: the barrier track travels right-to-left on its own; the ball
-  keeps a fixed horizontal position **at the centre of the screen** and only
-  moves vertically. No camera view.
+  starts at the centre of the screen and moves vertically — a bar that touches it
+  pushes it backwards (left) instead. No camera view.
 
 ## Rules & Scoring
 - **One run = one attempt** (global 2-attempts/day rule; best of 2 counts).
 - **Pass detection**: a barrier has passed the ball when its **trailing edge**
   crosses the ball's horizontal position. At that instant:
   - ball centre inside the gap → **+1 point**, run continues;
-  - otherwise → **Game Over**, points banked (normally resolved earlier as a
-    crash, since a ball outside its gap is already touching a bar).
-- **Contact**: the ball's hitbox touching a bar at **any moment** ends the run
-  immediately — the corridor stops advancing and the score is banked. There is no
-  bounce off the bars and no damage model: touching one is simply the end. The
-  player has the whole length of the sweep to line the ball up with the opening.
+  - otherwise → **no point** (a ball outside its gap is still being carried
+    backwards by that bar, so it cannot have finished passing it cleanly).
+- **Contact**: the ball's hitbox touching a bar at **any moment** carries the ball
+  **backwards (left)** for as long as they touch — contact never ends the run on
+  the spot. Slipping into the gap is the way out; a ball carried past the left
+  edge of the screen ends the run (`LEFT BEHIND!`), points banked. The player has
+  the whole length of the sweep to line the ball up with the opening.
 - **Target movement**: barriers travel right to left; each one has its own gap
   size and vertical placement.
 - **Win / Finish State**: the timer reaches `0.0s` (`TIME'S UP!`) — the run ends as
@@ -83,8 +83,10 @@ Continuous time-based ramp over the 60-second run:
   counts as loud (this doubles as the "is the mic hearing me?" feedback).
 
 ## Game Over & Results Flow
-- **On a crash (the ball touches a bar)**: the corridor freezes and the final
-  score is shown (retained points).
+- **On a miss (a bar pushes the ball off the screen)**: the corridor freezes, the
+  `LEFT BEHIND!` banner shows and the final score is displayed (retained points).
+  The session host then offers **PLAY AGAIN** and **HOME** (docs/03-screens.md —
+  Game Screen).
 - **On Timer Expiration (60s)**: `TIME'S UP!` + final score summary.
 - **Retry**: respects remaining daily attempts (lock + countdown if 0 remain).
 

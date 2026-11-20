@@ -6,6 +6,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -104,9 +105,10 @@ class SoundBarrierGameTest {
     }
 
     @Test
-    fun `missing a gap ends the run as a loss that keeps the score`() = runTest {
+    fun `missing a gap carries the ball off screen and ends the run as a loss`() = runTest {
         // Gap down at 0.20 while the ball rests at 0.50 -> the first barrier sweeps
-        // across the ball's hitbox and crashes it (about 1.9s in).
+        // across the ball's hitbox and carries it backwards until it leaves the
+        // screen (~5.7s in at the default pace).
         val game = SoundBarrierGame(
             FakeSoundSensor(),
             config = testConfig(gapCenter = 0.20),
@@ -116,13 +118,34 @@ class SoundBarrierGameTest {
         game.start(scope)
         testScheduler.runCurrent()
 
-        testScheduler.advanceTimeBy(3_100)
+        testScheduler.advanceTimeBy(6_200)
         testScheduler.runCurrent()
 
         assertEquals(listOf(false), scope.finishes)
         assertTrue(game.state.value.finished)
-        assertEquals(EndReason.HIT, game.state.value.endReason)
+        assertEquals(EndReason.LEFT_BEHIND, game.state.value.endReason)
         assertEquals(0, game.state.value.score)
+    }
+
+    @Test
+    fun `the UI state mirrors where the bars pushed the ball`() = runTest {
+        // The screen must draw the ball where the engine pushed it, not at the
+        // fixed centre it starts from.
+        val game = SoundBarrierGame(
+            FakeSoundSensor(),
+            config = testConfig(gapCenter = 0.20),
+            timeSource = { testScheduler.currentTime },
+        )
+        val scope = RecordingScope(backgroundScope)
+        game.start(scope)
+        testScheduler.runCurrent()
+
+        // Mid-push (contact from ~3.3s, off screen at ~5.7s).
+        testScheduler.advanceTimeBy(4_000)
+        testScheduler.runCurrent()
+
+        assertTrue("ballX=${game.state.value.ballX}", game.state.value.ballX < 0.5)
+        assertFalse(game.state.value.finished)
     }
 
     @Test
@@ -136,8 +159,8 @@ class SoundBarrierGameTest {
         game.start(scope)
         testScheduler.runCurrent()
 
-        // First barrier clears at ~2.21s; the next one is not due until ~3.83s.
-        testScheduler.advanceTimeBy(3_100)
+        // First barrier clears at ~3.75s; the next one is not due until ~6.5s.
+        testScheduler.advanceTimeBy(4_000)
         testScheduler.runCurrent()
 
         assertEquals(listOf(1L), scope.scores)
