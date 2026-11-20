@@ -202,6 +202,7 @@ fun RMGamesNav(container: AppContainer) {
                 repository = container.settings,
                 appVersion = remember { appVersion(context) },
                 nick = nick,
+                online = container.online,
                 onBack = { nav.popBackStack() },
                 onResetAttempts = if (debuggable) {
                     { attempts.reset(clock.dayIndex()) }

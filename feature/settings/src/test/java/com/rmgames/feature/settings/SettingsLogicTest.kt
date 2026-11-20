@@ -8,6 +8,14 @@ import java.io.File
 class SettingsLogicTest {
 
     @Test
+    fun `privacy note tells the truth with and without the online ranking`() {
+        val online = privacyNote(online = true)
+        assertEquals("Anonymous, no personal data", online.first)
+        assertTrue(online.second.contains("nick and each day's best score"))
+        assertEquals("Your data stays on this phone", privacyNote(online = false).first)
+    }
+
+    @Test
     fun `volume shows as a whole percentage`() {
         assertEquals("70%", volumeLabel(0.7f))
         assertEquals("0%", volumeLabel(0f))

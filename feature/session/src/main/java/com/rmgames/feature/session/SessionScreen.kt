@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -200,6 +201,8 @@ private fun IntroScreen(game: Game, thumbnail: (@Composable () -> Unit)?, attemp
                 gameId = game.id, title = game.title, howToPlay = game.description,
                 sensorLabel = sensor?.label.orEmpty(), sensorIcon = sensor?.icon,
                 durationLabel = gameDurationLabel(game.id, game.durationMs),
+                // Shorter art than the 16:9 default so the steps start above the fold.
+                thumbnailAspectRatio = 2.2f,
                 art = thumbnail,
             )
             gameHowTo(game.id)?.let { HowToCard(it, Modifier.padding(top = d.gapSection)) }
@@ -269,7 +272,8 @@ private fun HowToCard(howTo: HowTo, modifier: Modifier = Modifier) {
             Text("HOW TO PLAY", style = MaterialTheme.typography.labelSmall, color = c.onSurfaceVariant)
             howTo.steps.forEachIndexed { i, step ->
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("${i + 1}", style = MaterialTheme.typography.titleMedium, color = c.primary)
+                    // Fixed-width number column so every step's text lines up.
+                    Text("${i + 1}", Modifier.width(16.dp), style = MaterialTheme.typography.titleMedium, color = c.primary)
                     Text(step, style = MaterialTheme.typography.bodyMedium, color = c.onSurface)
                 }
             }

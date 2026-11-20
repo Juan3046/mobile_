@@ -56,6 +56,8 @@ fun SettingsRoute(
     onBack: () -> Unit,
     onResetAttempts: (() -> Unit)? = null,
     onForgetNick: (() -> Unit)? = null,
+    /** The build uploads nick + daily bests (Firebase configured). */
+    online: Boolean = false,
 ) {
     val settings by repository.settings.collectAsStateWithLifecycle()
     val feedback = LocalUiFeedback.current
@@ -68,6 +70,7 @@ fun SettingsRoute(
         onBack = onBack,
         onResetAttempts = onResetAttempts,
         onForgetNick = onForgetNick,
+        online = online,
     )
 }
 
@@ -81,6 +84,7 @@ fun SettingsScreen(
     onBack: () -> Unit,
     onResetAttempts: (() -> Unit)? = null,
     onForgetNick: (() -> Unit)? = null,
+    online: Boolean = false,
 ) {
     val c = RmTheme.colors
     val d = RmTheme.dimens
@@ -116,11 +120,8 @@ fun SettingsScreen(
                 RmListItem(nick ?: "Nick", supporting = if (nick != null) "Your nick · set once, can't be changed" else "Not chosen yet", icon = RmIcons.User)
             }
             Group("Privacy") {
-                RmListItem(
-                    "Your data stays on this phone",
-                    supporting = "Attempts, scores and settings are stored only on this device. No account, no personal data.",
-                    icon = RmIcons.Lock,
-                )
+                val (title, text) = privacyNote(online)
+                RmListItem(title, supporting = text, icon = RmIcons.Lock)
             }
             Group("Credits & licences") {
                 Credits.fonts.forEachIndexed { i, f ->

@@ -112,7 +112,7 @@ private fun SeasonTab(s: SeasonSummary, online: OnlineStandings) {
         SeasonStrip(s.season, todayIndex, points = null, showLabels = false)
     }
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        StatTile("Days played", "${s.daysPlayed} / ${s.days.size}", Modifier.weight(1f))
+        StatTile("Days played", "${s.daysPlayed} / ${s.days.size}", Modifier.weight(1f), caption = "this season")
         val (points, caption) = seasonPointsTile(online.online, online.standings)
         StatTile("Season points", points, Modifier.weight(1f), caption = caption)
     }
