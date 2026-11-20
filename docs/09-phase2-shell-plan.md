@@ -165,6 +165,8 @@
   provisional "#p of N" + points, Seasons history with per-day positions, season points and today's
   top 50. Decision: no all-player season leaderboard in the MVP (03 §3.4). Needs the updated rules
   published in the Firebase console.
+  **Verified on device (2026-11-20)** with two phones (two anonymous players): uploads, provisional
+  positions, season points and today's top 50 behave as specified with the published rules.
   Arcade/playful, high
   contrast, readable at a glance, portrait, dark-first with a light variant.
 - **Tokens**: colour scheme (brand + per-game accent colours), typography
@@ -232,7 +234,7 @@ paginated top-50 reads, security rules. Separate PRs after D.1–D.3 work offlin
 | 13 | Ranking / Seasons History (local data first) — **done** (bests from DataStore, 60 days) | `:feature:ranking` | 10 |
 | 14 | App icon, splash, edge-to-edge — **done** | `:app` | 3 |
 | 15 | Firebase: auth + nick onboarding — **UI + rules done**, Firebase adapter waits for the project | `:core:data`, `:feature:onboarding` | 8 |
-| 16 | Firebase: daily-best upload + ranking reads — **done** (device check pending) | `:core:data`, `:core:online`, `:feature:session`, `:feature:ranking` | 13, 15 |
+| 16 | Firebase: daily-best upload + ranking reads — **done** (verified on 2 devices) | `:core:data`, `:core:online`, `:feature:session`, `:feature:ranking` | 13, 15 |
 | 17 | Thumbnails contract + fallback (Decision 5); owners add theirs — **done** (all 5 drawn) | `:core:common`, games | 4 |
 
 Exit of Phase 2 (`08`): full daily loop works offline with 2 attempts enforced,
