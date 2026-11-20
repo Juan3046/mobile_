@@ -2,6 +2,8 @@ package com.rmgames.app
 
 import com.rmgames.core.data.LocalNickRegistry
 import com.rmgames.core.data.NickRegistry
+import com.rmgames.core.data.OfflineRanking
+import com.rmgames.core.data.Ranking
 import com.rmgames.core.data.Reservation
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
@@ -21,5 +23,12 @@ class OnlineWiringTest {
     fun `without a Firebase config the app stays on the local stand-in and never builds the online one`() {
         val chosen = chooseNickRegistry(firebaseConfigured = false) { error("must not be built") }
         assertTrue(chosen is LocalNickRegistry)
+    }
+
+    @Test
+    fun `the ranking is online only with a Firebase config`() {
+        val remote = object : Ranking by OfflineRanking() { override val isOnline = true }
+        assertSame(remote, chooseRanking(firebaseConfigured = true) { remote })
+        assertTrue(chooseRanking(firebaseConfigured = false) { error("must not be built") } is OfflineRanking)
     }
 }

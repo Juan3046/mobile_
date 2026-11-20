@@ -179,6 +179,7 @@ fun RMGamesNav(container: AppContainer) {
                 // Today's game from the current rotation; past days use what was recorded
                 // (practice runs never record, so stored bests are always the daily game).
                 dailyGameId = { day -> if (day == clock.dayIndex()) todaysGame(day) else null },
+                ranking = container.ranking,
             )
         }
         composable("settings") {
@@ -211,6 +212,7 @@ fun RMGamesNav(container: AppContainer) {
                     onExit = { nav.popBackStack("home", inclusive = false) },
                     // Only today's game counts; any other game (debug launcher) is a practice run.
                     practice = gameId != todaysGame(clock.dayIndex()),
+                    ranking = container.ranking,
                 )
             }
         }

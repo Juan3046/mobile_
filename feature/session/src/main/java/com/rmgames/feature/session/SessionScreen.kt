@@ -59,6 +59,8 @@ import com.rmgames.core.common.ui.gameSensor
 import com.rmgames.core.common.ui.rememberRemaining
 import com.rmgames.core.data.AttemptRepository
 import com.rmgames.core.data.DayClock
+import com.rmgames.core.data.PlayedDay
+import com.rmgames.core.data.RankingSync
 import com.rmgames.core.data.ScoreRepository
 import kotlinx.coroutines.delay
 
@@ -83,6 +85,8 @@ fun SessionRoute(
     clock: DayClock,
     onExit: () -> Unit,
     practice: Boolean = false,
+    /** Uploads the daily best and reads the provisional position; null = no online ranking. */
+    ranking: RankingSync? = null,
 ) {
     if (entry == null) {
         NotFound(onExit)
@@ -133,13 +137,24 @@ fun SessionRoute(
             IntroScreen(entry.game, entry.thumbnail, flow.attemptsLeft(), locked = phase == SessionPhase.Locked, practice = practice, onStart = ::startRun, onClose = onExit)
         is SessionPhase.Finished -> {
             var showResult by remember(phase) { mutableStateOf(false) }
+            val s = phase.summary
+            var rank by remember(phase) {
+                mutableStateOf(initialResultRanking(s.practice, ranking?.isOnline == true, s.dailyBest != null))
+            }
+            LaunchedEffect(phase) {
+                val best = s.dailyBest
+                if (rank == ResultRanking.Loading && ranking != null && best != null) {
+                    rank = ranking.report(PlayedDay(s.dayIndex, entry.game.id, best, entry.game.higherWins))
+                        ?.let { ResultRanking.Known(it) } ?: ResultRanking.Unknown
+                }
+            }
             LaunchedEffect(phase) {
                 delay(END_HOLD_MS)
                 showResult = true
                 feedback.scene(AudioScene.Menu)
                 if (phase.summary.isNewBest || phase.summary.isPersonalBest) feedback.cue(UiCue.NewBest)
             }
-            if (showResult) ResultScreen(entry.game, phase.summary, onPlayAgain = ::startRun, onHome = onExit)
+            if (showResult) ResultScreen(entry.game, phase.summary, rank, onPlayAgain = ::startRun, onHome = onExit)
             else RunStage(entry, phase, flow.liveScore)
         }
         else -> RunStage(entry, phase, flow.liveScore)
@@ -239,7 +254,7 @@ private fun CountdownOverlay(secondsLeft: Int) {
 
 /** Result (docs/03 §3.3): score, daily best, attempts, ranking note, Play again or lock. */
 @Composable
-private fun ResultScreen(game: Game, s: RunSummary, onPlayAgain: () -> Unit, onHome: () -> Unit) {
+private fun ResultScreen(game: Game, s: RunSummary, rank: ResultRanking, onPlayAgain: () -> Unit, onHome: () -> Unit) {
     val c = RmTheme.colors
     val d = RmTheme.dimens
     val runNumber = (s.attemptsTotal - s.attemptsLeft).coerceAtLeast(1)
@@ -282,10 +297,10 @@ private fun ResultScreen(game: Game, s: RunSummary, onPlayAgain: () -> Unit, onH
             }
             RmCard(Modifier.fillMaxWidth()) {
                 Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(if (s.practice) "PRACTICE RUN" else "PROVISIONAL RANKING", style = MaterialTheme.typography.labelSmall, color = c.onSurfaceVariant)
-                    Text(if (s.practice) "Debug practice: this score is not saved and no attempt was used."
-                        else "Your best of the day decides your position. Position and season points show here once online ranking arrives.",
-                        style = MaterialTheme.typography.bodyMedium, color = c.onSurface)
+                    val note = resultRankingNote(rank)
+                    Text(note.label, style = MaterialTheme.typography.labelSmall, color = c.onSurfaceVariant)
+                    note.headline?.let { Text(it, style = MaterialTheme.typography.headlineMedium, color = c.onSurface) }
+                    Text(note.body, style = MaterialTheme.typography.bodyMedium, color = c.onSurface)
                 }
             }
         }

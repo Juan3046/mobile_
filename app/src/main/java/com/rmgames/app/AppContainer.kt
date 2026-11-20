@@ -11,6 +11,9 @@ import com.rmgames.core.data.PersistentScoreRepository
 import com.rmgames.core.data.SettingsRepository
 import com.rmgames.core.online.FirebaseAnonymousAuth
 import com.rmgames.core.online.FirestoreNickDirectory
+import com.rmgames.core.online.FirestoreRankingStore
+import com.rmgames.core.online.OnlineRanking
+import com.rmgames.core.data.RankingSync
 import com.rmgames.core.online.OnlineNickRegistry
 import com.rmgames.core.data.NickClaim
 import com.rmgames.core.data.NickRegistry
@@ -63,6 +66,17 @@ class AppContainer(context: Context) {
         OnlineNickRegistry(FirebaseAnonymousAuth(), FirestoreNickDirectory(), onError = { Log.w("RmOnline", "nick reservation failed", it) })
     }
     val nickClaim = NickClaim(nickRegistry, players)
+
+    /**
+     * Daily online ranking (plan 09 PR 16): `days/{day}/games/{game}/players/{uid}` in Firestore
+     * when configured; offline builds show no positions. One anonymous identity for both.
+     */
+    val ranking = RankingSync(
+        chooseRanking(online) {
+            OnlineRanking(FirebaseAnonymousAuth(), FirestoreRankingStore(), onError = { Log.w("RmOnline", "ranking call failed", it) })
+        },
+        nick = { players.nick.value },
+    )
 
     /**
      * App-wide music and UI sounds (plan 09 PR 7). Synthesized in code; all AudioTrack work
