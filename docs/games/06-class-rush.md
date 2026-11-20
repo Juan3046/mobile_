@@ -19,11 +19,16 @@ procedural art (no assets, no references to other games).
 - **Tilt the phone forward** (top edge away from you) to hop one row forward.
 - **Tilt it back** (top edge towards you) to hop one row back.
 - **Tilt left / right** to step one column sideways.
-- One tilt = one hop; keep it tilted to repeat (every 0.35 s). Return to neutral to re-arm.
-- Neutral is calibrated from how the player holds the phone when the run starts, and slowly
-  follows it while the phone rests in the neutral zone.
-- Thresholds (tune by playtest): hop at ≥ 18° away from neutral, re-arm under 9°. Sideways
-  takes priority only when it is the larger tilt.
+- **One tilt = one hop**: come back to the middle to hop again (holding never repeats).
+- Neutral is the pose held while the run starts (~0.4 s of readings) and slowly follows the
+  hand while it rests in the middle.
+- Readings are low-passed to gravity, so a jolt of the hand is not a tilt. A hop needs ≥ 15°
+  on one clear axis (the other axis at most 1/1.4 of it: diagonals are ignored); coming back
+  under 8° re-arms. Tuning history: the first version (18°/9°, raw readings, auto-repeat every
+  0.35 s) felt "very bad" in the 2026-11-20 playtest.
+- **Tilt indicator** (bottom right): the dot is the phone's tilt, the ring is where a hop
+  fires, the inner disc is the middle that re-arms.
+- Debug builds log the angles to Logcat (`RushTilt`) for tuning.
 - Debug builds: arrow keys / WASD hop (emulator only).
 
 ## Lanes & hazards
@@ -33,7 +38,7 @@ procedural art (no assets, no references to other games).
   before it enters the screen. Touching it ends the run.
 - **Pond**: ice floes of 2–3 cells drift sideways. Stand on a floe (it carries you); landing
   in the water or being carried off the edge ends the run.
-- **Too slow**: 6 s without reaching a new row ends the run ("The lecture started without you").
+- **Too slow**: 8 s without reaching a new row ends the run ("The lecture started without you").
 
 ## Scoring
 - **Score = rows advanced (the furthest row reached)**, higher wins (`higherWins = true`).

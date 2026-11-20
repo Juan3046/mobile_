@@ -111,7 +111,7 @@ class ClassRushEngineTest {
     fun `standing still too long ends the run`() {
         val e = engine()
         e.hop(Hop.FORWARD)
-        e.tick(5_900)
+        e.tick(7_900)
         assertEquals(RushPhase.PLAYING, e.state.value.phase)
         e.hop(Hop.LEFT) // sideways is not progress
         e.tick(200)
@@ -131,7 +131,7 @@ class ClassRushEngineTest {
     @Test
     fun `after the run ends nothing moves`() {
         val e = engine()
-        e.tick(6_100)
+        e.tick(8_100)
         e.hop(Hop.FORWARD)
         assertEquals(0, e.state.value.row)
     }

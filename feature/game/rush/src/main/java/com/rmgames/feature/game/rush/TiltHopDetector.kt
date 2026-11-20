@@ -5,38 +5,60 @@ import kotlin.math.abs
 import kotlin.math.asin
 import kotlin.math.atan2
 
-/** Readings averaged into the neutral pose when a run starts (~0.2 s). */
-const val CALIBRATION_SAMPLES = 10
-
-/** Holding a tilt repeats the hop this often. */
-const val REPEAT_MS = 350L
+/** Readings averaged into the neutral pose when a run starts (~0.4 s at 50 Hz). */
+const val CALIBRATION_SAMPLES = 20
 
 /** Tilt (degrees from neutral) that hops, and the calm zone that re-arms. */
-private const val HOP_DEG = 18f
-private const val REARM_DEG = 9f
+const val HOP_DEG = 15f
+const val REARM_DEG = 8f
+
+/** The hop axis must beat the other one by this factor (no diagonal guesses). */
+private const val AXIS_DOMINANCE = 1.4f
+
+/** Gravity low-pass per reading: removes hand jolts (~70 ms at 50 Hz). */
+private const val SMOOTHING = 0.25f
 
 /** How fast neutral follows the hand while it rests in the calm zone. */
-private const val NEUTRAL_FOLLOW = 0.02f
+private const val NEUTRAL_FOLLOW = 0.01f
+
+/** Current tilt from neutral in degrees: [lean] + = top edge away, [roll] + = left edge down. */
+data class Tilt(val lean: Float = 0f, val roll: Float = 0f)
 
 /**
- * Turns accelerometer readings (gravity, m/s²) into hops (docs/games/06 "Controls"). Two
- * angles are measured against the pose the phone had when the run started: leaning back
- * (top edge away = forward hop, towards you = back hop) and rolling (left edge down = left).
- * One tilt is one hop; holding it repeats every [REPEAT_MS]; coming back to neutral re-arms.
+ * Turns accelerometer readings (m/s², gravity included) into hops (docs/games/06 "Controls").
+ *
+ * Playtest 2026-11-20 ("very bad"): raw readings include the hand's own movement, holding a
+ * tilt repeated hops into traffic, and re-arming needed an exact return to neutral. Now:
+ * readings are low-passed to gravity; two angles (lean back/forward, roll left/right) are
+ * measured against the pose held at the start; a tilt past [HOP_DEG] on one clear axis is
+ * exactly one hop; coming back inside [REARM_DEG] re-arms. Holding never repeats.
  */
 class TiltHopDetector {
     private var samples = 0
+    private var gx = 0f
+    private var gy = 0f
+    private var gz = 0f
     private var baseLean = 0f
     private var baseRoll = 0f
     private var armed = true
-    private var lastHop: Hop? = null
-    private var lastHopAt = 0L
 
-    fun onSample(g: Vector3, nowMs: Long): Hop? {
-        val norm = g.magnitude
-        if (norm < 1f) return null // free fall / no data: ignore
-        val lean = Math.toDegrees(atan2(g.z.toDouble(), g.y.toDouble())).toFloat()
-        val roll = Math.toDegrees(asin((g.x / norm).coerceIn(-1f, 1f).toDouble())).toFloat()
+    /** Latest tilt from neutral, for the on-screen indicator. */
+    var tilt = Tilt()
+        private set
+
+    /** True once neutral is known (the first [CALIBRATION_SAMPLES] readings). */
+    val calibrated: Boolean get() = samples >= CALIBRATION_SAMPLES
+
+    fun onSample(g: Vector3, @Suppress("UNUSED_PARAMETER") nowMs: Long): Hop? {
+        if (g.magnitude < 1f) return null // free fall / no data
+        if (samples == 0) { gx = g.x; gy = g.y; gz = g.z } else {
+            gx += (g.x - gx) * SMOOTHING
+            gy += (g.y - gy) * SMOOTHING
+            gz += (g.z - gz) * SMOOTHING
+        }
+        val norm = kotlin.math.sqrt(gx * gx + gy * gy + gz * gz).coerceAtLeast(1f)
+        val lean = Math.toDegrees(atan2(gz.toDouble(), gy.toDouble())).toFloat()
+        val roll = Math.toDegrees(asin((gx / norm).coerceIn(-1f, 1f).toDouble())).toFloat()
         if (samples < CALIBRATION_SAMPLES) {
             samples++
             baseLean += (lean - baseLean) / samples
@@ -45,26 +67,21 @@ class TiltHopDetector {
         }
         val dLean = lean - baseLean
         val dRoll = roll - baseRoll
+        tilt = Tilt(dLean, dRoll)
         val strongest = maxOf(abs(dLean), abs(dRoll))
-        if (strongest < HOP_DEG) {
-            if (strongest < REARM_DEG) {
-                armed = true
-                lastHop = null
-                baseLean += (lean - baseLean) * NEUTRAL_FOLLOW
-                baseRoll += (roll - baseRoll) * NEUTRAL_FOLLOW
-            }
+        if (strongest < REARM_DEG) {
+            armed = true
+            baseLean += (lean - baseLean) * NEUTRAL_FOLLOW
+            baseRoll += (roll - baseRoll) * NEUTRAL_FOLLOW
             return null
         }
-        val hop = if (abs(dRoll) > abs(dLean)) {
-            if (dRoll > 0) Hop.LEFT else Hop.RIGHT
-        } else {
-            if (dLean > 0) Hop.FORWARD else Hop.BACK
+        if (!armed || strongest < HOP_DEG) return null
+        val hop = when {
+            abs(dRoll) >= abs(dLean) * AXIS_DOMINANCE -> if (dRoll > 0) Hop.LEFT else Hop.RIGHT
+            abs(dLean) >= abs(dRoll) * AXIS_DOMINANCE -> if (dLean > 0) Hop.FORWARD else Hop.BACK
+            else -> return null // diagonal: not clearly one direction
         }
-        val fire = armed || (hop == lastHop && nowMs - lastHopAt >= REPEAT_MS)
-        if (!fire) return null
         armed = false
-        lastHop = hop
-        lastHopAt = nowMs
         return hop
     }
 }

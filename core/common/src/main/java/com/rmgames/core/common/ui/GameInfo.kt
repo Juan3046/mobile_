@@ -70,10 +70,10 @@ fun gameHowTo(gameId: String): HowTo? = when (gameId.split('-').getOrNull(1)) {
     )
     "class" -> HowTo(
         listOf(
-            "Hold the phone comfortably: that pose is neutral.",
-            "Tilt it forward to hop ahead, back to hop back, sideways to step.",
+            "Hold the phone comfortably when the run starts: that pose is the middle.",
+            "Tilt forward to hop, back to go back, sideways to step. Then back to the middle.",
             "Dodge cars and trams (a red light warns). On the pond, stay on the ice.",
-            "Don't stand still: 6 seconds without progress ends the run.",
+            "Don't stand still: 8 seconds without progress ends the run.",
         ),
         goal = "Cross as many rows as you can in 60 seconds.",
     )

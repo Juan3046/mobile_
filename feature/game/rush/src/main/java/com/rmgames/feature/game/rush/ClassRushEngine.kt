@@ -13,7 +13,7 @@ const val COLUMNS = 7
 const val RUN_MS = 60_000L
 
 /** No new row for this long ends the run ("too slow"). */
-const val IDLE_LIMIT_MS = 6_000L
+const val IDLE_LIMIT_MS = 8_000L
 
 /** How far back from your best row you may hop. */
 private const val MAX_BACK_ROWS = 3

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -70,6 +71,7 @@ private const val ROWS_BELOW = 2
 @Composable
 fun ClassRushScreen(game: ClassRushGame) {
     val s by game.state.collectAsState()
+    val tilt by game.tilt.collectAsState()
     val focus = remember { FocusRequester() }
     LaunchedEffect(Unit) { focus.requestFocus() }
 
@@ -114,10 +116,16 @@ fun ClassRushScreen(game: ClassRushGame) {
             HudChip("ROWS ${s.score}")
         }
 
+        // Tilt indicator: the dot is the phone's tilt, the ring is where a hop fires.
+        if (s.phase == RushPhase.PLAYING) {
+            Canvas(Modifier.align(Alignment.BottomEnd).padding(20.dp).size(96.dp)) { drawTiltIndicator(tilt) }
+        }
+
         val message = when {
             s.phase == RushPhase.BLOCKED -> "Class Rush needs an accelerometer. This run is not recorded."
             s.phase == RushPhase.OVER -> endMessage(s)
-            s.elapsedMs < 2_500 -> "Tilt forward to hop · tilt sideways to step"
+            tilt == null && s.phase == RushPhase.PLAYING -> "Hold the phone still…"
+            s.elapsedMs < 3_500 -> "Tilt forward to hop · back to the middle · again"
             else -> null
         }
         if (message != null) {
@@ -138,6 +146,22 @@ private fun HudChip(text: String) {
         Modifier.background(Ink.copy(alpha = 0.78f), RoundedCornerShape(50)).padding(horizontal = 14.dp, vertical = 8.dp),
         color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Black,
     )
+}
+
+private fun DrawScope.drawTiltIndicator(tilt: Tilt?) {
+    val c = Offset(size.width / 2, size.height / 2)
+    val r = size.minDimension / 2 * 0.8f
+    drawCircle(Ink.copy(alpha = 0.6f), size.minDimension / 2, c)
+    drawCircle(Color.White.copy(alpha = 0.35f), r * REARM_DEG / HOP_DEG, c) // calm zone (re-arm)
+    drawCircle(Color.White, r, c, style = androidx.compose.ui.graphics.drawscope.Stroke(size.minDimension * 0.03f)) // hop ring
+    if (tilt == null) return
+    val scale = r / HOP_DEG
+    val dot = Offset(
+        c.x + (-tilt.roll * scale).coerceIn(-r * 1.2f, r * 1.2f),
+        c.y + (-tilt.lean * scale).coerceIn(-r * 1.2f, r * 1.2f),
+    )
+    val past = maxOf(kotlin.math.abs(tilt.lean), kotlin.math.abs(tilt.roll)) >= HOP_DEG
+    drawCircle(if (past) Hoodie else Backpack, size.minDimension * 0.11f, dot)
 }
 
 private fun DrawScope.drawLane(lane: Lane, row: Int, top: Float, cell: Float, t: Float) {

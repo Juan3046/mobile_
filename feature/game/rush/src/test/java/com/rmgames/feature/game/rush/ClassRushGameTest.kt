@@ -49,8 +49,8 @@ class ClassRushGameTest {
         repeat(CALIBRATION_SAMPLES) { sensor.emit(held(45.0)); advanceTimeBy(20) }
         // Three forward hops through the safe start rows.
         repeat(3) {
-            sensor.emit(held(70.0)); advanceTimeBy(40)
-            sensor.emit(held(45.0)); advanceTimeBy(40)
+            repeat(12) { sensor.emit(held(70.0)); advanceTimeBy(20) } // tilt and hold briefly
+            repeat(12) { sensor.emit(held(45.0)); advanceTimeBy(20) } // back to neutral
         }
         assertEquals(3, game.state.value.row)
         assertTrue(host.scores.contains(3L))
