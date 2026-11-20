@@ -15,7 +15,8 @@ sealed interface ResultRanking {
     data class Known(val standing: Standing) : ResultRanking
 }
 
-data class RankingNote(val label: String, val headline: String?, val body: String)
+/** [headline] = the position ("#4 of 212"); [points] = what it earns, shown right under it. */
+data class RankingNote(val label: String, val headline: String?, val body: String, val points: String? = null)
 
 internal fun initialResultRanking(practice: Boolean, online: Boolean, hasBest: Boolean): ResultRanking = when {
     practice -> ResultRanking.Practice
@@ -32,7 +33,8 @@ internal fun resultRankingNote(r: ResultRanking): RankingNote = when (r) {
     ResultRanking.Unknown -> RankingNote("PROVISIONAL RANKING", null, "Couldn't reach the ranking. Your best is saved and uploads next time you're online.")
     is ResultRanking.Known -> RankingNote(
         "PROVISIONAL RANKING",
-        r.standing.label(),
+        "#${r.standing.position} of ${r.standing.players}",
         "Your position today and the season points it earns. It can change until 12:00 as others play.",
+        points = "+${String.format(java.util.Locale.US, "%,d", r.standing.points)} season pts",
     )
 }

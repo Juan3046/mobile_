@@ -308,7 +308,7 @@ private fun ResultScreen(game: Game, s: RunSummary, rank: ResultRanking, onPlayA
                         Text("No score this run", style = MaterialTheme.typography.bodyLarge, color = c.onSurfaceVariant)
                     }
                     if (!s.isNewBest && s.dailyBest != null && s.score != null) {
-                        Text("Your best today stays at ${gameScoreText(game.id, s.dailyBest).value}",
+                        Text("Your best today stays at ${gameScoreText(game.id, s.dailyBest).let { "${it.value} ${it.unit}" }}",
                             style = MaterialTheme.typography.bodyMedium, color = c.onSurfaceVariant, textAlign = TextAlign.Center)
                     }
                     if (!s.isPersonalBest && s.personalBest != null && s.score != null) {
@@ -329,7 +329,9 @@ private fun ResultScreen(game: Game, s: RunSummary, rank: ResultRanking, onPlayA
                 Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     val note = resultRankingNote(rank)
                     Text(note.label, style = MaterialTheme.typography.labelSmall, color = c.onSurfaceVariant)
+                    // Position big, the season points it earns right under it (never wrapped mid-phrase).
                     note.headline?.let { Text(it, style = MaterialTheme.typography.headlineMedium, color = c.onSurface) }
+                    note.points?.let { Text(it, style = MaterialTheme.typography.titleMedium, color = c.primaryInk) }
                     Text(note.body, style = MaterialTheme.typography.bodyMedium, color = c.onSurface)
                 }
             }

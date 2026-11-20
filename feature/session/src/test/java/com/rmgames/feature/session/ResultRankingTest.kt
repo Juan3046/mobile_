@@ -11,7 +11,8 @@ class ResultRankingTest {
     fun `a known standing shows position, players and points`() {
         val note = resultRankingNote(ResultRanking.Known(Standing(4, 212, 5225)))
         assertEquals("PROVISIONAL RANKING", note.label)
-        assertEquals("#4 of 212 · 5,225 pts", note.headline)
+        assertEquals("#4 of 212", note.headline)
+        assertEquals("+5,225 season pts", note.points)
         assertTrue(note.body, note.body.contains("season points"))
     }
 

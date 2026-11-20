@@ -51,7 +51,7 @@ Implementation (Phase 2 — `SessionRoute` in `:feature:session`, run logic in `
 - On finish the game's end state holds ~1 s ("Run over"), then the Result: "New best" stamp + confetti when the run beat today's best, the score counting up (one line, shrinks to fit), daily best and attempts tiles, **Play again** (straight to the countdown) or the locked "Back at 12:00" + countdown, and Back to home.
 - **Personal best**: when a run beats every earlier day for that game, the stamp reads "Personal best" (confetti + fanfare); otherwise the record is shown under the score. Not shown for the very first score.
 - A run belongs to the day it started even if it ends after 12:00. Runs with no score record nothing.
-- **Provisional ranking card** (plan 09 PR 16): after a scored real run the daily best is uploaded and the card shows the position with the season points next to it, "#4 of 212 · 5,225 pts" (`(N−p+1)×25`), noting it can change until 12:00. While loading: "Checking today's ranking…"; no connection: the best is kept and uploads next time; builds without Firebase say there is no online ranking; practice runs say nothing was saved.
+- **Provisional ranking card** (plan 09 PR 16): after a scored real run the daily best is uploaded and the card shows the position big ("#4 of 212") with the season points it earns right under it ("+5,225 season pts") (`(N−p+1)×25`), noting it can change until 12:00. While loading: "Checking today's ranking…"; no connection: the best is kept and uploads next time; builds without Firebase say there is no online ranking; practice runs say nothing was saved.
 
 ## 3.4 Ranking / Seasons History
 - Tabs: **Season** (current standings with nicks + points, plus my day-by-day breakdown) and **History** (past seasons + all-time total).
