@@ -38,6 +38,32 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Server "epoch day" (UTC). Game days are local noon-to-noon, so a few days of slack.
+    function serverDay() { return math.floor(request.time.toMillis() / 86400000); }
+
+    // Daily ranking (docs/03 §3.3, plan 09 PR 16): one doc per player per day's game, written
+    // only by its owner, under the nick their profile owns, for a recent day, and only ever
+    // improving (the direction is fixed by higherWins on the first write). Readable by any
+    // signed-in player (top 50 + count queries for positions).
+    match /days/{day}/games/{gameId}/players/{uid} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && day.matches('^[0-9]{1,7}$')
+        && int(day) >= serverDay() - 3 && int(day) <= serverDay() + 1
+        && gameId.matches('^[a-z0-9_-]{1,40}$')
+        && request.resource.data.keys().hasOnly(['nick', 'best', 'higherWins', 'updatedAt'])
+        && request.resource.data.best is int
+        && request.resource.data.higherWins is bool
+        && request.resource.data.updatedAt == request.time
+        && exists(userDoc(uid))
+        && get(userDoc(uid)).data.nick == request.resource.data.nick
+        && (resource == null || (
+          request.resource.data.higherWins == resource.data.higherWins
+          && ((resource.data.higherWins && request.resource.data.best >= resource.data.best)
+            || (!resource.data.higherWins && request.resource.data.best <= resource.data.best))));
+      allow delete: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
