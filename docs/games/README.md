@@ -11,7 +11,7 @@ and always take precedence unless a game doc explicitly documents an approved ex
 | 03 | `03-blink-sniper.md` | Blink Sniper (front camera, blink detection) | Defined |
 | 04 | `04-compass-chaos.md` | Compass Chaos (magnetometer, face direction) | Defined |
 | 05 | `05-soda-shake.md` | Soda Shake (accelerometer, shake to 20) | Defined — duration exception |
-| 06 | `06-class-rush.md` | Class Rush (tap & swipe — touch exception, lane crossing, 60 s) | Implemented 2026-11-20 |
+| 06 | `06-class-rush.md` | Class Rush (tap & swipe — touch exception, lane crossing, 60 s) | Implemented and playtested on device 2026-11-20 |
 
 Season 1 needs 7 defined games: **5 / 7 defined**. Games 06–07 are intentionally deferred.
 
