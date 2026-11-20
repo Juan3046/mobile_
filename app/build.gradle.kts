@@ -18,10 +18,10 @@ android {
         versionName = "0.1.0-phase0"
     }
 
-    // Release signing (docs/04 "Release build"): the upload key lives OUTSIDE git, described by a
+    // Release signing (docs/04 "Release build"; no Google Play — APKs are shared directly): the key lives OUTSIDE git, described by a
     // git-ignored `keystore.properties` (storeFile, storePassword, keyAlias, keyPassword). Without
     // it, release is signed with the local debug key so it can still be installed for testing —
-    // never publish that APK.
+    // don't share that APK.
     val keystoreFile = rootProject.file("keystore.properties")
     val releaseKey = if (keystoreFile.exists()) Properties().apply { keystoreFile.inputStream().use(::load) } else null
     signingConfigs {
