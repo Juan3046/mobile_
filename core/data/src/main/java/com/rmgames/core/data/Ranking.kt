@@ -9,7 +9,10 @@ import kotlinx.coroutines.coroutineScope
 data class DailyEntry(val dayIndex: Long, val gameId: String, val best: Long, val higherWins: Boolean, val nick: String)
 
 /** Where a best stands among the day's players, and the season points it is worth. */
-data class Standing(val position: Int, val players: Int, val points: Int)
+data class Standing(val position: Int, val players: Int, val points: Int) {
+    /** "#4 of 212 · 5,225 pts": the day's position with the season points next to it. */
+    fun label(): String = "#$position of $players · ${String.format(java.util.Locale.US, "%,d", points)} pts"
+}
 
 /** One row of a day's leaderboard. */
 data class RankRow(val position: Int, val nick: String, val best: Long, val isMe: Boolean)
@@ -49,6 +52,9 @@ class OfflineRanking : Ranking {
     override suspend fun top(dayIndex: Long, gameId: String, higherWins: Boolean, limit: Int): List<RankRow> = emptyList()
 }
 
+/** My season so far for the Main screen: total points and today's standing (null = not played / unknown). */
+data class SeasonStatus(val points: Int, val today: Standing?)
+
 /** One day the player has a daily best for (the day's game). */
 data class PlayedDay(val dayIndex: Long, val gameId: String, val best: Long, val higherWins: Boolean)
 
@@ -86,11 +92,12 @@ class RankingSync(private val ranking: Ranking, private val nick: () -> String?)
      * My season points so far (Main screen strip): the sum of the days whose standing is known.
      * 0 before playing; null when offline or when no played day could be read.
      */
-    suspend fun seasonTotal(days: List<PlayedDay>, today: Long): Int? {
+    suspend fun seasonTotal(days: List<PlayedDay>, today: Long): SeasonStatus? {
         if (!ranking.isOnline) return null
-        if (days.isEmpty()) return 0
-        val standings = season(days, today).values
-        return if (standings.all { it == null }) null else seasonPoints(standings.toList())
+        if (days.isEmpty()) return SeasonStatus(0, null)
+        val standings = season(days, today)
+        if (standings.values.all { it == null }) return null
+        return SeasonStatus(seasonPoints(standings.values.toList()), standings[today])
     }
 
     suspend fun top(dayIndex: Long, gameId: String, higherWins: Boolean, limit: Int = 50): List<RankRow> =

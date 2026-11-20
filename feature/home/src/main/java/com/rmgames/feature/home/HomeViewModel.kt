@@ -7,6 +7,7 @@ import com.rmgames.core.data.DayClock
 import com.rmgames.core.data.MAX_ATTEMPTS_PER_DAY
 import com.rmgames.core.data.ScoreRepository
 import com.rmgames.core.data.SeasonCalendar
+import com.rmgames.core.data.Standing
 
 /** Everything the Main screen (docs/03 §3.1, §3.5) shows. */
 data class HomeUiState(
@@ -27,6 +28,8 @@ data class HomeUiState(
     val seasonPoints: Long?,
     /** This phone lacks the game's sensor: Play disabled with this text (docs/02). */
     val unavailableReason: String? = null,
+    /** Today's position + the season points it earns (online ranking); null = not played / unknown. */
+    val todayStanding: Standing? = null,
 )
 
 /** Main-screen logic. Plain class (no Android deps) so it unit-tests on the JVM. */

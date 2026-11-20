@@ -22,6 +22,12 @@ class RankingTest {
     }
 
     @Test
+    fun `a standing reads as position, players and the season points it earns`() {
+        assertEquals("#4 of 212 · 5,225 pts", Standing(4, 212, 5225).label())
+        assertEquals("#1 of 1 · 25 pts", Standing(1, 1, 25).label())
+    }
+
+    @Test
     fun `season points add up each played day`() {
         assertEquals(5225, seasonPoints(listOf(Standing(1, 100, 2500), Standing(2, 110, 2725), null)))
         assertEquals(0, seasonPoints(emptyList()))

@@ -124,4 +124,4 @@ fun seasonPointsTile(online: Boolean, standings: Map<Long, Standing?>?): Pair<St
     else -> String.format(Locale.US, "%,d", seasonPoints(standings.values.toList())) to "provisional"
 }
 
-fun standingLabel(s: Standing): String = "#${s.position} of ${s.players}"
+fun standingLabel(s: Standing): String = s.label()

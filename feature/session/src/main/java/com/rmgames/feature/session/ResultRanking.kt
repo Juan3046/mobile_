@@ -1,7 +1,6 @@
 package com.rmgames.feature.session
 
 import com.rmgames.core.data.Standing
-import java.util.Locale
 
 /** What the Result's ranking card knows (docs/03 §3.3, plan 09 PR 16). */
 sealed interface ResultRanking {
@@ -33,7 +32,7 @@ internal fun resultRankingNote(r: ResultRanking): RankingNote = when (r) {
     ResultRanking.Unknown -> RankingNote("PROVISIONAL RANKING", null, "Couldn't reach the ranking. Your best is saved and uploads next time you're online.")
     is ResultRanking.Known -> RankingNote(
         "PROVISIONAL RANKING",
-        "#${r.standing.position} of ${r.standing.players}",
-        "Worth ${String.format(Locale.US, "%,d", r.standing.points)} points for the season. It can change until 12:00 as others play.",
+        r.standing.label(),
+        "Your position today and the season points it earns. It can change until 12:00 as others play.",
     )
 }

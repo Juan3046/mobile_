@@ -174,7 +174,7 @@ fun RMGamesNav(container: AppContainer) {
                 onSettings = { nav.navigate("settings") },
                 onHistory = { nav.navigate("history") },
                 unavailableReason = unavailable,
-                seasonPoints = if (container.ranking.isOnline) {
+                seasonStatus = if (container.ranking.isOnline) {
                     {
                         val today = clock.dayIndex()
                         val rules = registry.all.associate { it.game.id to it.game.higherWins }

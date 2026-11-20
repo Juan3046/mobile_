@@ -45,6 +45,7 @@ import com.rmgames.core.common.ui.rememberRemaining
 import com.rmgames.core.data.AttemptRepository
 import com.rmgames.core.data.DayClock
 import com.rmgames.core.data.ScoreRepository
+import com.rmgames.core.data.SeasonStatus
 import kotlinx.coroutines.delay
 
 /**
@@ -70,8 +71,8 @@ fun HomeRoute(
     onSettings: (() -> Unit)? = null,
     /** Why a game can't run on this phone (missing sensor), or null — Play is then disabled. */
     unavailableReason: (gameId: String) -> String? = { null },
-    /** Reads my season points from the online ranking (null result = unknown); null = offline build. */
-    seasonPoints: (suspend () -> Int?)? = null,
+    /** Reads my season points + today's standing from the online ranking (null result = unknown); null = offline build. */
+    seasonStatus: (suspend () -> SeasonStatus?)? = null,
 ) {
     val vm = remember(games, attempts, scores, clock) { HomeViewModel(attempts, scores, clock, games, unavailableReason) }
     val feedback = LocalUiFeedback.current
@@ -85,10 +86,11 @@ fun HomeRoute(
     }
     // Season points arrive after the screen shows; refreshed on every resume / new day.
     // Keyed by season: a failed refresh after the weekly rollover never shows last season's points.
-    var points by remember(state.season) { mutableStateOf<Long?>(null) }
-    LaunchedEffect(version) { points = seasonPoints?.invoke()?.toLong() ?: points }
+    var status by remember(state.season) { mutableStateOf<SeasonStatus?>(null) }
+    LaunchedEffect(version) { status = seasonStatus?.invoke() ?: status }
     HomeScreen(
-        state = state.copy(seasonPoints = points),
+        // Today's standing only belongs to today's game: a new day (version) drops it until re-read.
+        state = state.copy(seasonPoints = status?.points?.toLong(), todayStanding = status?.today.takeIf { state.bestToday != null }),
         thumbnail = thumbnails[state.gameId],
         onPlay = { onPlay(state.gameId) },
         onHistory = onHistory,
@@ -161,7 +163,13 @@ fun HomeScreen(
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 AttemptsPips(state.attemptsLeft, total = state.attemptsTotal)
                 val best = state.bestToday?.let { gameScoreText(state.gameId, it) }
-                Text("Best today: ${best?.let { "${it.value} ${it.unit}" } ?: "—"}", style = MaterialTheme.typography.bodySmall, color = c.onSurfaceVariant)
+                Column(horizontalAlignment = Alignment.End) {
+                    Text("Best today: ${best?.let { "${it.value} ${it.unit}" } ?: "—"}", style = MaterialTheme.typography.bodySmall, color = c.onSurfaceVariant)
+                    // Today's position with the season points it earns (online ranking, provisional).
+                    state.todayStanding?.let {
+                        Text(it.label(), style = MaterialTheme.typography.labelLarge, color = c.primaryInk)
+                    }
+                }
             }
             val unavailable = state.unavailableReason
             if (unavailable != null) {

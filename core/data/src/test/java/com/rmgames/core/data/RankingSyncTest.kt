@@ -49,9 +49,9 @@ class RankingSyncTest {
     @Test
     fun `season total adds the known days, zero before playing, unknown without connection`() = runTest {
         val days = listOf(PlayedDay(18, "b", 2, true), PlayedDay(19, "c", 3, true))
-        assertEquals(500, RankingSync(FakeRanking()) { "hola" }.seasonTotal(days, today = 20))
-        assertEquals(250, RankingSync(FakeRanking(unknownDay = 18)) { "hola" }.seasonTotal(days, today = 20))
-        assertEquals(0, RankingSync(FakeRanking()) { "hola" }.seasonTotal(emptyList(), today = 20))
+        assertEquals(500, RankingSync(FakeRanking()) { "hola" }.seasonTotal(days, today = 20)?.points)
+        assertEquals(250, RankingSync(FakeRanking(unknownDay = 18)) { "hola" }.seasonTotal(days, today = 20)?.points)
+        assertEquals(0, RankingSync(FakeRanking()) { "hola" }.seasonTotal(emptyList(), today = 20)?.points)
         assertNull(RankingSync(FakeRanking(unknownDay = 19)) { "hola" }.seasonTotal(listOf(PlayedDay(19, "c", 3, true)), today = 20))
         assertNull(RankingSync(FakeRanking(isOnline = false)) { "hola" }.seasonTotal(days, today = 20))
     }
@@ -71,5 +71,13 @@ class RankingSyncTest {
             listOf(PlayedDay(season1Start, "a", 5, true), PlayedDay(today, "d", 1, false)),
             seasonPlayedDays(today, history, dailyGameId = { daily[it] }, higherWins = { it != "d" }),
         )
+    }
+
+    @Test
+    fun `season status carries today's standing when today was played`() = runTest {
+        val sync = RankingSync(FakeRanking()) { "hola" }
+        val played = listOf(PlayedDay(19, "c", 3, true), PlayedDay(20, "d", 4, true))
+        assertEquals(Standing(1, 10, 250), sync.seasonTotal(played, today = 20)?.today)
+        assertNull(sync.seasonTotal(listOf(PlayedDay(19, "c", 3, true)), today = 20)?.today)
     }
 }

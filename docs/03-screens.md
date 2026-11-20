@@ -18,7 +18,7 @@ Also visible (per global rules):
 
 Implementation (Phase 2, Direction A — `HomeRoute`/`HomeScreen` in `:feature:home`):
 - Top bar with the "RM GAMES" wordmark and the settings gear (→ §3.6).
-- Season strip (season N, day d of 7, the player's season points). Points come from the online ranking (`RankingSync.seasonTotal` over this season's played daily-game bests, today's and yesterday's re-uploaded first) and appear once loaded; refreshed on every return to Main and at 12:00. Hidden on builds without Firebase or when no day could be read (no connection); "0" before the first scored day.
+- Season strip (season N, day d of 7, the player's season points). Points come from the online ranking (`RankingSync.seasonTotal` over this season's played daily-game bests, today's and yesterday's re-uploaded first) and appear once loaded; refreshed on every return to Main and at 12:00. Hidden on builds without Firebase or when no day could be read (no connection); "0" before the first scored day. Once today's game is scored, under "Best today" the Main screen also shows today's position with its season points ("#1 of 2 · 50 pts", provisional until 12:00), read in the same call.
 - "Today's game" header with a countdown chip ("Ends in HH:MM:SS"; "Next game in" when locked).
 - `GameCard`: thumbnail (generated fallback until each game ships art), sensor chip, duration, title, how-to (the game's `description`).
 - Fixed bottom area, always reachable: attempts pips + text, best of today, the big **Play** button; **Seasons history** button once the Ranking screen exists (plan 09 PR 13).
@@ -51,7 +51,7 @@ Implementation (Phase 2 — `SessionRoute` in `:feature:session`, run logic in `
 - On finish the game's end state holds ~1 s ("Run over"), then the Result: "New best" stamp + confetti when the run beat today's best, the score counting up (one line, shrinks to fit), daily best and attempts tiles, **Play again** (straight to the countdown) or the locked "Back at 12:00" + countdown, and Back to home.
 - **Personal best**: when a run beats every earlier day for that game, the stamp reads "Personal best" (confetti + fanfare); otherwise the record is shown under the score. Not shown for the very first score.
 - A run belongs to the day it started even if it ends after 12:00. Runs with no score record nothing.
-- **Provisional ranking card** (plan 09 PR 16): after a scored real run the daily best is uploaded and the card shows "#4 of 212" + the season points it is worth now (`(N−p+1)×25`), noting it can change until 12:00. While loading: "Checking today's ranking…"; no connection: the best is kept and uploads next time; builds without Firebase say there is no online ranking; practice runs say nothing was saved.
+- **Provisional ranking card** (plan 09 PR 16): after a scored real run the daily best is uploaded and the card shows the position with the season points next to it, "#4 of 212 · 5,225 pts" (`(N−p+1)×25`), noting it can change until 12:00. While loading: "Checking today's ranking…"; no connection: the best is kept and uploads next time; builds without Firebase say there is no online ranking; practice runs say nothing was saved.
 
 ## 3.4 Ranking / Seasons History
 - Tabs: **Season** (current standings with nicks + points, plus my day-by-day breakdown) and **History** (past seasons + all-time total).
@@ -62,7 +62,7 @@ Implementation, local data first (`SeasonsHistoryRoute` in `:feature:ranking`, p
 - **History** tab: all-time days played and seasons played, **personal bests** per game (score + date), past seasons (dates, days played), newest first; empty state until Season 1 ends.
 - Only the day's daily game counts for that day (debug-launched runs of other games are ignored).
 - Built from the player's own daily bests (`ScoreRepository.history()`, full history on device).
-- **Online** (plan 09 PR 16, Firebase builds): each played day of the current season shows its position ("· #4 of 212"), the **Season points** tile adds them up ("provisional"; "…" while checking, "—" with no connection), and a **Today · {game}** list shows today's top 50 (ties share a position, "(you)" marks the player). Today's and yesterday's bests are re-uploaded when the screen opens, so runs finished offline catch up.
+- **Online** (plan 09 PR 16, Firebase builds): each played day of the current season shows its position and the season points it earns ("· #4 of 212 · 5,225 pts"), the **Season points** tile adds them up ("provisional"; "…" while checking, "—" with no connection), and a **Today · {game}** list shows today's top 50 (ties share a position, "(you)" marks the player). Today's and yesterday's bests are re-uploaded when the screen opens, so runs finished offline catch up.
 - **Decision (2026-11-20)**: no all-player season leaderboard in the MVP — on the Spark plan it would need a per-player season total written by clients (easy to fake) or reading every day's list. The Season tab shows *my* season points; other players appear in the daily top 50.
 
 ## 3.5 Locked / No-Attempts State

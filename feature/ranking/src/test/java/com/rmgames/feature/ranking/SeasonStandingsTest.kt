@@ -27,6 +27,6 @@ class SeasonStandingsTest {
 
     @Test
     fun `a day's standing reads as position of players`() {
-        assertEquals("#4 of 212", standingLabel(Standing(4, 212, 5225)))
+        assertEquals("#4 of 212 · 5,225 pts", standingLabel(Standing(4, 212, 5225)))
     }
 }
