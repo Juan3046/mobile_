@@ -9,7 +9,9 @@ import com.rmgames.core.data.DayClock
 import com.rmgames.core.data.PersistentAttemptRepository
 import com.rmgames.core.data.PersistentScoreRepository
 import com.rmgames.core.data.SettingsRepository
-import com.rmgames.core.data.LocalNickRegistry
+import com.rmgames.core.online.FirebaseAnonymousAuth
+import com.rmgames.core.online.FirestoreNickDirectory
+import com.rmgames.core.online.OnlineNickRegistry
 import com.rmgames.core.data.NickClaim
 import com.rmgames.core.data.NickRegistry
 import com.rmgames.core.data.PlayerRepository
@@ -50,11 +52,16 @@ class AppContainer(context: Context) {
     val settings = SettingsRepository(DataStoreSnapshotStore(dataStore, "settings", SettingsCodec), ioScope, logError)
     val players = PlayerRepository(DataStoreSnapshotStore(dataStore, "player", PlayerCodec), ioScope, logError)
 
+    /** True when the build has a Firebase config (`app/google-services.json`). */
+    val online: Boolean = isFirebaseConfigured(context)
+
     /**
-     * Nick uniqueness (docs/03 §3.2). Local stand-in until Firebase is connected: replace with
-     * the Firebase registry (anonymous auth + `nicks/{key}` transaction) — nothing else changes.
+     * Nick uniqueness (docs/03 §3.2): Firebase Anonymous Auth + `nicks/{key}` transaction when
+     * configured, otherwise the local stand-in (any valid nick, this device only).
      */
-    private val nickRegistry: NickRegistry = LocalNickRegistry()
+    private val nickRegistry: NickRegistry = chooseNickRegistry(online) {
+        OnlineNickRegistry(FirebaseAnonymousAuth(), FirestoreNickDirectory())
+    }
     val nickClaim = NickClaim(nickRegistry, players)
 
     /**

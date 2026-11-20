@@ -19,6 +19,11 @@
 - Attempts stay local by product rule (docs/02); daily bests (→ shared ranking, stream E) and settings are the cloud candidates. Daily bests keep the full history in the same DataStore entry (no Room — plan 09 PR 10 decision), and personal bests are computed from it.
 - Storage failures are logged and never block play: the in-memory state stays authoritative and the next write retries.
 
+## Firebase (online features)
+- Project on the **Spark plan** with **Anonymous Auth** and **Firestore**. Adapters live in `:core:online` (`OnlineNickRegistry` over `AnonymousAuth` + `NickDirectory`, tested with fakes; thin Firebase classes).
+- **Config is per developer**: download `google-services.json` for the Android app `com.rmgames` and put it at `app/google-services.json` (git-ignored). With it, the build applies the google-services plugin and `AppContainer` uses Firebase; without it the app builds and runs offline with the local stand-ins.
+- **Security rules** are versioned in `firestore.rules` (deploy: console → Firestore → Rules, or `firebase deploy --only firestore:rules` with `firebase.json`). Nicks: created once by their owner under the lowercase key, never updated or deleted; everything else denied by default.
+
 ## Constraints
 - Native Android only (no cross-platform in MVP).
 - Portrait orientation locked.

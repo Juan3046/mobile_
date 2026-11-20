@@ -37,6 +37,9 @@ dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:data"))
     implementation(project(":core:audio"))
+    implementation(project(":core:online"))
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth) // FirebaseApp check in OnlineWiring
     implementation(project(":core:sensors"))
     implementation(project(":core:vision"))
     implementation(project(":feature:home"))
@@ -61,4 +64,10 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     testImplementation(libs.junit)
+}
+
+// Firebase (plan 09 stream E): the config file is per-developer and git-ignored. Without it the
+// app builds and runs offline with the local stand-ins (AppContainer checks FirebaseApp at runtime).
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
 }

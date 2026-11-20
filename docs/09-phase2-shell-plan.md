@@ -147,6 +147,12 @@
   project + `google-services.json`)**: Firebase BoM + google-services plugin, `FirebaseNickRegistry`
   (Anonymous Auth, Firestore transaction on `nicks/{nickKey}` = { uid }), security rules, swap in
   `AppContainer`.
+  **Status (2026-11-20): PR 15 part 2 code ready** (branch `feature/firebase-online`) — new
+  `:core:online`: `OnlineNickRegistry` (anonymous sign-in, then `nicks/{key}` transaction; "already
+  mine" = reserved so retries are safe; failures/10 s timeout = Offline), `FirebaseAnonymousAuth`,
+  `FirestoreNickDirectory` (+ `users/{uid}`), `firestore.rules`, google-services plugin applied only
+  when `app/google-services.json` exists, `AppContainer` picks Firebase vs local at runtime. Waiting on
+  the user's Firebase project to verify on a device.
   Arcade/playful, high
   contrast, readable at a glance, portrait, dark-first with a light variant.
 - **Tokens**: colour scheme (brand + per-game accent colours), typography
