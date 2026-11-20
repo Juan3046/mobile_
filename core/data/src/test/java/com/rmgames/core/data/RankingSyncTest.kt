@@ -45,4 +45,31 @@ class RankingSyncTest {
         assertEquals(Standing(1, 10, 250), standings[18])
         assertEquals(750, seasonPoints(standings.values.toList()))
     }
+
+    @Test
+    fun `season total adds the known days, zero before playing, unknown without connection`() = runTest {
+        val days = listOf(PlayedDay(18, "b", 2, true), PlayedDay(19, "c", 3, true))
+        assertEquals(500, RankingSync(FakeRanking()) { "hola" }.seasonTotal(days, today = 20))
+        assertEquals(250, RankingSync(FakeRanking(unknownDay = 18)) { "hola" }.seasonTotal(days, today = 20))
+        assertEquals(0, RankingSync(FakeRanking()) { "hola" }.seasonTotal(emptyList(), today = 20))
+        assertNull(RankingSync(FakeRanking(unknownDay = 19)) { "hola" }.seasonTotal(listOf(PlayedDay(19, "c", 3, true)), today = 20))
+        assertNull(RankingSync(FakeRanking(isOnline = false)) { "hola" }.seasonTotal(days, today = 20))
+    }
+
+    @Test
+    fun `the season's played days are this season's daily-game bests up to today`() {
+        val season1Start = SeasonCalendar.SEASON_ONE_START_DAY
+        val today = season1Start + 3
+        val history = listOf(
+            DailyBest(season1Start - 1, "x", 9), // before the season
+            DailyBest(season1Start, "a", 5),
+            DailyBest(season1Start + 1, "practice-only", 7), // not that day's game
+            DailyBest(today, "d", 1),
+        )
+        val daily = mapOf(season1Start + 1 to "b")
+        assertEquals(
+            listOf(PlayedDay(season1Start, "a", 5, true), PlayedDay(today, "d", 1, false)),
+            seasonPlayedDays(today, history, dailyGameId = { daily[it] }, higherWins = { it != "d" }),
+        )
+    }
 }

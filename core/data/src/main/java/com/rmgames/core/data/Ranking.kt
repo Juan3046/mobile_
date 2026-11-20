@@ -82,6 +82,38 @@ class RankingSync(private val ranking: Ranking, private val nick: () -> String?)
         }
     }
 
+    /**
+     * My season points so far (Main screen strip): the sum of the days whose standing is known.
+     * 0 before playing; null when offline or when no played day could be read.
+     */
+    suspend fun seasonTotal(days: List<PlayedDay>, today: Long): Int? {
+        if (!ranking.isOnline) return null
+        if (days.isEmpty()) return 0
+        val standings = season(days, today).values
+        return if (standings.all { it == null }) null else seasonPoints(standings.toList())
+    }
+
     suspend fun top(dayIndex: Long, gameId: String, higherWins: Boolean, limit: Int = 50): List<RankRow> =
         if (ranking.isOnline) ranking.top(dayIndex, gameId, higherWins, limit) else emptyList()
+}
+
+/**
+ * The current season's played days up to [today] (the season of [today]): one per day, only
+ * the day's daily game when [dailyGameId] knows it (debug practice games never count).
+ */
+fun seasonPlayedDays(
+    today: Long,
+    history: List<DailyBest>,
+    dailyGameId: (Long) -> String? = { null },
+    higherWins: (gameId: String) -> Boolean,
+): List<PlayedDay> {
+    val season = SeasonCalendar.seasonDay(today).season
+    return history
+        .filter { b ->
+            b.dayIndex <= today && SeasonCalendar.seasonDay(b.dayIndex).season == season &&
+                dailyGameId(b.dayIndex).let { it == null || it == b.gameId }
+        }
+        .groupBy { it.dayIndex }.values.map { it.first() }
+        .sortedBy { it.dayIndex }
+        .map { PlayedDay(it.dayIndex, it.gameId, it.best, higherWins(it.gameId)) }
 }
