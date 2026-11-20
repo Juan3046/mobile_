@@ -23,6 +23,7 @@ Implementation (Phase 2, Direction A — `HomeRoute`/`HomeScreen` in `:feature:h
 - `GameCard`: thumbnail (generated fallback until each game ships art), sensor chip, duration, title, how-to (the game's `description`).
 - Fixed bottom area, always reachable: attempts pips + text, best of today, the big **Play** button; **Seasons history** button once the Ranking screen exists (plan 09 PR 13).
 - Locked (0 attempts): Play becomes a disabled "Back at 12:00" button + "Next game in" countdown + best of the day (§3.5).
+- **Missing sensor** (docs/02): if this phone lacks the hardware today's game needs, Play becomes a disabled "Not playable on this phone" button with the reason above it ("Soda Shake needs an accelerometer, and this phone doesn't have one."). No attempt is spent. The game's intro (debug launcher too) shows the same reason with Start off and never asks for a permission. Required hardware per game: Onion Roll gyroscope, Blink Sniper front camera, Compass Chaos magnetometer, Soda Shake accelerometer; Poruba Casino none (touch buttons). Logic: `requiredSensors`/`unavailableReason` in `:app` (`SensorGate.kt`) over `AndroidSensorAvailability` (`:core:sensors`).
 - Debug builds only: "Reset attempts (debug)" + a launcher for every registered game (also the ones out of the rotation).
 - State refreshes on resume and at the 12:00 boundary.
 

@@ -30,8 +30,8 @@ A fast-paced directional challenge. The player must physically spin their body a
 - Per global rule: **disable Play with a clear message** ("Compass Chaos requires a magnetometer") and never record fake scores.
 - Phase 1b: if the magnetometer flow fails, the run is **blocked in-game** —
   the screen shows the message, the score is zeroed and nothing is reported or
-  recorded (a blocked run never calls `onFinished`). Home-level Play disabling
-  lands in Phase 2.
+  recorded (a blocked run never calls `onFinished`). Home-level Play disabling is
+  done (Phase 3, docs/03 §3.1 "Missing sensor"): a phone without the sensor never starts a run.
 
 ## Persistence (local-first MVP)
 - Best turns survived, attempts used today; daily best uploads once for the shared ranking.

@@ -33,6 +33,16 @@ class HomeViewModelTest {
     private fun vm() = HomeViewModel(attempts, scores, clock, games)
 
     @Test
+    fun `a game this phone can't run disables Play with the reason, without touching attempts`() {
+        val today = DailyGameSelector.select(day, games.map { it.id })
+        val state = HomeViewModel(attempts, scores, clock, games) { id -> if (id == today) "Needs a gyroscope." else null }
+            .state(wednesday)
+        assertEquals("Needs a gyroscope.", state.unavailableReason)
+        assertEquals(2, state.attemptsLeft)
+        assertNull(vm().state(wednesday).unavailableReason)
+    }
+
+    @Test
     fun `shows today's game with its how-to`() {
         val state = vm().state(wednesday)
         val expected = DailyGameSelector.select(day, games.map { it.id })

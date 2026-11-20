@@ -33,6 +33,7 @@ import com.rmgames.core.common.theme.RmTheme
 import com.rmgames.core.common.ui.RmTransitions
 import android.content.pm.ApplicationInfo
 import com.rmgames.core.sensors.AndroidAccelerometerSensor
+import com.rmgames.core.sensors.AndroidSensorAvailability
 import com.rmgames.core.sensors.AndroidCompassSensor
 import com.rmgames.core.sensors.AndroidGyroscopeSensor
 import com.rmgames.core.vision.MlKitBlinkDetector
@@ -142,6 +143,9 @@ fun RMGamesNav(container: AppContainer) {
     val context = LocalContext.current
     val todaysGame: (Long) -> String = { day -> DailyGameSelector.select(day, dailyRotation(registry.all.map { it.game }).map { it.id }) }
     val debuggable = remember { (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0 }
+    // Missing hardware blocks a game with a message (docs/02); checked once per launch.
+    val sensors = remember { AndroidSensorAvailability(context) }
+    val unavailable: (String) -> String? = { id -> unavailableReason(id, registry.find(id)?.game?.title ?: id, sensors) }
     NavHost(
         navController = nav,
         // First launch: choose a nick before anything else (docs/03 §3.2).
@@ -168,6 +172,7 @@ fun RMGamesNav(container: AppContainer) {
                 debugTools = debuggable,
                 onSettings = { nav.navigate("settings") },
                 onHistory = { nav.navigate("history") },
+                unavailableReason = unavailable,
             )
         }
         composable("history") {
@@ -196,7 +201,8 @@ fun RMGamesNav(container: AppContainer) {
         composable("session/{gameId}") { backStack ->
             val gameId = backStack.arguments?.getString("gameId").orEmpty()
             val entry = registry.find(gameId)
-            PermissionGate(entry) {
+            val reason = remember(gameId) { unavailable(gameId) }
+            val session: @Composable () -> Unit = {
                 SessionRoute(
                     entry = entry,
                     attempts = attempts,
@@ -205,8 +211,11 @@ fun RMGamesNav(container: AppContainer) {
                     onExit = { nav.popBackStack("home", inclusive = false) },
                     // Only today's game counts; any other game (debug launcher) is a practice run.
                     practice = gameId != todaysGame(clock.dayIndex()),
+                    unavailableReason = reason,
                 )
             }
+            // Missing hardware: explain on the intro; never ask for a permission it can't use.
+            if (reason != null) session() else PermissionGate(entry) { session() }
         }
     }
 }
