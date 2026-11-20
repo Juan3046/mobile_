@@ -15,7 +15,7 @@ fun gameSensor(gameId: String): GameSensor? = when (gameId.split('-').getOrNull(
     "blink" -> GameSensor("Front camera", RmIcons.Camera)
     "compass" -> GameSensor("Compass", RmIcons.Compass)
     "soda" -> GameSensor("Shake", RmIcons.Shake)
-    "class" -> GameSensor("Tilt", RmIcons.Tilt)
+    "class" -> GameSensor("Tap & swipe", RmIcons.Run)
     else -> null
 }
 
@@ -70,8 +70,8 @@ fun gameHowTo(gameId: String): HowTo? = when (gameId.split('-').getOrNull(1)) {
     )
     "class" -> HowTo(
         listOf(
-            "Hold the phone comfortably when the run starts: that pose is the middle.",
-            "Tilt forward to hop, back to go back, sideways to step. Then back to the middle.",
+            "Tap anywhere to hop forward one row.",
+            "Swipe left or right to step aside, swipe down to hop back.",
             "Dodge cars and trams (a red light warns). On the pond, stay on the ice.",
             "Don't stand still: 8 seconds without progress ends the run.",
         ),

@@ -15,21 +15,16 @@ procedural art (no assets, no references to other games).
 - Procedural lanes per run (seeded): the first rows are safe pavement, then a mix of
   pavement, road, tram track and pond. Lanes get faster the further you go.
 
-## Controls (accelerometer)
-- **Tilt the phone forward** (top edge away from you) to hop one row forward.
-- **Tilt it back** (top edge towards you) to hop one row back.
-- **Tilt left / right** to step one column sideways.
-- **One tilt = one hop**: come back to the middle to hop again (holding never repeats).
-- Neutral is the pose held while the run starts (~0.4 s of readings) and slowly follows the
-  hand while it rests in the middle.
-- Readings are low-passed to gravity, so a jolt of the hand is not a tilt. A hop needs ≥ 15°
-  on one clear axis (the other axis at most 1/1.4 of it: diagonals are ignored); coming back
-  under 8° re-arms. Tuning history: the first version (18°/9°, raw readings, auto-repeat every
-  0.35 s) felt "very bad" in the 2026-11-20 playtest.
-- **Tilt indicator** (bottom right): the dot is the phone's tilt, the ring is where a hop
-  fires, the inner disc is the middle that re-arms.
-- Debug builds log the angles to Logcat (`RushTilt`) for tuning.
-- Debug builds: arrow keys / WASD hop (emulator only).
+## Controls (touch — approved exception)
+- **Tap anywhere** to hop one row forward.
+- **Swipe left / right** to step one column sideways; **swipe down** to hop one row back
+  (swipe up also hops forward). A finger move under 28 dp is a tap.
+- **Why touch** (decided 2026-11-20, documented exception to the sensor rule in
+  `../02-gameplay-rules.md`): the first versions used accelerometer tilt (18°, then a filtered
+  15° with an on-screen indicator). The device playtest showed it was too hard: sideways tilts
+  were missed when the phone did not pass through neutral, and coming back from a forward tilt
+  overshot into unwanted back hops. Lane crossing needs precise, instant hops.
+- Debug builds: arrow keys / WASD too (emulator).
 
 ## Lanes & hazards
 - **Pavement**: always safe.
@@ -47,8 +42,7 @@ procedural art (no assets, no references to other games).
 - One run = one attempt; the daily best ranks the day for position points.
 
 ## Fallback
-- Missing accelerometer: the Main screen disables Play with a message (docs/03 §3.1); if the
-  sensor fails mid-run, the run is blocked and nothing is recorded.
+- None needed: touch only, no sensor and no permission.
 
 ## Feedback
 - A short, light vibration on each hop; a longer one when the run ends early. Honours
@@ -56,7 +50,13 @@ procedural art (no assets, no references to other games).
 
 ## Implementation
 - `feature/game/rush`: `ClassRushEngine` (pure rules: lanes, hops, hazards, timer, score;
-  JVM tests), `TiltHopDetector` (accelerometer → hops; JVM tests), `ClassRushGame` (16 ms loop
-  on `hostScope`), `ClassRushScreen` (Canvas: lanes, cars, tram + warning light, floes,
-  student, HUD with time left and rows), `ClassRushThumbnail`.
+  JVM tests), `swipeHop` (finger gesture → hop; JVM tests), `ClassRushGame` (16 ms loop on
+  `hostScope`), `ClassRushScreen` (Canvas: lanes, cars, tram + warning light, floes, student,
+  HUD with time left and rows; tap/swipe input), `ClassRushThumbnail`.
+- **Collisions use exactly the drawn shapes** (playtest 2026-11-20: the first hit box was
+  0.3 cell wider than the student, so cars "hit" before touching). Student body radius =
+  `PLAYER_HALF` (0.26 cell); cars and trams collide with their drawn body (`CAR_INSET`, 0.08
+  cell in from each end); you stand on a floe up to its drawn edge (`FLOE_INSET`). Hops animate
+  in 60–70 ms so what you see matches where the engine puts you. Debug builds log how each run
+  ended (`ClassRush`).
 - Game id `06-class-rush`; accent colour `GameAccents.Rush`.

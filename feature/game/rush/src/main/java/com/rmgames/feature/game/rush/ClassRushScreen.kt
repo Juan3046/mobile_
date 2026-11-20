@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,6 +32,9 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -60,6 +62,9 @@ private val Hoodie = Color(0xFFFF5D8F)
 private val Backpack = Color(0xFFFFD23F)
 private val CarColors = listOf(Color(0xFFE63946), Color(0xFF2A9D8F), Color(0xFFF4A261), Color(0xFF8E7DBE))
 
+/** A finger move shorter than this (both axes) is a tap. */
+private const val SWIPE_DP = 28
+
 /** Rows kept below the student on screen. */
 private const val ROWS_BELOW = 2
 
@@ -71,7 +76,6 @@ private const val ROWS_BELOW = 2
 @Composable
 fun ClassRushScreen(game: ClassRushGame) {
     val s by game.state.collectAsState()
-    val tilt by game.tilt.collectAsState()
     val focus = remember { FocusRequester() }
     LaunchedEffect(Unit) { focus.requestFocus() }
 
@@ -87,14 +91,29 @@ fun ClassRushScreen(game: ClassRushGame) {
     }
 
     // Smooth hops and camera.
-    val px by animateFloatAsState(s.x, tween(if (s.phase == RushPhase.PLAYING) 90 else 0), label = "x")
-    val py by animateFloatAsState(s.row.toFloat(), tween(110), label = "row")
+    val px by animateFloatAsState(s.x, tween(if (s.phase == RushPhase.PLAYING) 60 else 0), label = "x")
+    val py by animateFloatAsState(s.row.toFloat(), tween(if (s.phase == RushPhase.PLAYING) 70 else 0), label = "row")
     val camera by animateFloatAsState((s.row - ROWS_BELOW).coerceAtLeast(0).toFloat(), tween(220), label = "camera")
 
     Box(
         Modifier.fillMaxSize().background(Pavement)
             .focusRequester(focus).focusable()
-            .onKeyEvent { debugHop(it)?.let { hop -> game.requestDebugHop(hop); true } ?: false },
+            .onKeyEvent { debugHop(it)?.let { hop -> game.onTouch(hop); true } ?: false }
+            // Tap = hop forward; swipe = step that way (decided on lift, see swipeHop).
+            .pointerInput(game) {
+                val threshold = SWIPE_DP.dp.toPx()
+                awaitEachGesture {
+                    val down = awaitFirstDown()
+                    var last = down.position
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                        last = change.position
+                        if (!change.pressed) break
+                    }
+                    game.onTouch(swipeHop(last.x - down.position.x, last.y - down.position.y, threshold))
+                }
+            },
     ) {
         Canvas(Modifier.fillMaxSize()) {
             val cell = size.width / COLUMNS
@@ -105,9 +124,7 @@ fun ClassRushScreen(game: ClassRushGame) {
                 val top = size.height - (row - camera + 1) * cell
                 drawLane(if (row < 0) Lane(LaneKind.PAVEMENT) else game.lane(row), row, top, cell, t)
             }
-            if (s.phase != RushPhase.BLOCKED) {
-                drawStudent(Offset(px * cell + cell / 2, size.height - (py - camera + 0.5f) * cell), cell, fell = s.end == RushEnd.FELL)
-            }
+            drawStudent(Offset(px * cell + cell / 2, size.height - (py - camera + 0.5f) * cell), cell, fell = s.end == RushEnd.FELL)
         }
 
         // HUD: time left and rows.
@@ -116,16 +133,9 @@ fun ClassRushScreen(game: ClassRushGame) {
             HudChip("ROWS ${s.score}")
         }
 
-        // Tilt indicator: the dot is the phone's tilt, the ring is where a hop fires.
-        if (s.phase == RushPhase.PLAYING) {
-            Canvas(Modifier.align(Alignment.BottomEnd).padding(20.dp).size(96.dp)) { drawTiltIndicator(tilt) }
-        }
-
         val message = when {
-            s.phase == RushPhase.BLOCKED -> "Class Rush needs an accelerometer. This run is not recorded."
             s.phase == RushPhase.OVER -> endMessage(s)
-            tilt == null && s.phase == RushPhase.PLAYING -> "Hold the phone still…"
-            s.elapsedMs < 3_500 -> "Tilt forward to hop · back to the middle · again"
+            s.elapsedMs < 3_500 -> "Tap to hop · swipe left/right to step · swipe down to go back"
             else -> null
         }
         if (message != null) {
@@ -148,22 +158,6 @@ private fun HudChip(text: String) {
     )
 }
 
-private fun DrawScope.drawTiltIndicator(tilt: Tilt?) {
-    val c = Offset(size.width / 2, size.height / 2)
-    val r = size.minDimension / 2 * 0.8f
-    drawCircle(Ink.copy(alpha = 0.6f), size.minDimension / 2, c)
-    drawCircle(Color.White.copy(alpha = 0.35f), r * REARM_DEG / HOP_DEG, c) // calm zone (re-arm)
-    drawCircle(Color.White, r, c, style = androidx.compose.ui.graphics.drawscope.Stroke(size.minDimension * 0.03f)) // hop ring
-    if (tilt == null) return
-    val scale = r / HOP_DEG
-    val dot = Offset(
-        c.x + (-tilt.roll * scale).coerceIn(-r * 1.2f, r * 1.2f),
-        c.y + (-tilt.lean * scale).coerceIn(-r * 1.2f, r * 1.2f),
-    )
-    val past = maxOf(kotlin.math.abs(tilt.lean), kotlin.math.abs(tilt.roll)) >= HOP_DEG
-    drawCircle(if (past) Hoodie else Backpack, size.minDimension * 0.11f, dot)
-}
-
 private fun DrawScope.drawLane(lane: Lane, row: Int, top: Float, cell: Float, t: Float) {
     val w = size.width
     when (lane.kind) {
@@ -182,8 +176,9 @@ private fun DrawScope.drawLane(lane: Lane, row: Int, top: Float, cell: Float, t:
             listOf(0.3f, 0.7f).forEach { y -> drawRect(Rail, Offset(0f, top + cell * y - cell * 0.03f), Size(w, cell * 0.06f)) }
             lane.movers.forEach { m ->
                 val x = lane.moverX(m, t) * cell
-                drawRoundRect(TramBody, Offset(x, top + cell * 0.1f), Size(m.length * cell, cell * 0.8f), CornerRadius(cell * 0.2f))
-                drawRect(TramStripe, Offset(x, top + cell * 0.42f), Size(m.length * cell, cell * 0.16f))
+                val body = m.length * cell - 2 * cell * CAR_INSET
+                drawRoundRect(TramBody, Offset(x + cell * CAR_INSET, top + cell * 0.1f), Size(body, cell * 0.8f), CornerRadius(cell * 0.2f))
+                drawRect(TramStripe, Offset(x + cell * CAR_INSET, top + cell * 0.42f), Size(body, cell * 0.16f))
             }
             // Warning light: blinks while a tram is about to come in.
             if (lane.warning(t) && (t * 4).toInt() % 2 == 0) {
@@ -195,21 +190,22 @@ private fun DrawScope.drawLane(lane: Lane, row: Int, top: Float, cell: Float, t:
         LaneKind.POND -> {
             drawRect(Water, Offset(0f, top), Size(w, cell))
             lane.movers.forEach { m ->
-                drawRoundRect(Ice, Offset(lane.moverX(m, t) * cell + cell * 0.05f, top + cell * 0.12f), Size(m.length * cell - cell * 0.1f, cell * 0.76f), CornerRadius(cell * 0.25f))
+                drawRoundRect(Ice, Offset(lane.moverX(m, t) * cell + cell * FLOE_INSET, top + cell * 0.12f), Size(m.length * cell - 2 * cell * FLOE_INSET, cell * 0.76f), CornerRadius(cell * 0.25f))
             }
         }
     }
 }
 
 private fun DrawScope.drawCar(x: Float, top: Float, length: Float, cell: Float, color: Color, dir: Int) {
-    drawRoundRect(color, Offset(x + cell * 0.05f, top + cell * 0.15f), Size(length - cell * 0.1f, cell * 0.7f), CornerRadius(cell * 0.18f))
+    // Same rectangle the engine collides with (CAR_INSET).
+    drawRoundRect(color, Offset(x + cell * CAR_INSET, top + cell * 0.15f), Size(length - 2 * cell * CAR_INSET, cell * 0.7f), CornerRadius(cell * 0.18f))
     // Windscreen on the driving side.
     val glassX = if (dir > 0) x + length - cell * 0.45f else x + cell * 0.15f
     drawRoundRect(Color(0xCCDDEEFF), Offset(glassX, top + cell * 0.25f), Size(cell * 0.3f, cell * 0.5f), CornerRadius(cell * 0.08f))
 }
 
 private fun DrawScope.drawStudent(c: Offset, cell: Float, fell: Boolean) {
-    val r = cell * 0.36f
+    val r = cell * PLAYER_HALF / 0.85f // body circle = the engine's hit box
     if (fell) drawCircle(Color.White.copy(alpha = 0.5f), r * 1.4f, c) // splash
     drawRoundRect(Backpack, Offset(c.x - r * 0.75f, c.y - r * 0.1f), Size(r * 1.5f, r * 1.0f), CornerRadius(r * 0.3f))
     drawCircle(Hoodie, r * 0.85f, c)

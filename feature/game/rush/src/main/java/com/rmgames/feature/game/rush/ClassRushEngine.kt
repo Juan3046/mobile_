@@ -3,7 +3,6 @@ package com.rmgames.feature.game.rush
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /** The street is this many cells wide (docs/games/06). */
@@ -18,15 +17,21 @@ const val IDLE_LIMIT_MS = 8_000L
 /** How far back from your best row you may hop. */
 private const val MAX_BACK_ROWS = 3
 
-/** Half the student's width in cells, for collisions with cars and trams. */
-private const val PLAYER_HALF = 0.3f
+/**
+ * Half the student's drawn body in cells. Collisions use the same shapes the screen draws
+ * (playtest 2026-11-20: a larger hit box killed the student before a car visibly touched).
+ */
+const val PLAYER_HALF = 0.26f
 
-/** A little forgiveness at the ends of an ice floe. */
-private const val FLOE_GRACE = 0.1f
+/** Cars and trams are drawn (and collide) this much inside their cells on each side. */
+const val CAR_INSET = 0.08f
+
+/** Ice floes are drawn this much inside their cells; standing still counts up to their edge. */
+const val FLOE_INSET = 0.05f
 
 enum class Hop { FORWARD, BACK, LEFT, RIGHT }
 
-enum class RushPhase { PLAYING, OVER, BLOCKED }
+enum class RushPhase { PLAYING, OVER }
 
 /** Why a run ended; only running out the clock is a win. */
 enum class RushEnd(val win: Boolean) { TIME_UP(true), HIT(false), FELL(false), TOO_SLOW(false) }
@@ -49,7 +54,7 @@ data class RushState(
 
 /**
  * Pure rules of Class Rush (docs/games/06-class-rush.md): no Android, no Compose. The host
- * loop calls [tick]; tilt gestures call [hop]; lanes come from [laneAt] (seeded per run).
+ * loop calls [tick]; taps and swipes call [hop]; lanes come from [laneAt] (seeded per run).
  */
 class ClassRushEngine(private var laneAt: (row: Int) -> Lane) {
     private val _state = MutableStateFlow(RushState())
@@ -63,11 +68,6 @@ class ClassRushEngine(private var laneAt: (row: Int) -> Lane) {
         laneAt = lanes
         lastProgressMs = 0
         _state.value = RushState()
-    }
-
-    /** Missing sensor: the run is void and never reports anything. */
-    fun block() {
-        _state.value = _state.value.copy(phase = RushPhase.BLOCKED)
     }
 
     fun hop(hop: Hop) {
@@ -149,14 +149,16 @@ data class Lane(
     /** A car or tram covers the student whose centre is at [center]. */
     fun hits(center: Float, t: Float): Boolean =
         (kind == LaneKind.ROAD || kind == LaneKind.TRAM) && movers.any { m ->
-            val mid = moverX(m, t) + m.length / 2
-            abs(center - mid) < m.length / 2 + PLAYER_HALF
+            val x = moverX(m, t)
+            val left = x + CAR_INSET
+            val right = x + m.length - CAR_INSET
+            center + PLAYER_HALF > left && center - PLAYER_HALF < right
         }
 
     /** An ice floe is under the student whose centre is at [center]. */
     fun carries(center: Float, t: Float): Boolean = movers.any { m ->
         val x = moverX(m, t)
-        center >= x - FLOE_GRACE && center <= x + m.length + FLOE_GRACE
+        center >= x + FLOE_INSET && center <= x + m.length - FLOE_INSET
     }
 
     /** Some mover is off screen now but enters within the warning time (tram light). */

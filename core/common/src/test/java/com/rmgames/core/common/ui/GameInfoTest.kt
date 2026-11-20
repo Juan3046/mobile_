@@ -12,7 +12,7 @@ class GameInfoTest {
         assertEquals(GameSensor("Front camera", RmIcons.Camera), gameSensor("03-blink-sniper"))
         assertEquals(GameSensor("Compass", RmIcons.Compass), gameSensor("04-compass-chaos"))
         assertEquals(GameSensor("Shake", RmIcons.Shake), gameSensor("05-soda-shake"))
-        assertEquals(GameSensor("Tilt", RmIcons.Tilt), gameSensor("06-class-rush"))
+        assertEquals(GameSensor("Tap & swipe", RmIcons.Run), gameSensor("06-class-rush"))
     }
 
     @Test

@@ -145,6 +145,27 @@ class ClassRushEngineTest {
     }
 
     @Test
+    fun `a car only hits when it visibly touches the student`() {
+        // Regression (playtest 2026-11-20 "collisions are wrong"): a car whose drawn body ends
+        // 0.1 cell before the student's body used to count as a hit.
+        val student = 3.5f // centre of column 3
+        val nearMiss = Lane(LaneKind.ROAD, dir = 1, speed = 0f, movers = listOf(Mover(2.25f, 1f)))
+        assertFalse(nearMiss.hits(student, 0f))
+        val touching = Lane(LaneKind.ROAD, dir = 1, speed = 0f, movers = listOf(Mover(2.5f, 1f)))
+        assertTrue(touching.hits(student, 0f))
+        // The car's drawn body and its hit box are the same rectangle.
+        assertEquals(2.25f + CAR_INSET, nearMiss.moverX(nearMiss.movers[0], 0f) + CAR_INSET, 0.001f)
+    }
+
+    @Test
+    fun `you are safe on the drawn ice and fall just off it`() {
+        val pond = Lane(LaneKind.POND, dir = 1, speed = 0f, movers = listOf(Mover(2f, 2f)))
+        assertTrue(pond.carries(2.1f, 0f))
+        assertTrue(pond.carries(3.9f, 0f))
+        assertFalse(pond.carries(4.3f, 0f))
+    }
+
+    @Test
     fun `only road and tram movers hurt`() {
         val road = Lane(LaneKind.ROAD, dir = 1, speed = 0f, movers = listOf(Mover(3f, 1f)))
         assertTrue(road.hits(3.5f, 0f))

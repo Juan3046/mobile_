@@ -1,24 +1,17 @@
 package com.rmgames.feature.game.rush
 
 import com.rmgames.core.common.GameScope
-import com.rmgames.core.sensors.AccelerometerSensor
-import com.rmgames.core.sensors.FakeAccelerometerSensor
-import com.rmgames.core.sensors.Vector3
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import kotlin.math.cos
-import kotlin.math.sin
 
 /** Wiring of [ClassRushGame] to the host contract (docs/08), on virtual time. */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -34,43 +27,20 @@ class ClassRushGameTest {
         fun close() = hostScope.cancel()
     }
 
-    private fun held(backDeg: Double): Vector3 {
-        val b = Math.toRadians(backDeg)
-        return Vector3(0f, (9.81 * cos(b)).toFloat(), (9.81 * sin(b)).toFloat())
-    }
-
     @Test
-    fun `tilting forward hops, the rows are reported and the clock ends the run`() = runTest {
-        val sensor = FakeAccelerometerSensor()
+    fun `taps hop forward, rows are reported and the run ends once`() = runTest {
         val host = RecordingHost(this)
-        val game = ClassRushGame(sensor, newSeed = { 1L })
+        val game = ClassRushGame(newSeed = { 1L })
         game.start(host)
         runCurrent()
-        repeat(CALIBRATION_SAMPLES) { sensor.emit(held(45.0)); advanceTimeBy(20) }
-        // Three forward hops through the safe start rows.
-        repeat(3) {
-            repeat(12) { sensor.emit(held(70.0)); advanceTimeBy(20) } // tilt and hold briefly
-            repeat(12) { sensor.emit(held(45.0)); advanceTimeBy(20) } // back to neutral
-        }
-        assertEquals(3, game.state.value.row)
-        assertTrue(host.scores.contains(3L))
-        advanceTimeBy(RUN_MS) // idle or the clock ends it
+        repeat(SAFE_START_ROWS - 1) { game.onTouch(Hop.FORWARD); advanceTimeBy(100) }
+        assertEquals(SAFE_START_ROWS - 1, game.state.value.row)
+        assertTrue(host.scores.contains((SAFE_START_ROWS - 1).toLong()))
+        advanceTimeBy(RUN_MS) // idle (or the clock) ends it
         assertEquals(1, host.finishes.size)
         assertEquals(RushPhase.OVER, game.state.value.phase)
-        host.close()
-    }
-
-    @Test
-    fun `a missing accelerometer blocks the run and reports nothing`() = runTest {
-        val missing = object : AccelerometerSensor {
-            override fun readings(): Flow<Vector3> = flow { error("no accelerometer") }
-        }
-        val host = RecordingHost(this)
-        val game = ClassRushGame(missing, newSeed = { 1L })
-        game.start(host)
-        advanceTimeBy(1_000)
-        assertEquals(RushPhase.BLOCKED, game.state.value.phase)
-        assertTrue(host.finishes.isEmpty())
+        game.onTouch(Hop.FORWARD) // nothing moves after the end
+        assertEquals(SAFE_START_ROWS - 1, game.state.value.score)
         host.close()
     }
 

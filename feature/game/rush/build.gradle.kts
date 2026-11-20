@@ -26,7 +26,6 @@ android {
 
 dependencies {
     implementation(project(":core:common"))
-    implementation(project(":core:sensors"))
     implementation(libs.kotlinx.coroutines.android)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)

@@ -129,7 +129,7 @@ private fun rememberGameRegistry(): GameRegistry {
                 blinkSniperEntry(MlKitBlinkDetector(context, lifecycleOwner)),
                 compassChaosEntry(AndroidCompassSensor(context)),
                 sodaShakeEntry(AndroidAccelerometerSensor(context)),
-                classRushEntry(AndroidAccelerometerSensor(context)),
+                classRushEntry(),
             ),
         )
     }

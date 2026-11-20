@@ -33,7 +33,7 @@ class GameRegistryWiringTest {
             blinkSniperEntry(FakeBlinkDetector()),
             compassChaosEntry(FakeCompassSensor()),
             sodaShakeEntry(FakeAccelerometerSensor()),
-            classRushEntry(FakeAccelerometerSensor()),
+            classRushEntry(),
         ),
     )
 

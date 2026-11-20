@@ -19,7 +19,7 @@ class SensorGateTest {
         assertEquals(listOf(SensorType.FRONT_CAMERA), requiredSensors("03-blink-sniper"))
         assertEquals(listOf(SensorType.MAGNETOMETER), requiredSensors("04-compass-chaos"))
         assertEquals(listOf(SensorType.ACCELEROMETER), requiredSensors("05-soda-shake"))
-        assertEquals(listOf(SensorType.ACCELEROMETER), requiredSensors("06-class-rush"))
+        assertEquals(emptyList<SensorType>(), requiredSensors("06-class-rush")) // touch exception
     }
 
     @Test
