@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -35,7 +36,10 @@ import com.rmgames.core.common.ui.SectionHeader
 import com.rmgames.core.common.ui.StatTile
 import com.rmgames.core.common.ui.gameScoreText
 import com.rmgames.core.data.DayClock
+import com.rmgames.core.data.RankRow
+import com.rmgames.core.data.RankingSync
 import com.rmgames.core.data.ScoreRepository
+import com.rmgames.core.data.Standing
 
 /**
  * Seasons history route (docs/03 §3.4), built from the player's own daily bests. Opened
@@ -48,18 +52,41 @@ fun SeasonsHistoryRoute(
     games: List<Game>,
     onBack: () -> Unit,
     dailyGameId: (Long) -> String? = { null },
+    /** Online ranking for points, positions and today's top 50; null = none. */
+    ranking: RankingSync? = null,
 ) {
     val feedback = LocalUiFeedback.current
     LaunchedEffect(Unit) { feedback.scene(AudioScene.Menu) }
+    val rules = remember(games) { games.associate { it.id to it.higherWins } }
+    val today = remember(clock) { clock.dayIndex() }
     val history = remember(scores, clock, games) {
-        val rules = games.associate { it.id to it.higherWins }
-        SeasonHistory.build(clock.dayIndex(), scores.history(), games.associate { it.id to it.title }, dailyGameId) { rules[it] ?: true }
+        SeasonHistory.build(today, scores.history(), games.associate { it.id to it.title }, dailyGameId) { rules[it] ?: true }
     }
-    SeasonsHistoryScreen(history, onBack)
+    val todaysGame = dailyGameId(today)
+    var online by remember {
+        mutableStateOf(OnlineStandings(online = ranking?.isOnline == true, todayGameId = todaysGame, todayGameTitle = games.firstOrNull { it.id == todaysGame }?.title))
+    }
+    LaunchedEffect(history) {
+        if (ranking == null || !ranking.isOnline) return@LaunchedEffect
+        // Today's best is (re)uploaded first, so it shows in the top list below.
+        val standings = ranking.season(history.current.playedDays { rules[it] ?: true }, today)
+        online = online.copy(standings = standings)
+        if (todaysGame != null) online = online.copy(todayTop = ranking.top(today, todaysGame, rules[todaysGame] ?: true))
+    }
+    SeasonsHistoryScreen(history, onBack, online)
 }
 
+/** What the online ranking adds to the history; nulls are "not loaded (yet)". */
+data class OnlineStandings(
+    val online: Boolean = false,
+    val standings: Map<Long, Standing?>? = null,
+    val todayTop: List<RankRow>? = null,
+    val todayGameId: String? = null,
+    val todayGameTitle: String? = null,
+)
+
 @Composable
-fun SeasonsHistoryScreen(history: SeasonHistory, onBack: () -> Unit) {
+fun SeasonsHistoryScreen(history: SeasonHistory, onBack: () -> Unit, online: OnlineStandings = OnlineStandings()) {
     val c = RmTheme.colors
     var tab by rememberSaveable { mutableIntStateOf(0) }
     Column(Modifier.fillMaxSize().background(c.background)) {
@@ -70,13 +97,13 @@ fun SeasonsHistoryScreen(history: SeasonHistory, onBack: () -> Unit) {
                 .padding(horizontal = RmTheme.dimens.gutter).padding(top = 16.dp, bottom = RmTheme.dimens.gapMajor),
             verticalArrangement = Arrangement.spacedBy(RmTheme.dimens.gapSection),
         ) {
-            if (tab == 0) SeasonTab(history.current) else HistoryTab(history)
+            if (tab == 0) SeasonTab(history.current, online) else HistoryTab(history, online.online)
         }
     }
 }
 
 @Composable
-private fun SeasonTab(s: SeasonSummary) {
+private fun SeasonTab(s: SeasonSummary, online: OnlineStandings) {
     val c = RmTheme.colors
     val todayIndex = s.days.indexOfFirst { it.state == DayState.Today }.coerceAtLeast(0)
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -86,7 +113,8 @@ private fun SeasonTab(s: SeasonSummary) {
     }
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         StatTile("Days played", "${s.daysPlayed} / ${s.days.size}", Modifier.weight(1f))
-        StatTile("Season points", "—", Modifier.weight(1f), caption = "with online ranking")
+        val (points, caption) = seasonPointsTile(online.online, online.standings)
+        StatTile("Season points", points, Modifier.weight(1f), caption = caption)
     }
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         SectionHeader("Day by day")
@@ -94,12 +122,40 @@ private fun SeasonTab(s: SeasonSummary) {
             Column(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
                 s.days.forEachIndexed { i, d ->
                     if (i > 0) RmListDivider(inset = false)
-                    RmListItem(headline = d.dateLabel, supporting = dayText(d))
+                    val standing = online.standings?.get(d.dayIndex)?.let { " · ${standingLabel(it)}" }.orEmpty()
+                    RmListItem(headline = d.dateLabel, supporting = dayText(d) + standing)
                 }
             }
         }
     }
-    OnlineNote()
+    if (online.online && online.todayGameId != null) TodayTop(online.todayGameId, online.todayGameTitle ?: online.todayGameId, online.todayTop)
+    OnlineNote(online.online)
+}
+
+/** Today's top 50 for the daily game (provisional until 12:00). */
+@Composable
+private fun TodayTop(gameId: String, gameTitle: String, rows: List<RankRow>?) {
+    val c = RmTheme.colors
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        SectionHeader("Today · $gameTitle")
+        when {
+            rows == null -> Text("Loading today's ranking…", style = MaterialTheme.typography.bodyMedium, color = c.onSurfaceVariant)
+            rows.isEmpty() -> Text("No one is ranked yet today (or no connection).", style = MaterialTheme.typography.bodyMedium, color = c.onSurfaceVariant)
+            else -> RmCard(Modifier.fillMaxWidth()) {
+                Column(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                    rows.forEachIndexed { i, r ->
+                        if (i > 0) RmListDivider(inset = false)
+                        val score = gameScoreText(gameId, r.best)
+                        RmListItem(
+                            headline = "#${r.position}  ${r.nick}" + if (r.isMe) " (you)" else "",
+                            supporting = "${score.value} ${score.unit}",
+                            icon = if (r.isMe) RmIcons.Trophy else null,
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
 
 private fun dayText(d: SeasonDayRow): String {
@@ -113,7 +169,7 @@ private fun dayText(d: SeasonDayRow): String {
 }
 
 @Composable
-private fun HistoryTab(h: SeasonHistory) {
+private fun HistoryTab(h: SeasonHistory, online: Boolean) {
     val c = RmTheme.colors
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         StatTile("Days played", "${h.allTime.daysPlayed}", Modifier.weight(1f), caption = "all time")
@@ -151,13 +207,14 @@ private fun HistoryTab(h: SeasonHistory) {
             }
         }
     }
-    OnlineNote()
+    OnlineNote(online)
 }
 
 @Composable
-private fun OnlineNote() {
+private fun OnlineNote(online: Boolean) {
     Text(
-        "Positions, season points and other players' standings arrive with online ranking. For now this shows your own results on this phone.",
+        if (online) "Positions and points are provisional until each day closes at 12:00. Your bests upload when you're online."
+        else "This build has no online ranking: it shows your own results on this phone.",
         style = MaterialTheme.typography.bodySmall, color = RmTheme.colors.onSurfaceVariant,
     )
 }

@@ -40,6 +40,8 @@ data class RunSummary(
     val personalBest: Long? = null,
     /** This run beat every earlier day (not shown for the very first score). */
     val isPersonalBest: Boolean = false,
+    /** The day the run belongs to (the ranking day). */
+    val dayIndex: Long = 0,
 )
 
 /**
@@ -123,6 +125,7 @@ class SessionFlow(
                 personalBest = scores.personalBest(game.id, game.higherWins)?.best,
                 isPersonalBest = !practice && score != null && previousPersonal != null &&
                     if (game.higherWins) score > previousPersonal else score < previousPersonal,
+                dayIndex = runDay,
             ),
         )
     }

@@ -32,6 +32,8 @@ Shared (frozen in Phase 1a — built together, no cross-module edits afterwards)
                              lock + countdown, result screen
 :core:audio                 app music + UI sounds: synthesizer, SoundBook,
                              AudioDirector rules, Android AudioTrack backend — Phase 2
+:core:online                Firebase adapters (Anonymous Auth, Firestore nick
+                             directory; ranking next) — Phase 2 stream E
 :feature:onboarding         first-launch nick screen (NickClaim + NickRegistry) — Phase 2
 :feature:ranking            seasons history (Season / History tabs); online
                              standings later — Phase 2
