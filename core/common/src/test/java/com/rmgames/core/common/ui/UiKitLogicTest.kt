@@ -133,7 +133,7 @@ class GameVisualsTest {
 
     @Test
     fun `each known game maps to its accent`() {
-        assertEquals(c.gameEscape, gameAccent("01-escape-poruba", c))
+        assertEquals(c.gameCasino, gameAccent("01-poruba-casino", c))
         assertEquals(c.gameOnion, gameAccent("02-onion-roll", c))
         assertEquals(c.gameBlink, gameAccent("03-blink-sniper", c))
         assertEquals(c.gameCompass, gameAccent("04-compass-chaos", c))
@@ -147,7 +147,7 @@ class GameVisualsTest {
 
     @Test
     fun `each known game has its own glyph and unknown gets the play glyph`() {
-        val ids = listOf("01-escape-poruba", "02-onion-roll", "03-blink-sniper", "04-compass-chaos", "05-soda-shake")
+        val ids = listOf("01-poruba-casino", "02-onion-roll", "03-blink-sniper", "04-compass-chaos", "05-soda-shake")
         assertEquals(ids.size, ids.map { gameGlyph(it) }.toSet().size)
         assertEquals(RmIcons.Play, gameGlyph("99-new-game"))
     }
@@ -166,7 +166,7 @@ class RmIconsTest {
     @Test
     fun `catalogue holds the shell icons`() {
         listOf("play", "replay", "settings", "close", "back", "timer", "lock", "star", "trophy",
-            "podium", "camera", "bug", "eye", "compass", "can", "onion", "run", "shake", "tilt", "info")
+            "podium", "camera", "bug", "eye", "compass", "can", "onion", "run", "shake", "tilt", "info", "cards")
             .forEach { assertTrue("missing $it", it in RmIcons.all) }
     }
 }

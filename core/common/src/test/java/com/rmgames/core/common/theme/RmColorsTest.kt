@@ -57,7 +57,7 @@ class RmColorsTest {
     @Test
     fun `game accents are shared by both themes`() {
         with(RmPalette) {
-            assertEquals(Dark.gameEscape, Light.gameEscape)
+            assertEquals(Dark.gameCasino, Light.gameCasino)
             assertEquals(Dark.gameOnion, Light.gameOnion)
             assertEquals(Dark.gameBlink, Light.gameBlink)
             assertEquals(Dark.gameCompass, Light.gameCompass)

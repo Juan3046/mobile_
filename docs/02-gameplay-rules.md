@@ -16,6 +16,8 @@
 - **Standard games last 30–90 seconds.**
 - **Approved exception: Soda Shake (05)** — short variable-length single round (ends at 20 shakes).
 - **Approved exception: Compass Chaos (04)** — fixed 20s round.
+- **Approved exception: Poruba Casino (01)** — unlimited duration; run ends when balance
+  drops below the minimum 10-banana wager.
 - **Approved exception: Onion Roll (02)** — endless survival run with no time
   cap (approved after playtest, 2026-11-10); the ever-accelerating belt ends
   every run. Score = whole seconds survived. See `games/02-onion-roll.md`.
@@ -30,7 +32,7 @@
 - All audio work runs on its own thread, never the main thread.
 
 ## Controls
-- Focus on **mobile sensors** where possible (camera, gyroscope, accelerometer), but touch-drag is allowed when the game design requires it (e.g. Escape Poruba).
+- Focus on **mobile sensors/camera** (camera, gyroscope, accelerometer); touch controls are allowed only as a documented game-specific exception.
 - Touch as fallback only where strictly needed (to be specified per minigame).
 - **Missing sensor / permission denied: block + message.** Disable Play for that game with a clear explanation; never record fake scores.
 

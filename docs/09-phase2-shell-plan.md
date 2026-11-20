@@ -120,7 +120,9 @@
   together), Claude drew all five in their own modules: one `<Game>Thumbnail.kt` (Canvas, flat shapes
   with the ink outline) + one line in each entry factory — Escape: road between Poruba panel blocks;
   Onion: onion on the belt with fruit; Blink: target + crosshair + bomb; Compass: spinning dial;
-  Soda: shaking can with fizz. A wiring test requires every registered game to ship one. Verified by
+  Soda: shaking can with fizz. (2026-11-20: Escape was replaced on `main` by **Poruba Casino**; its
+  thumbnail is a fanned blackjack hand + a banana, and the shell maps it to "Head gestures",
+  "No time limit" and a score in bananas.) A wiring test requires every registered game to ship one. Verified by
   unit tests + build only — no device/emulator available (SDK system images are incomplete).
   **Device check (2026-11-18, evening)** — splash, Main, Seasons history and all intros seen on the
   phone. Fixed: (1) history showed a debug-launched game's score as "today" — `SeasonHistory.build`
@@ -236,5 +238,6 @@ plus the screens above styled with `RmTheme` and app-wide audio honouring Settin
 - **Scope creep from "life" features** (music, particles, animations): every
   effect is opt-out in Settings and must keep 60 fps on the test device.
 - **Audio licensing**: no asset merges without its licence recorded.
-- **Escape Poruba** is still a skeleton — the daily rotation must tolerate a game
+- *(Resolved 2026-11-20: Poruba Casino replaced the Escape skeleton and joined the rotation.)*
+  **Escape Poruba** was still a skeleton — the daily rotation must tolerate a game
   that is not ready (skip unready games until it lands).

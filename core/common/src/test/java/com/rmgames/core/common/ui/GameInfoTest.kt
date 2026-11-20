@@ -7,7 +7,7 @@ class GameInfoTest {
 
     @Test
     fun `each game names the sensor it plays with`() {
-        assertEquals(GameSensor("Touch drag", RmIcons.Run), gameSensor("01-escape-poruba"))
+        assertEquals(GameSensor("Head gestures", RmIcons.Camera), gameSensor("01-poruba-casino"))
         assertEquals(GameSensor("Tilt", RmIcons.Tilt), gameSensor("02-onion-roll"))
         assertEquals(GameSensor("Front camera", RmIcons.Camera), gameSensor("03-blink-sniper"))
         assertEquals(GameSensor("Compass", RmIcons.Compass), gameSensor("04-compass-chaos"))
@@ -23,7 +23,7 @@ class GameInfoTest {
     fun `duration label follows the documented exceptions`() {
         assertEquals("60 seconds", gameDurationLabel("03-blink-sniper", 60_000))
         assertEquals("20 seconds", gameDurationLabel("04-compass-chaos", 20_000))
-        assertEquals("90 seconds", gameDurationLabel("01-escape-poruba", 90_000))
+        assertEquals("No time limit", gameDurationLabel("01-poruba-casino", Long.MAX_VALUE))
         assertEquals("Endless", gameDurationLabel("02-onion-roll", Long.MAX_VALUE))
         assertEquals("20 shakes", gameDurationLabel("05-soda-shake", 10_000))
     }
@@ -34,6 +34,12 @@ class GameScoreTextTest {
     fun `points games show the raw count`() {
         assertEquals(ScoreText("27", "points"), gameScoreText("03-blink-sniper", 27))
         assertEquals(ScoreText("1", "point"), gameScoreText("04-compass-chaos", 1))
+    }
+
+    @Test
+    fun `casino shows the banana balance`() {
+        assertEquals(ScoreText("130", "bananas"), gameScoreText("01-poruba-casino", 130))
+        assertEquals(ScoreText("1", "banana"), gameScoreText("01-poruba-casino", 1))
     }
 
     @Test

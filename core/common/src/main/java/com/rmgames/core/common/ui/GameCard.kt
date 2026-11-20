@@ -32,7 +32,7 @@ import com.rmgames.core.common.theme.RmTheme
 
 /** Accent colour for a game id (thumbnail fallback, game chip). Unknown ids get a neutral container. */
 fun gameAccent(gameId: String, colors: RmColors): Color = when (gameKey(gameId)) {
-    "escape" -> colors.gameEscape
+    "poruba" -> colors.gameCasino
     "onion" -> colors.gameOnion
     "blink" -> colors.gameBlink
     "compass" -> colors.gameCompass
@@ -42,7 +42,7 @@ fun gameAccent(gameId: String, colors: RmColors): Color = when (gameKey(gameId))
 
 /** Glyph for a game's thumbnail fallback. Unknown ids get the play glyph. */
 fun gameGlyph(gameId: String): ImageVector = when (gameKey(gameId)) {
-    "escape" -> RmIcons.Run
+    "poruba" -> RmIcons.Cards
     "onion" -> RmIcons.Onion
     "blink" -> RmIcons.Eye
     "compass" -> RmIcons.Compass

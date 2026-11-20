@@ -5,27 +5,24 @@ plugins {
 }
 
 android {
-    namespace = "com.rmgames.feature.game.escape"
+    namespace = "com.rmgames.feature.game.casino"
     compileSdk = 34
-
-    defaultConfig {
-        minSdk = 31
-    }
+    defaultConfig { minSdk = 31 }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-    buildFeatures {
-        compose = true
-    }
+    kotlinOptions { jvmTarget = "17" }
+    buildFeatures { compose = true }
 }
 
 dependencies {
     implementation(project(":core:common"))
+    implementation(project(":core:vision"))
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.kotlinx.coroutines.android)
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
 }

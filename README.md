@@ -4,7 +4,7 @@ Short daily sensor-driven mobile games (Android native, Kotlin, portrait only).
 
 - 1 daily game, 30–90s (documented exceptions, e.g. endless Onion Roll), 2 attempts/day (best counts).
 - 7-day seasons + historical leaderboard + Seasons History.
-- Minigames 01–02: Escape Poruba, Onion Roll (see `docs/games/`).
+- Minigames 01–05: Poruba Casino, Onion Roll, Blink Sniper, Compass Chaos, Soda Shake (see `docs/games/`).
 
 ## Docs (source of truth)
 

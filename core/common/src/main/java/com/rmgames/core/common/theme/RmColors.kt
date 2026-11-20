@@ -42,7 +42,7 @@ data class RmColors(
     val inverseSurface: Color, val inverseOnSurface: Color, val inversePrimary: Color,
     val ledge: Color,
     val scrim: Color = Color(0x8F000000),
-    val gameEscape: Color = GameAccents.Escape,
+    val gameCasino: Color = GameAccents.Casino,
     val gameOnion: Color = GameAccents.Onion,
     val gameBlink: Color = GameAccents.Blink,
     val gameCompass: Color = GameAccents.Compass,
@@ -82,7 +82,7 @@ data class RmColors(
             ui("primary/surface", primary, surface),
             ui("error/surface", error, surface),
             ui("success/surface", success, surface),
-            text("onGame/gameEscape", onGame, gameEscape),
+            text("onGame/gameCasino", onGame, gameCasino),
             text("onGame/gameOnion", onGame, gameOnion),
             text("onGame/gameBlink", onGame, gameBlink),
             text("onGame/gameCompass", onGame, gameCompass),
@@ -123,7 +123,7 @@ data class RmColors(
 
 /** Per-game accent colours (content colour, never interaction). Shared by both themes. */
 object GameAccents {
-    val Escape = Color(0xFF8FB8FF)
+    val Casino = Color(0xFF8FB8FF)
     val Onion = Color(0xFFC9A7FF)
     val Blink = Color(0xFF6FE3D0)
     val Compass = Color(0xFFB5E36F)

@@ -3,6 +3,7 @@ package com.rmgames.app
 import com.rmgames.core.common.Game
 import com.rmgames.core.common.GameScope
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class DailyRotationTest {
@@ -16,25 +17,25 @@ class DailyRotationTest {
         override fun stop() {}
     }
 
-    private val all = listOf("01-escape-poruba", "02-onion-roll", "03-blink-sniper", "04-compass-chaos", "05-soda-shake").map(::G)
+    private val all = listOf("01-poruba-casino", "02-onion-roll", "03-blink-sniper", "04-compass-chaos", "05-soda-shake").map(::G)
+
+    @Test
+    fun `every current game is playable, so all five rotate`() {
+        assertTrue(NOT_READY_FOR_ROTATION.isEmpty())
+        assertEquals(all.map { it.id }, dailyRotation(all).map { it.id })
+    }
 
     @Test
     fun `games that are not ready stay out of the daily rotation`() {
         assertEquals(
             listOf("02-onion-roll", "03-blink-sniper", "04-compass-chaos", "05-soda-shake"),
-            dailyRotation(all).map { it.id },
+            dailyRotation(all, notReady = setOf("01-poruba-casino")).map { it.id },
         )
     }
 
     @Test
-    fun `rotation keeps registry order`() {
-        val shuffled = listOf(all[4], all[1], all[3])
-        assertEquals(shuffled.map { it.id }, dailyRotation(shuffled).map { it.id })
-    }
-
-    @Test
     fun `if nothing is ready the full list is used so home never breaks`() {
-        val onlyEscape = listOf(all[0])
-        assertEquals(onlyEscape, dailyRotation(onlyEscape))
+        val one = listOf(all[0])
+        assertEquals(one, dailyRotation(one, notReady = setOf("01-poruba-casino")))
     }
 }

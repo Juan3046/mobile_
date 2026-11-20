@@ -47,12 +47,13 @@ object RmIcons {
         "M12 3c-1 4-2 7-2 11s1 6 2 6M12 3c1 4 2 7 2 11s-1 6-2 6")
     val Run = stroked("run", circle(14f, 4f, 2f), "M6 21l3-6 3 2v5M8 10l3-3 4 2 3 3M11 7l-1 6")
     val Shake = stroked("shake", rect(8f, 3f, 8f, 18f, 2f), "M4 8v8M20 8v8M2 10v4M22 10v4")
+    val Cards = stroked("cards", rect(9f, 3f, 12f, 16f, 2f), "M6 6.5l-2 .6a2 2 0 0 0-1.3 2.4l3 10.4a2 2 0 0 0 2.4 1.4l4.4-1.2", "M15 7.5l-2.2 3.5 2.2 3.5 2.2-3.5z")
     val Tilt = stroked("tilt", rect(7f, 3f, 10f, 18f, 2f), "M3 8a10 10 0 0 0 0 8M21 8a10 10 0 0 1 0 8")
 
     /** Every icon by sprite name (used by tests and previews). */
     val all: Map<String, ImageVector> by lazy {
         listOf(Play, Replay, Settings, Close, Back, Check, ChevronRight, Timer, Lock, Star, Trophy, Podium,
-            History, Calendar, Info, Bug, Music, Volume, Vibrate, User, Camera, Eye, Compass, Can, Onion, Run, Shake, Tilt)
+            History, Calendar, Info, Bug, Music, Volume, Vibrate, User, Camera, Eye, Compass, Can, Onion, Run, Shake, Tilt, Cards)
             .associateBy { it.name }
     }
 
