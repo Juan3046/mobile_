@@ -32,7 +32,7 @@ class PorubaCasinoGame(
 ) : Game {
     override val id = "01-poruba-casino"
     override val title = "Poruba Casino"
-    override val description = "Play blackjack with head gestures. Nod to hit; shake to stand."
+    override val description = "Five hands of blackjack against the dealer. Nod to hit, shake your head to stand. End with the most bananas."
     override val durationMs = Long.MAX_VALUE
     override val higherWins = true
 
@@ -233,14 +233,18 @@ class PorubaCasinoGame(
         }
     }
 
+    /**
+     * Presentation pauses (docs/games/01 "Run Flow"). Calmer since the 2026-11-20 playtest
+     * ("too fast"): each step stays on screen long enough to read. They never expire a turn.
+     */
     companion object {
-        private const val CAMERA_STARTUP_TIMEOUT_MS = 2_500L
-        private const val DEAL_CARD_PAUSE_MS = 650L
+        internal const val CAMERA_STARTUP_TIMEOUT_MS = 2_500L
+        internal const val DEAL_CARD_PAUSE_MS = 900L
         private const val INITIAL_DEAL_CARD_COUNT = 4
-        private const val ACTION_PAUSE_MS = 700L
-        private const val DEALER_REVEAL_PAUSE_MS = 1_000L
-        private const val DEALER_CARD_PAUSE_MS = 1_100L
-        private const val RESULT_DISPLAY_MS = 2_500L
+        internal const val ACTION_PAUSE_MS = 900L
+        internal const val DEALER_REVEAL_PAUSE_MS = 1_400L
+        internal const val DEALER_CARD_PAUSE_MS = 1_300L
+        internal const val RESULT_DISPLAY_MS = 3_200L
     }
 }
 

@@ -24,8 +24,9 @@ class SodaShakeEngineTest {
 
     private fun peak(dir: Float) = Vector3(20f * dir, GRAVITY, 0f)
 
+    /** A fresh engine that has already seen the phone held still (its gravity reference). */
     private fun engine(initial: SodaShakeState = SodaShakeState.INITIAL) =
-        SodaShakeEngine(initialState = initial)
+        SodaShakeEngine(initialState = initial).apply { onSample(rest) }
 
     // --- lifecycle & gauge ---
 
@@ -51,12 +52,23 @@ class SodaShakeEngineTest {
     }
 
     @Test
-    fun `a peak below the threshold never counts`() {
+    fun `small wobbles below the threshold never count`() {
         val e = engine()
 
-        repeat(20) { e.tick(16, Vector3(14f, 0f, 0f)) } // magnitude 14 < 15
-        e.tick(104, rest)
-        repeat(20) { e.tick(16, Vector3(14f, 0f, 0f)) }
+        repeat(40) { i -> e.tick(16, Vector3(if (i % 2 == 0) 5f else -5f, GRAVITY, 0f)) } // movement ≤ 5 < 7
+
+        assertEquals(0, e.state.value.shakes)
+    }
+
+    @Test
+    fun `tilting the phone slowly never counts — gravity is not a shake`() {
+        val e = engine()
+
+        // Rotate from upright to landscape over 2 s: gravity moves from y to x.
+        repeat(125) { i ->
+            val a = (i / 124.0) * Math.PI / 2
+            e.tick(16, Vector3((GRAVITY * Math.sin(a)).toFloat(), (GRAVITY * Math.cos(a)).toFloat(), 0f))
+        }
 
         assertEquals(0, e.state.value.shakes)
     }
@@ -109,23 +121,32 @@ class SodaShakeEngineTest {
     }
 
     @Test
-    fun `shakes must alternate direction — tapping the same way does not count`() {
+    fun `any kind of shake counts — same direction, up and down, front and back`() {
         val e = engine()
 
-        e.tick(16, peak(+1f)) // t=16 → count 1 (dir +)
-        e.tick(120, rest) // t=136 → re-armed
-        e.tick(16, peak(+1f)) // t=152 → dead time ok, but same direction: ignored
-        e.tick(120, rest) // t=272 → re-armed
-        e.tick(16, peak(-1f)) // t=288 → opposite direction → count 2
+        e.tick(16, peak(+1f)) // side
+        e.tick(120, rest)
+        e.tick(16, peak(+1f)) // same side again: counts too
+        e.tick(120, rest)
+        e.tick(16, Vector3(0f, GRAVITY + 10f, 0f)) // up/down along gravity
+        e.tick(120, rest)
+        e.tick(16, Vector3(0f, GRAVITY, -12f)) // towards the face
+        e.tick(120, rest)
 
-        assertEquals(2, e.state.value.shakes)
+        assertEquals(4, e.state.value.shakes)
     }
 
     @Test
-    fun `direction is the sign of the dominant axis`() {
-        assertEquals(1, SodaShakeEngine.directionOf(Vector3(20f, GRAVITY, 0f)))
-        assertEquals(-1, SodaShakeEngine.directionOf(Vector3(-20f, GRAVITY, 0f)))
-        assertEquals(-1, SodaShakeEngine.directionOf(Vector3(0f, GRAVITY, -25f)))
+    fun `every sensor reading is checked, not only the frame ticks`() {
+        val e = engine()
+
+        e.tick(16)
+        e.onSample(peak(+1f))
+        e.onSample(rest)
+        e.tick(100)
+        e.onSample(peak(-1f))
+
+        assertEquals(2, e.state.value.shakes)
     }
 
     // --- pop, score and end of run ---

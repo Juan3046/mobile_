@@ -44,7 +44,7 @@ Implementation (`NickOnboardingRoute` in `:feature:onboarding`, rules in `NickCl
 - Play again button (if attempts remain) else lock state (see 3.5).
 
 Implementation (Phase 2 — `SessionRoute` in `:feature:session`, run logic in `SessionFlow`):
-- Before each run: a "How to play" intro (GameCard + attempts + **Start**). Start spends the attempt; with none left the intro is locked.
+- Before each run: a "How to play" intro (GameCard + a **How to play** card with 3–4 short numbered steps and the goal + attempts + **Start**). The steps live in `gameHowTo()` (`:core:common`, written from each spec in `docs/games/`; added after the 2026-11-20 playtest). Start spends the attempt; with none left the intro is locked.
 - 3-2-1 countdown overlay with haptics, then the game starts (frozen `SessionGameScope` contract unchanged); non-own-HUD games get a host score chip.
 - Back during the countdown or the run asks to confirm, then forfeits the attempt and records nothing.
 - On finish the game's end state holds ~1 s ("Run over"), then the Result: "New best" stamp + confetti when the run beat today's best, the score counting up (one line, shrinks to fit), daily best and attempts tiles, **Play again** (straight to the countdown) or the locked "Back at 12:00" + countdown, and Back to home.

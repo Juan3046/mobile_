@@ -23,9 +23,20 @@ class GameInfoTest {
     fun `duration label follows the documented exceptions`() {
         assertEquals("60 seconds", gameDurationLabel("03-blink-sniper", 60_000))
         assertEquals("20 seconds", gameDurationLabel("04-compass-chaos", 20_000))
-        assertEquals("No time limit", gameDurationLabel("01-poruba-casino", Long.MAX_VALUE))
+        assertEquals("5 hands", gameDurationLabel("01-poruba-casino", Long.MAX_VALUE))
         assertEquals("Endless", gameDurationLabel("02-onion-roll", Long.MAX_VALUE))
         assertEquals("20 shakes", gameDurationLabel("05-soda-shake", 10_000))
+    }
+
+    @Test
+    fun `every game has short how-to steps and a goal`() {
+        listOf("01-poruba-casino", "02-onion-roll", "03-blink-sniper", "04-compass-chaos", "05-soda-shake").forEach { id ->
+            val h = requireNotNull(gameHowTo(id)) { id }
+            assert(h.steps.size in 2..4) { "$id: ${h.steps}" }
+            assert(h.steps.all { it.length <= 90 } && h.goal.length <= 90) { "$id: keep it short" }
+        }
+        assertEquals("Finish the 5 hands with as many bananas as you can.", gameHowTo("01-poruba-casino")!!.goal)
+        assertEquals(null, gameHowTo("99-new"))
     }
 }
 

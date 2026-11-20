@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -54,6 +55,8 @@ import com.rmgames.core.common.ui.RmTopBar
 import com.rmgames.core.common.ui.ScoreCounter
 import com.rmgames.core.common.ui.StatTile
 import com.rmgames.core.common.ui.gameDurationLabel
+import com.rmgames.core.common.ui.gameHowTo
+import com.rmgames.core.common.ui.HowTo
 import com.rmgames.core.common.ui.gameScoreText
 import com.rmgames.core.common.ui.gameSensor
 import com.rmgames.core.common.ui.rememberRemaining
@@ -197,6 +200,7 @@ private fun IntroScreen(game: Game, thumbnail: (@Composable () -> Unit)?, attemp
                 durationLabel = gameDurationLabel(game.id, game.durationMs),
                 art = thumbnail,
             )
+            gameHowTo(game.id)?.let { HowToCard(it, Modifier.padding(top = d.gapSection)) }
         }
         Column(Modifier.fillMaxWidth().padding(d.gutter), verticalArrangement = Arrangement.spacedBy(d.gapRelated)) {
             AttemptsPips(attemptsLeft)
@@ -249,6 +253,24 @@ private fun CountdownOverlay(secondsLeft: Int) {
     ) {
         Text("GET READY", style = MaterialTheme.typography.headlineSmall, color = c.inverseOnSurface)
         Text(secondsLeft.toString(), Modifier.scale(pop.value), style = RmTheme.score(160.sp), color = c.tertiary)
+    }
+}
+
+/** Numbered steps + the goal, under the GameCard on the intro (docs/03 §3.3). */
+@Composable
+private fun HowToCard(howTo: HowTo, modifier: Modifier = Modifier) {
+    val c = RmTheme.colors
+    RmCard(modifier.fillMaxWidth()) {
+        Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("HOW TO PLAY", style = MaterialTheme.typography.labelSmall, color = c.onSurfaceVariant)
+            howTo.steps.forEachIndexed { i, step ->
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text("${i + 1}", style = MaterialTheme.typography.titleMedium, color = c.primary)
+                    Text(step, style = MaterialTheme.typography.bodyMedium, color = c.onSurface)
+                }
+            }
+            Text("Goal: ${howTo.goal}", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold), color = c.onSurface)
+        }
     }
 }
 

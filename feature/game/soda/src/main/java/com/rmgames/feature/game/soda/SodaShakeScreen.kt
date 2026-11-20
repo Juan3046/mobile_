@@ -11,6 +11,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
+import com.rmgames.core.common.ui.LocalUiFeedback
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -47,6 +49,17 @@ fun SodaShakeScreen(
     val s by state.collectAsState()
     val focusRequester = remember { FocusRequester() }
     LaunchedEffect(Unit) { focusRequester.requestFocus() }
+
+    // A buzz per counted shake, a longer one at the pop (honours Settings → Vibration).
+    val context = LocalContext.current
+    val hapticsEnabled = LocalUiFeedback.current.hapticsEnabled
+    val vibrator = remember(context) { SodaShakeVibrator(context) }
+    val lastShakes = remember { intArrayOf(0) }
+    LaunchedEffect(s.shakes) {
+        val buzz = shakeBuzz(lastShakes[0], s.shakes)
+        lastShakes[0] = s.shakes
+        if (buzz != null && hapticsEnabled) vibrator.play(buzz)
+    }
 
     Box(
         modifier = Modifier
