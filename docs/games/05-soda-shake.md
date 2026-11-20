@@ -16,12 +16,17 @@ A physical speed test. The player shakes the phone as fast as possible to build 
 ## Rules
 - Shake detection counts high-force peaks on X, Y, Z axes; each valid peak = 1 shake.
 - The can pops at **20 shakes**, ending the run. No time limit, no fail state (giving up forfeits the attempt per global no-pause rule).
-- Cheat guard (implementation): peaks must alternate direction / exceed a dead time so tiny vibrations don't count (tune in playtest).
-  - Initial tuning in `SodaShakeEngine` (confirm by playtest): magnitude peak above
-    `15 m/s²` (≈ 0.5 g over gravity), must settle back below `11 m/s²` before the
-    next peak counts (hysteresis — a held reading counts once), minimum `120 ms`
-    between counted shakes, and consecutive counted peaks must alternate the sign
-    of the dominant axis (one-way tapping does not count).
+- **Any shake counts** — up/down, side to side, front/back or mixed (playtest 2026-11-20:
+  the first tuning required alternating direction on the dominant axis with gravity
+  included, which dropped up/down shakes and felt broken).
+  Detection in `SodaShakeEngine` (tune by playtest): gravity is removed with a low-pass
+  estimate (tilting never counts); the remaining hand movement must exceed `7 m/s²`
+  (≈ 0.7 g), calm down below `4 m/s²` before the next peak counts (hysteresis — one
+  jolt counts once), and counted shakes are at least `90 ms` apart. Every sensor reading
+  is checked (not one per frame), so fast shakes are not missed.
+- **Feedback**: every counted shake gives a short, light vibration; the pop a longer
+  one. Honours Settings → Vibration. The buzz is far below the shake threshold, so it
+  never counts as a shake.
 - The run clock is a stopwatch from the start and freezes at the pop; a run that
   never pops never finishes, so an idle run records nothing.
 
@@ -43,9 +48,7 @@ A physical speed test. The player shakes the phone as fast as possible to build 
 
 ## Open Questions
 - [x] Decided: single short round ending at 20 shakes (duration exception); score = time-to-pop cs, lower wins; block + message fallback; local-first persistence.
-- [ ] Playtest caveat: the cheat-guard tuning above (thresholds, 120 ms dead time,
-  direction alternation) is a first pass — confirm it feels fair for real shaking
-  and adjust in `SodaShakeEngine` only.
+- [x] Re-tuned after playtest (2026-11-20): any shake counts, gravity removed, vibration per shake.
 
 ## Implementation (Phase 1b)
 - `feature/game/soda`: `SodaShakeEngine` (pure rules, JVM unit tests),

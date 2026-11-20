@@ -1,7 +1,6 @@
 package com.rmgames.feature.game.soda
 
 import com.rmgames.core.sensors.Vector3
-import kotlin.math.abs
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,16 +37,18 @@ data class SodaShakeState(
 
 /**
  * Pure game rules for Soda Shake (docs/games/05-soda-shake.md) — no Android, no
- * Compose: the host loop calls [tick] with the latest accelerometer sample and
- * [state] is what the screen renders.
+ * Compose: the host feeds every accelerometer reading to [onSample], advances the
+ * clock with [tick], and [state] is what the screen renders.
  *
- * **Detection** is peak-based with three guards, so table taps and motor buzz
- * never count (tune by playtest):
- * 1. the magnitude must cross [SHAKE_THRESHOLD] (~0.5 g above gravity),
- * 2. it must settle back below [RELEASE_THRESHOLD] before the next peak counts
- *    (hysteresis — a held or sustained reading counts once),
- * 3. counted peaks are at least [DEAD_TIME_MS] apart **and alternate direction**
- *    (the sign of the dominant axis), so repeated one-way jolts are ignored.
+ * **Detection** counts *any* shake — up/down, side to side, forwards/backwards or
+ * mixed (playtest 2026-11-20: the old "alternate direction on the dominant axis"
+ * guard dropped half of the up/down shakes and felt broken):
+ * 1. gravity is removed with a low-pass estimate, so only the hand's movement is
+ *    measured, whatever the phone's orientation (tilting slowly never counts),
+ * 2. that movement must cross [SHAKE_THRESHOLD] (~0.7 g),
+ * 3. it must calm down below [RELEASE_THRESHOLD] before the next peak counts
+ *    (hysteresis — one jolt counts once), and counted peaks are at least
+ *    [DEAD_TIME_MS] apart. The phone's own vibration stays far below the threshold.
  *
  * **Scoring** is a stopwatch: the clock runs from the start and freezes at the
  * 20th shake (time-to-pop in centiseconds, `higherWins = false`). A run that
@@ -63,17 +64,18 @@ class SodaShakeEngine(
     private val _state = MutableStateFlow(initialState)
     val state: StateFlow<SodaShakeState> = _state.asStateFlow()
 
-    /** True once a peak has been seen and false again after it settles (hysteresis). */
+    /** True once a peak has been seen and false again after it calms down (hysteresis). */
     private var armed = false
     private var lastShakeAtMs: Long? = null
-    private var lastDirection = 0
     private var popStartedAtMs = 0L
+    /** Low-pass gravity estimate; null until the first reading. */
+    private var gravity: Vector3? = null
 
     /**
      * Advances the run by [rawDtMs] (no spatial simulation, so a stalled frame
-     * is harmless) and detects a shake peak in [sample] (m/s², gravity included).
+     * is harmless), then reads [sample] if one is given.
      */
-    fun tick(rawDtMs: Long, sample: Vector3) {
+    fun tick(rawDtMs: Long, sample: Vector3? = null) {
         if (rawDtMs <= 0L) return
         val current = _state.value
         when (current.phase) {
@@ -90,38 +92,32 @@ class SodaShakeEngine(
                 return
             }
 
-            SodaPhase.RUNNING -> Unit // fall through to detection below
-        }
-
-        val elapsed = current.elapsedMs + rawDtMs
-        var shakes = current.shakes
-        var phase = SodaPhase.RUNNING
-
-        val magnitude = sample.magnitude
-        if (!armed && magnitude >= threshold) {
-            armed = true // a crossing counts at most once, accepted or not
-            val direction = directionOf(sample)
-            if (isCountable(elapsed, direction)) {
-                shakes += 1
-                lastShakeAtMs = elapsed
-                lastDirection = direction
-                if (shakes >= SHAKES_TO_POP) {
-                    phase = SodaPhase.POPPING
-                    popStartedAtMs = elapsed
-                }
+            SodaPhase.RUNNING -> {
+                val elapsed = current.elapsedMs + rawDtMs
+                _state.value = current.copy(elapsedMs = elapsed, scoreCentis = elapsed / CENTIS_PER_SECOND)
             }
         }
-        if (magnitude <= releaseThreshold) armed = false
+        sample?.let(::onSample)
+    }
 
-        _state.value = current.copy(
-            phase = phase,
-            elapsedMs = elapsed,
-            shakes = shakes,
-            pressure = (shakes * PRESSURE_PER_SHAKE).coerceAtMost(1f),
-            // One formula for the whole run: the POPPING branch never recomputes it.
-            scoreCentis = elapsed / CENTIS_PER_SECOND,
-            popProgress = 0f,
-        )
+    /** One accelerometer reading (m/s², gravity included): a movement peak counts a shake. */
+    fun onSample(sample: Vector3) {
+        val g = gravity ?: sample
+        val movement = Vector3(sample.x - g.x, sample.y - g.y, sample.z - g.z).magnitude
+        // Follow gravity quickly while calm, barely during a shake (a hard push is not a tilt).
+        val k = if (movement < threshold) GRAVITY_FILTER else GRAVITY_FILTER_SHAKING
+        gravity = Vector3(g.x + k * (sample.x - g.x), g.y + k * (sample.y - g.y), g.z + k * (sample.z - g.z))
+        val current = _state.value
+        if (current.phase != SodaPhase.RUNNING) return
+        if (!armed && movement >= threshold) {
+            armed = true // a crossing counts at most once, accepted or not
+            val spacedOut = lastShakeAtMs?.let { current.elapsedMs - it >= deadTimeMs } ?: true
+            if (spacedOut) {
+                lastShakeAtMs = current.elapsedMs
+                registerShake(current.elapsedMs, current)
+            }
+        }
+        if (movement <= releaseThreshold) armed = false
     }
 
     /** Debug-only shake (emulator playtesting): counts without any sensor reading. */
@@ -145,14 +141,8 @@ class SodaShakeEngine(
         _state.value = initial
         armed = false
         lastShakeAtMs = null
-        lastDirection = 0
         popStartedAtMs = 0L
-    }
-
-    /** Dead time + direction alternation: the cheat guard of docs/05. */
-    private fun isCountable(elapsedMs: Long, direction: Int): Boolean {
-        val spacedOut = lastShakeAtMs?.let { elapsedMs - it >= deadTimeMs } ?: true
-        return spacedOut && direction != 0 && direction != lastDirection
+        gravity = null
     }
 
     private fun registerShake(elapsedMs: Long, current: SodaShakeState) {
@@ -163,42 +153,23 @@ class SodaShakeEngine(
             pressure = (shakes * PRESSURE_PER_SHAKE).coerceAtMost(1f),
             scoreCentis = elapsedMs / CENTIS_PER_SECOND,
             popProgress = 0f,
-        ).also {
-            if (shakes >= SHAKES_TO_POP) popStartedAtMs = elapsedMs
-        }
+        )
+        if (shakes >= SHAKES_TO_POP) popStartedAtMs = elapsedMs
     }
 
     companion object {
-        /** ~0.5 g above gravity — the comfortable level of the frozen ShakeDetector. */
-        const val SHAKE_THRESHOLD = 15f
-        /** The reading must settle back near gravity before the next peak counts. */
-        const val RELEASE_THRESHOLD = 11f
+        /** Hand movement (gravity removed) that counts as a shake: ~0.7 g. */
+        const val SHAKE_THRESHOLD = 7f
+        /** The movement must calm down below this before the next peak counts. */
+        const val RELEASE_THRESHOLD = 4f
         /** Minimum spacing between counted shakes (one jolt ≠ two shakes). */
-        const val DEAD_TIME_MS = 120L
+        const val DEAD_TIME_MS = 90L
         const val SHAKES_TO_POP = 20
         const val PRESSURE_PER_SHAKE = 0.05f
         const val POP_DURATION_MS = 400L
         private const val CENTIS_PER_SECOND = 10L
-
-        /**
-         * Sign of the dominant axis at a peak: during a shake that axis carries
-         * more than gravity (a peak above [SHAKE_THRESHOLD] proves it), and its
-         * sign flips on every back-and-forth — the alternation guard rides on it.
-         */
-        internal fun directionOf(sample: Vector3): Int {
-            val ax = abs(sample.x)
-            val ay = abs(sample.y)
-            val az = abs(sample.z)
-            val dominant = when {
-                ax >= ay && ax >= az -> sample.x
-                ay >= az -> sample.y
-                else -> sample.z
-            }
-            return when {
-                dominant > 0f -> 1
-                dominant < 0f -> -1
-                else -> 0
-            }
-        }
+        /** Per-reading weight of the gravity low-pass (~0.2 s at SENSOR_DELAY_GAME). */
+        private const val GRAVITY_FILTER = 0.1f
+        private const val GRAVITY_FILTER_SHAKING = 0.02f
     }
 }
