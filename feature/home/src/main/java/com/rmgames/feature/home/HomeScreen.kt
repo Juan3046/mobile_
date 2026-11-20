@@ -67,8 +67,10 @@ fun HomeRoute(
     thumbnails: Map<String, @Composable () -> Unit> = emptyMap(),
     onHistory: (() -> Unit)? = null,
     onSettings: (() -> Unit)? = null,
+    /** Why a game can't run on this phone (missing sensor), or null — Play is then disabled. */
+    unavailableReason: (gameId: String) -> String? = { null },
 ) {
-    val vm = remember(games, attempts, scores, clock) { HomeViewModel(attempts, scores, clock, games) }
+    val vm = remember(games, attempts, scores, clock) { HomeViewModel(attempts, scores, clock, games, unavailableReason) }
     val feedback = LocalUiFeedback.current
     LaunchedEffect(Unit) { feedback.scene(AudioScene.Menu) }
     var version by remember { mutableIntStateOf(0) }
@@ -154,7 +156,11 @@ fun HomeScreen(
                 val best = state.bestToday?.let { gameScoreText(state.gameId, it) }
                 Text("Best today: ${best?.let { "${it.value} ${it.unit}" } ?: "—"}", style = MaterialTheme.typography.bodySmall, color = c.onSurfaceVariant)
             }
-            if (state.locked) {
+            val unavailable = state.unavailableReason
+            if (unavailable != null) {
+                Text(unavailable, style = MaterialTheme.typography.bodyMedium, color = c.onSurface)
+                RmButton("Not playable on this phone", {}, Modifier.fillMaxWidth(), size = RmButtonSize.Xl, icon = RmIcons.Lock, enabled = false)
+            } else if (state.locked) {
                 RmButton("Back at 12:00", {}, Modifier.fillMaxWidth(), size = RmButtonSize.Xl, icon = RmIcons.Lock, enabled = false)
             } else {
                 RmButton("Play", onPlay, Modifier.fillMaxWidth(), size = RmButtonSize.Xl, icon = RmIcons.Play)

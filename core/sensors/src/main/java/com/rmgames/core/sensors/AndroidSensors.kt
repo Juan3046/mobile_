@@ -1,6 +1,7 @@
 package com.rmgames.core.sensors
 
 import android.content.Context
+import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -83,4 +84,17 @@ class AndroidCompassSensor(
         manager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_GAME)
         awaitClose { manager.unregisterListener(listener) }
     }.conflate().flowOn(Dispatchers.Default)
+}
+
+/** Android Adapter for [SensorAvailability]: asks `SensorManager` / `PackageManager` once per call. */
+class AndroidSensorAvailability(context: Context) : SensorAvailability {
+    private val app = context.applicationContext
+    private val manager = app.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+
+    override fun isAvailable(type: SensorType): Boolean = when (type) {
+        SensorType.GYROSCOPE -> manager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null
+        SensorType.ACCELEROMETER -> manager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null
+        SensorType.MAGNETOMETER -> manager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null
+        SensorType.FRONT_CAMERA -> app.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT)
+    }
 }

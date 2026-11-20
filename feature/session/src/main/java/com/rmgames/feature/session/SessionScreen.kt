@@ -90,6 +90,8 @@ fun SessionRoute(
     practice: Boolean = false,
     /** Uploads the daily best and reads the provisional position; null = no online ranking. */
     ranking: RankingSync? = null,
+    /** This phone lacks the game's sensor: the intro explains it and Start stays off (docs/02). */
+    unavailableReason: String? = null,
 ) {
     if (entry == null) {
         NotFound(onExit)
@@ -137,7 +139,7 @@ fun SessionRoute(
 
     when (phase) {
         SessionPhase.Intro, SessionPhase.Locked ->
-            IntroScreen(entry.game, entry.thumbnail, flow.attemptsLeft(), locked = phase == SessionPhase.Locked, practice = practice, onStart = ::startRun, onClose = onExit)
+            IntroScreen(entry.game, entry.thumbnail, flow.attemptsLeft(), locked = phase == SessionPhase.Locked, practice = practice, onStart = ::startRun, onClose = onExit, unavailableReason = unavailableReason)
         is SessionPhase.Finished -> {
             var showResult by remember(phase) { mutableStateOf(false) }
             val s = phase.summary
@@ -187,7 +189,7 @@ private fun NotFound(onExit: () -> Unit) {
 
 /** How-to + Start (plan 09 §2D.2). Start spends the attempt. */
 @Composable
-private fun IntroScreen(game: Game, thumbnail: (@Composable () -> Unit)?, attemptsLeft: Int, locked: Boolean, practice: Boolean, onStart: () -> Unit, onClose: () -> Unit) {
+private fun IntroScreen(game: Game, thumbnail: (@Composable () -> Unit)?, attemptsLeft: Int, locked: Boolean, practice: Boolean, onStart: () -> Unit, onClose: () -> Unit, unavailableReason: String? = null) {
     val c = RmTheme.colors
     val d = RmTheme.dimens
     Column(Modifier.fillMaxSize().background(c.background)) {
@@ -205,12 +207,14 @@ private fun IntroScreen(game: Game, thumbnail: (@Composable () -> Unit)?, attemp
         Column(Modifier.fillMaxWidth().padding(d.gutter), verticalArrangement = Arrangement.spacedBy(d.gapRelated)) {
             AttemptsPips(attemptsLeft)
             Text(
-                if (locked) "No attempts left today. A new game starts at 12:00."
+                if (unavailableReason != null) "$unavailableReason No attempt was used."
+                else if (locked) "No attempts left today. A new game starts at 12:00."
                 else if (practice) "Practice run (debug): this is not today's game, so no attempt is used and nothing is recorded."
                 else "Starting uses 1 attempt. Runs can't be paused.",
                 style = MaterialTheme.typography.bodyMedium, color = c.onSurfaceVariant,
             )
-            if (locked) RmButton("Back at 12:00", {}, Modifier.fillMaxWidth(), size = RmButtonSize.Xl, icon = RmIcons.Lock, enabled = false)
+            if (unavailableReason != null) RmButton("Not playable on this phone", {}, Modifier.fillMaxWidth(), size = RmButtonSize.Xl, icon = RmIcons.Lock, enabled = false)
+            else if (locked) RmButton("Back at 12:00", {}, Modifier.fillMaxWidth(), size = RmButtonSize.Xl, icon = RmIcons.Lock, enabled = false)
             else RmButton("Start", onStart, Modifier.fillMaxWidth(), size = RmButtonSize.Xl, icon = RmIcons.Play)
         }
     }

@@ -37,8 +37,8 @@ A physical speed test. The player shakes the phone as fast as possible to build 
 - Per global rule: **disable Play with a clear message** ("Soda Shake requires an accelerometer") and never record fake scores.
 - Phase 1b: if the accelerometer flow fails, the run is **blocked in-game** —
   the screen shows the message, the score is zeroed and nothing is reported or
-  recorded (a blocked run never calls `onFinished`). Home-level Play disabling
-  lands in Phase 2.
+  recorded (a blocked run never calls `onFinished`). Home-level Play disabling is
+  done (Phase 3, docs/03 §3.1 "Missing sensor"): a phone without the sensor never starts a run.
 
 ## Persistence (local-first MVP)
 - Best (fastest) pop time, attempts used today; daily best uploads once for the shared ranking.
