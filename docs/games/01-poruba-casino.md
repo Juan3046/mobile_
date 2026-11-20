@@ -80,6 +80,7 @@ head gestures detected by the front-facing camera.
   dealer reveal/draw/total, hand result, and reason the run ended.
 - Play short local sound effects for card deals, player decisions, dealer draws, and
   hand outcomes. Generate the tones on-device; do not download, save, or upload audio.
+  They follow Settings → Sound effects (off = silent), like every other game sound.
 - **HIT** and **STAND** buttons are **always shown** below the gesture area (playtest
   2026-11-20: a flaky front camera made hands unplayable), enabled only during the player's
   turn. Gestures and buttons both work; the note above them reads "Camera acting up? Tap

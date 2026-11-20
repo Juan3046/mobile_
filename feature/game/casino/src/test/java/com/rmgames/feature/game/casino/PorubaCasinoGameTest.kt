@@ -131,6 +131,20 @@ class PorubaCasinoGameTest {
         scope.cancelHost()
     }
 
+    @Test fun `sound effects off in Settings keeps the casino silent`() = runTest {
+        val sounds = RecordingSoundPlayer()
+        val game = PorubaCasinoGame(FakeHeadGestureDetector(), BlackjackEngine(deckFactory = { deckForBust() }), soundPlayerFactory = { sounds })
+        game.soundsEnabled = false
+        val scope = RecordingScope(this)
+        game.start(scope)
+        runCurrent()
+        advanceTimeBy(PorubaCasinoGame.CAMERA_STARTUP_TIMEOUT_MS + 4 * PorubaCasinoGame.DEAL_CARD_PAUSE_MS)
+        runCurrent()
+        assertEquals(CasinoPhase.PLAYING, game.state.value.game.phase)
+        assertTrue(sounds.events.isEmpty())
+        scope.cancelHost()
+    }
+
     @Test fun `camera tracking error enables touch controls and touch hit plays`() = runTest {
         val detector = FakeHeadGestureDetector()
         val game = PorubaCasinoGame(detector, BlackjackEngine(deckFactory = { deckForBust() }))
