@@ -31,7 +31,7 @@ fun gameHowTo(gameId: String): HowTo? = when (gameId.split('-').getOrNull(1)) {
             "Keep your face in view of the front camera.",
             "Nod to take a card (hit). Shake your head to stay (stand).",
             "Get closer to 21 than the dealer without going over. Each hand bets 10 bananas.",
-            "No camera? HIT and STAND buttons appear instead.",
+            "Camera acting up? The HIT and STAND buttons always work too.",
         ),
         goal = "Finish the 5 hands with as many bananas as you can.",
     )

@@ -111,6 +111,26 @@ class PorubaCasinoGameTest {
         scope.cancelHost()
     }
 
+    @Test fun `touch buttons work even while the camera tracks a face`() = runTest {
+        val detector = FakeHeadGestureDetector()
+        val game = PorubaCasinoGame(detector, BlackjackEngine(deckFactory = { deckForBust() }))
+        val scope = RecordingScope(this)
+        game.start(scope)
+        runCurrent()
+        detector.emit(HeadGestureObservation.FaceTracked(0f, 0f))
+        runCurrent()
+        advanceTimeBy(4 * PorubaCasinoGame.DEAL_CARD_PAUSE_MS)
+        runCurrent()
+        assertEquals(CameraStatus.READY, game.state.value.cameraStatus)
+
+        game.onTouchHit() // 17 + 5 = bust
+        runCurrent()
+        advanceTimeBy(PorubaCasinoGame.ACTION_PAUSE_MS)
+        runCurrent()
+        assertEquals(90, game.state.value.game.balance)
+        scope.cancelHost()
+    }
+
     @Test fun `camera tracking error enables touch controls and touch hit plays`() = runTest {
         val detector = FakeHeadGestureDetector()
         val game = PorubaCasinoGame(detector, BlackjackEngine(deckFactory = { deckForBust() }))

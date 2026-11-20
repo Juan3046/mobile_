@@ -96,10 +96,11 @@ fun PorubaCasinoScene(
             Spacer(Modifier.width(28.dp))
             GestureHint("↔", "SHAKE", "STAND")
         }
-        if (screen.cameraStatus == CameraStatus.TOUCH_FALLBACK) {
+        // Always offered (playtest 2026-11-20): a flaky front camera must never block a hand.
+        run {
             Spacer(Modifier.height(8.dp))
             Text(
-                "Camera unavailable · use touch controls",
+                touchControlsNote(screen.cameraStatus),
                 color = CasinoGold,
                 fontSize = 13.sp,
                 textAlign = TextAlign.Center,
@@ -230,3 +231,7 @@ internal fun resultHaptic(result: HandResult?): ResultHaptic? = when (result) {
     HandResult.PUSH -> ResultHaptic.Neutral
     null -> null
 }
+
+/** Line above the HIT/STAND buttons, which are always shown. */
+internal fun touchControlsNote(status: CameraStatus): String =
+    if (status == CameraStatus.TOUCH_FALLBACK) "Camera unavailable · use the buttons" else "Camera acting up? Tap instead"

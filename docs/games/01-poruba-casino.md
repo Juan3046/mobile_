@@ -80,8 +80,10 @@ head gestures detected by the front-facing camera.
   dealer reveal/draw/total, hand result, and reason the run ended.
 - Play short local sound effects for card deals, player decisions, dealer draws, and
   hand outcomes. Generate the tones on-device; do not download, save, or upload audio.
-- When camera fallback is active, show accessible **HIT** and **STAND** buttons below
-  the gesture area; only enable them during the player's turn.
+- **HIT** and **STAND** buttons are **always shown** below the gesture area (playtest
+  2026-11-20: a flaky front camera made hands unplayable), enabled only during the player's
+  turn. Gestures and buttons both work; the note above them reads "Camera acting up? Tap
+  instead", or "Camera unavailable · use the buttons" in touch-fallback mode.
 - Make bust, win, natural blackjack, push, and loss immediately distinguishable; each
   settled hand also gives one light haptic (confirm / reject / tick), honouring Settings →
   Vibration — nothing louder.
