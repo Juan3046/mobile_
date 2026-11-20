@@ -62,6 +62,7 @@ class RmColorsTest {
             assertEquals(Dark.gameBlink, Light.gameBlink)
             assertEquals(Dark.gameCompass, Light.gameCompass)
             assertEquals(Dark.gameSoda, Light.gameSoda)
+            assertEquals(Dark.gameRush, Light.gameRush)
         }
     }
 

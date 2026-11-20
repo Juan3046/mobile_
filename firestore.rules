@@ -1,0 +1,71 @@
+rules_version = '2';
+
+// RM Games — Firestore security rules (docs/09 stream E). Deploy with the Firebase console
+// (Firestore → Rules → paste) or `firebase deploy --only firestore:rules`.
+// Everything not matched below is denied.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+
+    function userDoc(uid) { return /databases/$(database)/documents/users/$(uid); }
+
+    // Nick reservations: one document per lowercase nick, created once by its owner,
+    // never updated or deleted (nicks are permanent — docs/03 §3.2). One nick per player:
+    // an account whose profile already names another nick cannot reserve a second one.
+    match /nicks/{key} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['uid', 'nick', 'createdAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.nick is string
+        && request.resource.data.nick.matches('^[A-Za-z0-9_]{3,12}$')
+        && key == request.resource.data.nick.lower()
+        && request.resource.data.createdAt == request.time
+        && (!exists(userDoc(request.auth.uid)) || get(userDoc(request.auth.uid)).data.nick.lower() == key);
+      allow update, delete: if false;
+    }
+
+    // Player profile: only the owner writes it, only with a nick they own (getAfter: the nick
+    // may be created in the same transaction), and the nick never changes afterwards.
+    match /users/{uid} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['nick'])
+        && getAfter(/databases/$(database)/documents/nicks/$(request.resource.data.nick.lower())).data.uid == uid;
+      allow update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.nick == resource.data.nick;
+      allow delete: if false;
+    }
+
+    // Server "epoch day" (UTC). Game days are local noon-to-noon, so a few days of slack.
+    function serverDay() { return math.floor(request.time.toMillis() / 86400000); }
+
+    // Daily ranking (docs/03 §3.3, plan 09 PR 16): one doc per player per day's game, written
+    // only by its owner, under the nick their profile owns, for a recent day, and only ever
+    // improving (the direction is fixed by higherWins on the first write). Readable by any
+    // signed-in player (top 50 + count queries for positions).
+    match /days/{day}/games/{gameId}/players/{uid} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && day.matches('^[0-9]{1,7}$')
+        && int(day) >= serverDay() - 3 && int(day) <= serverDay() + 1
+        && gameId.matches('^[a-z0-9_-]{1,40}$')
+        && request.resource.data.keys().hasOnly(['nick', 'best', 'higherWins', 'updatedAt'])
+        && request.resource.data.best is int
+        && request.resource.data.higherWins is bool
+        && request.resource.data.updatedAt == request.time
+        && exists(userDoc(uid))
+        && get(userDoc(uid)).data.nick == request.resource.data.nick
+        && (resource == null || (
+          request.resource.data.higherWins == resource.data.higherWins
+          && ((resource.data.higherWins && request.resource.data.best >= resource.data.best)
+            || (!resource.data.higherWins && request.resource.data.best <= resource.data.best))));
+      allow delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

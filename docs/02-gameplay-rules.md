@@ -34,6 +34,7 @@
 ## Controls
 - Focus on **mobile sensors/camera** (camera, gyroscope, accelerometer); touch controls are allowed only as a documented game-specific exception.
 - Touch as fallback only where strictly needed (to be specified per minigame).
+  Approved touch-controlled game: **06 Class Rush** (tap & swipe; tilt was too imprecise for lane crossing — see `games/06-class-rush.md`).
 - **Missing sensor / permission denied: block + message.** Disable Play for that game with a clear explanation; never record fake scores.
 
 ## Minigames

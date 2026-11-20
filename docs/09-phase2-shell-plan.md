@@ -147,6 +147,26 @@
   project + `google-services.json`)**: Firebase BoM + google-services plugin, `FirebaseNickRegistry`
   (Anonymous Auth, Firestore transaction on `nicks/{nickKey}` = { uid }), security rules, swap in
   `AppContainer`.
+  **Status (2026-11-20): PR 15 part 2 code ready** (branch `feature/firebase-online`) — new
+  `:core:online`: `OnlineNickRegistry` (anonymous sign-in, then `nicks/{key}` transaction; "already
+  mine" = reserved so retries are safe; failures/10 s timeout = Offline), `FirebaseAnonymousAuth`,
+  `FirestoreNickDirectory` (+ `users/{uid}`), `firestore.rules`, google-services plugin applied only
+  when `app/google-services.json` exists, `AppContainer` picks Firebase vs local at runtime. Waiting on
+  the user's Firebase project to verify on a device.
+  **Verified on device (2026-11-20)** with project `rm-games-10698` (Anonymous Auth + Firestore in
+  production mode + `firestore.rules`). Found on the way: errors were silently "Offline" → now logged
+  (`RmOnline`); changing the nick after "Forget nick" left an orphan reservation → reservation and
+  `users/{uid}` are now one transaction, an account with a nick gets it back (`Reservation.AlreadyHas`),
+  rules allow one nick per account. Setup gotchas: enable Authentication → Anonymous; create the
+  `(default)` Firestore database; publish the rules.
+- **PR 16 — online ranking. Status (2026-11-20): code done** (branch `feature/firebase-online`):
+  `Ranking`/`Standing`/`RankingSync` contract + `OfflineRanking` (`:core:data`), `OnlineRanking` +
+  `FirestoreRankingStore` (`:core:online`), ranking rules in `firestore.rules`, Result card with
+  provisional "#p of N" + points, Seasons history with per-day positions, season points and today's
+  top 50. Decision: no all-player season leaderboard in the MVP (03 §3.4). Needs the updated rules
+  published in the Firebase console.
+  **Verified on device (2026-11-20)** with two phones (two anonymous players): uploads, provisional
+  positions, season points and today's top 50 behave as specified with the published rules.
   Arcade/playful, high
   contrast, readable at a glance, portrait, dark-first with a light variant.
 - **Tokens**: colour scheme (brand + per-game accent colours), typography
@@ -214,7 +234,7 @@ paginated top-50 reads, security rules. Separate PRs after D.1–D.3 work offlin
 | 13 | Ranking / Seasons History (local data first) — **done** (bests from DataStore, 60 days) | `:feature:ranking` | 10 |
 | 14 | App icon, splash, edge-to-edge — **done** | `:app` | 3 |
 | 15 | Firebase: auth + nick onboarding — **UI + rules done**, Firebase adapter waits for the project | `:core:data`, `:feature:onboarding` | 8 |
-| 16 | Firebase: daily-best upload + ranking reads | `:core:data`, `:feature:ranking` | 13, 15 |
+| 16 | Firebase: daily-best upload + ranking reads — **done** (verified on 2 devices) | `:core:data`, `:core:online`, `:feature:session`, `:feature:ranking` | 13, 15 |
 | 17 | Thumbnails contract + fallback (Decision 5); owners add theirs — **done** (all 5 drawn) | `:core:common`, games | 4 |
 
 Exit of Phase 2 (`08`): full daily loop works offline with 2 attempts enforced,

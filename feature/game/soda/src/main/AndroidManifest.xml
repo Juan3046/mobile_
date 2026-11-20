@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- A short buzz on every counted shake, a stronger one at the pop (docs/games/05). -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+</manifest>

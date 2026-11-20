@@ -7,6 +7,7 @@ import com.rmgames.core.data.DayClock
 import com.rmgames.core.data.MAX_ATTEMPTS_PER_DAY
 import com.rmgames.core.data.ScoreRepository
 import com.rmgames.core.data.SeasonCalendar
+import com.rmgames.core.data.Standing
 
 /** Everything the Main screen (docs/03 §3.1, §3.5) shows. */
 data class HomeUiState(
@@ -23,8 +24,12 @@ data class HomeUiState(
     val nextResetMillis: Long,
     val season: Int,
     val seasonDayIndex: Int,
-    /** Season points; null until the online ranking computes them (plan 09 stream E). */
+    /** My season points so far; null when unknown (offline build, no connection, still loading). */
     val seasonPoints: Long?,
+    /** This phone lacks the game's sensor: Play disabled with this text (docs/02). */
+    val unavailableReason: String? = null,
+    /** Today's position + the season points it earns (online ranking); null = not played / unknown. */
+    val todayStanding: Standing? = null,
 )
 
 /** Main-screen logic. Plain class (no Android deps) so it unit-tests on the JVM. */
@@ -33,6 +38,8 @@ class HomeViewModel(
     private val scores: ScoreRepository,
     private val clock: DayClock,
     private val games: List<Game>,
+    /** Why a game can't run on this phone (missing sensor), or null. */
+    private val unavailable: (gameId: String) -> String? = { null },
 ) {
     init {
         require(games.isNotEmpty()) { "games must not be empty" }
@@ -57,6 +64,7 @@ class HomeViewModel(
             season = season.season,
             seasonDayIndex = season.dayOfSeason,
             seasonPoints = null,
+            unavailableReason = unavailable(game.id),
         )
     }
 

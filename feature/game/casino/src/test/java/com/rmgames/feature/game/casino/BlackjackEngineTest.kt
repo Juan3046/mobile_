@@ -97,12 +97,38 @@ class BlackjackEngineTest {
         assertTrue(engine.state.value.lastResult == null)
     }
 
+    @Test fun `a run is exactly five hands and ends after the last result is shown`() {
+        // Player 20 vs dealer 17 every hand: five wins.
+        val deck = listOf(Card(Rank.TEN, Suit.CLUBS), Card(Rank.TEN, Suit.DIAMONDS), Card(Rank.TEN, Suit.HEARTS), Card(Rank.SEVEN, Suit.DIAMONDS))
+        val engine = BlackjackEngine(deckFactory = { deck.toMutableList() })
+        engine.start()
+        repeat(BlackjackEngine.HANDS_PER_RUN) { i ->
+            assertEquals(i + 1, engine.state.value.hand)
+            repeat(4) { engine.dealNextInitialCard() }
+            engine.finishInitialDeal()
+            engine.stand()
+            while (engine.dealerStep() != null) Unit
+            assertEquals(CasinoPhase.BETWEEN_HANDS, engine.state.value.phase)
+            engine.beginNextHand()
+        }
+        assertEquals(CasinoPhase.FINISHED, engine.state.value.phase)
+        assertEquals(150, engine.state.value.balance)
+        assertEquals("5 hands played · you finish with 150 bananas", engine.state.value.message)
+    }
+
+    @Test fun `each hand announces its number and the last one says so`() {
+        val engine = BlackjackEngine()
+        engine.start()
+        assertEquals("Hand 1 of 5 · shuffling the deck…", engine.state.value.message)
+    }
+
     @Test fun `reset restores starting balance for a replay`() {
         val engine = BlackjackEngine(initialBalance = 35)
         engine.start()
         engine.reset()
         assertEquals(35, engine.state.value.balance)
         assertEquals(CasinoPhase.WAITING, engine.state.value.phase)
+        assertEquals(0, engine.state.value.hand)
         assertTrue(engine.state.value.player.cards.isEmpty())
     }
 

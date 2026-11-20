@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -31,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -54,11 +56,15 @@ import com.rmgames.core.common.ui.RmTopBar
 import com.rmgames.core.common.ui.ScoreCounter
 import com.rmgames.core.common.ui.StatTile
 import com.rmgames.core.common.ui.gameDurationLabel
+import com.rmgames.core.common.ui.gameHowTo
+import com.rmgames.core.common.ui.HowTo
 import com.rmgames.core.common.ui.gameScoreText
 import com.rmgames.core.common.ui.gameSensor
 import com.rmgames.core.common.ui.rememberRemaining
 import com.rmgames.core.data.AttemptRepository
 import com.rmgames.core.data.DayClock
+import com.rmgames.core.data.PlayedDay
+import com.rmgames.core.data.RankingSync
 import com.rmgames.core.data.ScoreRepository
 import kotlinx.coroutines.delay
 
@@ -83,6 +89,10 @@ fun SessionRoute(
     clock: DayClock,
     onExit: () -> Unit,
     practice: Boolean = false,
+    /** Uploads the daily best and reads the provisional position; null = no online ranking. */
+    ranking: RankingSync? = null,
+    /** This phone lacks the game's sensor: the intro explains it and Start stays off (docs/02). */
+    unavailableReason: String? = null,
 ) {
     if (entry == null) {
         NotFound(onExit)
@@ -130,16 +140,27 @@ fun SessionRoute(
 
     when (phase) {
         SessionPhase.Intro, SessionPhase.Locked ->
-            IntroScreen(entry.game, entry.thumbnail, flow.attemptsLeft(), locked = phase == SessionPhase.Locked, practice = practice, onStart = ::startRun, onClose = onExit)
+            IntroScreen(entry.game, entry.thumbnail, flow.attemptsLeft(), locked = phase == SessionPhase.Locked, practice = practice, onStart = ::startRun, onClose = onExit, unavailableReason = unavailableReason)
         is SessionPhase.Finished -> {
             var showResult by remember(phase) { mutableStateOf(false) }
+            val s = phase.summary
+            var rank by remember(phase) {
+                mutableStateOf(initialResultRanking(s.practice, ranking?.isOnline == true, s.dailyBest != null))
+            }
+            LaunchedEffect(phase) {
+                val best = s.dailyBest
+                if (rank == ResultRanking.Loading && ranking != null && best != null) {
+                    rank = ranking.report(PlayedDay(s.dayIndex, entry.game.id, best, entry.game.higherWins))
+                        ?.let { ResultRanking.Known(it) } ?: ResultRanking.Unknown
+                }
+            }
             LaunchedEffect(phase) {
                 delay(END_HOLD_MS)
                 showResult = true
                 feedback.scene(AudioScene.Menu)
                 if (phase.summary.isNewBest || phase.summary.isPersonalBest) feedback.cue(UiCue.NewBest)
             }
-            if (showResult) ResultScreen(entry.game, phase.summary, onPlayAgain = ::startRun, onHome = onExit)
+            if (showResult) ResultScreen(entry.game, phase.summary, rank, onPlayAgain = ::startRun, onHome = onExit)
             else RunStage(entry, phase, flow.liveScore)
         }
         else -> RunStage(entry, phase, flow.liveScore)
@@ -169,7 +190,7 @@ private fun NotFound(onExit: () -> Unit) {
 
 /** How-to + Start (plan 09 §2D.2). Start spends the attempt. */
 @Composable
-private fun IntroScreen(game: Game, thumbnail: (@Composable () -> Unit)?, attemptsLeft: Int, locked: Boolean, practice: Boolean, onStart: () -> Unit, onClose: () -> Unit) {
+private fun IntroScreen(game: Game, thumbnail: (@Composable () -> Unit)?, attemptsLeft: Int, locked: Boolean, practice: Boolean, onStart: () -> Unit, onClose: () -> Unit, unavailableReason: String? = null) {
     val c = RmTheme.colors
     val d = RmTheme.dimens
     Column(Modifier.fillMaxSize().background(c.background)) {
@@ -180,18 +201,23 @@ private fun IntroScreen(game: Game, thumbnail: (@Composable () -> Unit)?, attemp
                 gameId = game.id, title = game.title, howToPlay = game.description,
                 sensorLabel = sensor?.label.orEmpty(), sensorIcon = sensor?.icon,
                 durationLabel = gameDurationLabel(game.id, game.durationMs),
+                // Shorter art than the 16:9 default so the steps start above the fold.
+                thumbnailAspectRatio = 2.2f,
                 art = thumbnail,
             )
+            gameHowTo(game.id)?.let { HowToCard(it, Modifier.padding(top = d.gapSection)) }
         }
         Column(Modifier.fillMaxWidth().padding(d.gutter), verticalArrangement = Arrangement.spacedBy(d.gapRelated)) {
             AttemptsPips(attemptsLeft)
             Text(
-                if (locked) "No attempts left today. A new game starts at 12:00."
+                if (unavailableReason != null) "$unavailableReason No attempt was used."
+                else if (locked) "No attempts left today. A new game starts at 12:00."
                 else if (practice) "Practice run (debug): this is not today's game, so no attempt is used and nothing is recorded."
                 else "Starting uses 1 attempt. Runs can't be paused.",
                 style = MaterialTheme.typography.bodyMedium, color = c.onSurfaceVariant,
             )
-            if (locked) RmButton("Back at 12:00", {}, Modifier.fillMaxWidth(), size = RmButtonSize.Xl, icon = RmIcons.Lock, enabled = false)
+            if (unavailableReason != null) RmButton("Not playable on this phone", {}, Modifier.fillMaxWidth(), size = RmButtonSize.Xl, icon = RmIcons.Lock, enabled = false)
+            else if (locked) RmButton("Back at 12:00", {}, Modifier.fillMaxWidth(), size = RmButtonSize.Xl, icon = RmIcons.Lock, enabled = false)
             else RmButton("Start", onStart, Modifier.fillMaxWidth(), size = RmButtonSize.Xl, icon = RmIcons.Play)
         }
     }
@@ -237,9 +263,28 @@ private fun CountdownOverlay(secondsLeft: Int) {
     }
 }
 
+/** Numbered steps + the goal, under the GameCard on the intro (docs/03 §3.3). */
+@Composable
+private fun HowToCard(howTo: HowTo, modifier: Modifier = Modifier) {
+    val c = RmTheme.colors
+    RmCard(modifier.fillMaxWidth()) {
+        Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("HOW TO PLAY", style = MaterialTheme.typography.labelSmall, color = c.onSurfaceVariant)
+            howTo.steps.forEachIndexed { i, step ->
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    // Fixed-width number column so every step's text lines up.
+                    Text("${i + 1}", Modifier.width(16.dp), style = MaterialTheme.typography.titleMedium, color = c.primary)
+                    Text(step, style = MaterialTheme.typography.bodyMedium, color = c.onSurface)
+                }
+            }
+            Text("Goal: ${howTo.goal}", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold), color = c.onSurface)
+        }
+    }
+}
+
 /** Result (docs/03 §3.3): score, daily best, attempts, ranking note, Play again or lock. */
 @Composable
-private fun ResultScreen(game: Game, s: RunSummary, onPlayAgain: () -> Unit, onHome: () -> Unit) {
+private fun ResultScreen(game: Game, s: RunSummary, rank: ResultRanking, onPlayAgain: () -> Unit, onHome: () -> Unit) {
     val c = RmTheme.colors
     val d = RmTheme.dimens
     val runNumber = (s.attemptsTotal - s.attemptsLeft).coerceAtLeast(1)
@@ -263,7 +308,7 @@ private fun ResultScreen(game: Game, s: RunSummary, onPlayAgain: () -> Unit, onH
                         Text("No score this run", style = MaterialTheme.typography.bodyLarge, color = c.onSurfaceVariant)
                     }
                     if (!s.isNewBest && s.dailyBest != null && s.score != null) {
-                        Text("Your best today stays at ${gameScoreText(game.id, s.dailyBest).value}",
+                        Text("Your best today stays at ${gameScoreText(game.id, s.dailyBest).let { "${it.value} ${it.unit}" }}",
                             style = MaterialTheme.typography.bodyMedium, color = c.onSurfaceVariant, textAlign = TextAlign.Center)
                     }
                     if (!s.isPersonalBest && s.personalBest != null && s.score != null) {
@@ -282,10 +327,12 @@ private fun ResultScreen(game: Game, s: RunSummary, onPlayAgain: () -> Unit, onH
             }
             RmCard(Modifier.fillMaxWidth()) {
                 Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(if (s.practice) "PRACTICE RUN" else "PROVISIONAL RANKING", style = MaterialTheme.typography.labelSmall, color = c.onSurfaceVariant)
-                    Text(if (s.practice) "Debug practice: this score is not saved and no attempt was used."
-                        else "Your best of the day decides your position. Position and season points show here once online ranking arrives.",
-                        style = MaterialTheme.typography.bodyMedium, color = c.onSurface)
+                    val note = resultRankingNote(rank)
+                    Text(note.label, style = MaterialTheme.typography.labelSmall, color = c.onSurfaceVariant)
+                    // Position big, the season points it earns right under it (never wrapped mid-phrase).
+                    note.headline?.let { Text(it, style = MaterialTheme.typography.headlineMedium, color = c.onSurface) }
+                    note.points?.let { Text(it, style = MaterialTheme.typography.titleMedium, color = c.primaryInk) }
+                    Text(note.body, style = MaterialTheme.typography.bodyMedium, color = c.onSurface)
                 }
             }
         }

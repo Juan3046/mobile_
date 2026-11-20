@@ -12,6 +12,7 @@ class GameInfoTest {
         assertEquals(GameSensor("Front camera", RmIcons.Camera), gameSensor("03-blink-sniper"))
         assertEquals(GameSensor("Compass", RmIcons.Compass), gameSensor("04-compass-chaos"))
         assertEquals(GameSensor("Shake", RmIcons.Shake), gameSensor("05-soda-shake"))
+        assertEquals(GameSensor("Tap & swipe", RmIcons.Run), gameSensor("06-class-rush"))
     }
 
     @Test
@@ -23,9 +24,21 @@ class GameInfoTest {
     fun `duration label follows the documented exceptions`() {
         assertEquals("60 seconds", gameDurationLabel("03-blink-sniper", 60_000))
         assertEquals("20 seconds", gameDurationLabel("04-compass-chaos", 20_000))
-        assertEquals("No time limit", gameDurationLabel("01-poruba-casino", Long.MAX_VALUE))
+        assertEquals("5 hands", gameDurationLabel("01-poruba-casino", Long.MAX_VALUE))
         assertEquals("Endless", gameDurationLabel("02-onion-roll", Long.MAX_VALUE))
         assertEquals("20 shakes", gameDurationLabel("05-soda-shake", 10_000))
+        assertEquals("60 seconds", gameDurationLabel("06-class-rush", 60_000))
+    }
+
+    @Test
+    fun `every game has short how-to steps and a goal`() {
+        listOf("01-poruba-casino", "02-onion-roll", "03-blink-sniper", "04-compass-chaos", "05-soda-shake", "06-class-rush").forEach { id ->
+            val h = requireNotNull(gameHowTo(id)) { id }
+            assert(h.steps.size in 2..4) { "$id: ${h.steps}" }
+            assert(h.steps.all { it.length <= 90 } && h.goal.length <= 90) { "$id: keep it short" }
+        }
+        assertEquals("Finish the 5 hands with as many bananas as you can.", gameHowTo("01-poruba-casino")!!.goal)
+        assertEquals(null, gameHowTo("99-new"))
     }
 }
 
@@ -34,6 +47,12 @@ class GameScoreTextTest {
     fun `points games show the raw count`() {
         assertEquals(ScoreText("27", "points"), gameScoreText("03-blink-sniper", 27))
         assertEquals(ScoreText("1", "point"), gameScoreText("04-compass-chaos", 1))
+    }
+
+    @Test
+    fun `class rush shows rows`() {
+        assertEquals(ScoreText("17", "rows"), gameScoreText("06-class-rush", 17))
+        assertEquals(ScoreText("1", "row"), gameScoreText("06-class-rush", 1))
     }
 
     @Test

@@ -2,6 +2,8 @@ package com.rmgames.feature.game.casino
 
 import android.Manifest
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import com.rmgames.core.common.ui.LocalUiFeedback
 import com.rmgames.core.common.Game
 import com.rmgames.core.common.GameEntry
 import com.rmgames.core.common.GameScope
@@ -32,9 +34,12 @@ class PorubaCasinoGame(
 ) : Game {
     override val id = "01-poruba-casino"
     override val title = "Poruba Casino"
-    override val description = "Play blackjack with head gestures. Nod to hit; shake to stand."
+    override val description = "Five hands of blackjack against the dealer. Nod to hit, shake your head to stand. End with the most bananas."
     override val durationMs = Long.MAX_VALUE
     override val higherWins = true
+
+    /** Settings → Sound effects; the screen keeps it in sync (off = the casino stays silent). */
+    @Volatile var soundsEnabled: Boolean = true
 
     private val _state = MutableStateFlow(CasinoScreenState(game = engine.state.value))
     val state: StateFlow<CasinoScreenState> = _state.asStateFlow()
@@ -152,20 +157,20 @@ class PorubaCasinoGame(
         val current = engine.state.value
         _state.value = _state.value.copy(game = current)
         if (current.player.cards.size > observedPlayerCards) {
-            soundPlayer?.play(
+            playSound(
                 if (current.phase == CasinoPhase.DEALING) CasinoSound.CARD_DEALT else CasinoSound.PLAYER_HIT,
             )
         }
         if (current.dealer.cards.size > observedDealerCards) {
-            soundPlayer?.play(
+            playSound(
                 if (current.phase == CasinoPhase.DEALING) CasinoSound.CARD_DEALT else CasinoSound.DEALER_DRAWS,
             )
         }
         if (current.phase == CasinoPhase.DEALER_TURN && observedPhase != CasinoPhase.DEALER_TURN) {
-            soundPlayer?.play(CasinoSound.PLAYER_STANDS)
+            playSound(CasinoSound.PLAYER_STANDS)
         }
         if (current.lastResult != null && current.lastResult != observedResult) {
-            soundPlayer?.play(
+            playSound(
                 when (current.lastResult) {
                     HandResult.WIN -> CasinoSound.WIN
                     HandResult.LOSS -> CasinoSound.LOSS
@@ -233,19 +238,29 @@ class PorubaCasinoGame(
         }
     }
 
+    /**
+     * Presentation pauses (docs/games/01 "Run Flow"). Calmer since the 2026-11-20 playtest
+     * ("too fast"): each step stays on screen long enough to read. They never expire a turn.
+     */
+    private fun playSound(sound: CasinoSound) {
+        if (soundsEnabled) soundPlayer?.play(sound)
+    }
+
     companion object {
-        private const val CAMERA_STARTUP_TIMEOUT_MS = 2_500L
-        private const val DEAL_CARD_PAUSE_MS = 650L
+        internal const val CAMERA_STARTUP_TIMEOUT_MS = 2_500L
+        internal const val DEAL_CARD_PAUSE_MS = 900L
         private const val INITIAL_DEAL_CARD_COUNT = 4
-        private const val ACTION_PAUSE_MS = 700L
-        private const val DEALER_REVEAL_PAUSE_MS = 1_000L
-        private const val DEALER_CARD_PAUSE_MS = 1_100L
-        private const val RESULT_DISPLAY_MS = 2_500L
+        internal const val ACTION_PAUSE_MS = 900L
+        internal const val DEALER_REVEAL_PAUSE_MS = 1_400L
+        internal const val DEALER_CARD_PAUSE_MS = 1_300L
+        internal const val RESULT_DISPLAY_MS = 3_200L
     }
 }
 
 @Composable
 fun PorubaCasinoScreen(game: PorubaCasinoGame) {
+    val sfxEnabled = LocalUiFeedback.current.sfxEnabled
+    SideEffect { game.soundsEnabled = sfxEnabled }
     PorubaCasinoScene(game.state, game::onTouchHit, game::onTouchStand)
 }
 

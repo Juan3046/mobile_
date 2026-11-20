@@ -18,6 +18,17 @@ object Credits {
 }
 
 /** Volume as a whole percentage, e.g. "70%". */
+/**
+ * Privacy row (title to text), docs/03 §3.6. With the online ranking the nick and daily bests
+ * leave the phone under an anonymous account, so the offline promise must not show then.
+ */
+fun privacyNote(online: Boolean): Pair<String, String> = if (online) {
+    "Anonymous, no personal data" to
+        "Your nick and each day's best score are shared for the ranking (no email or phone number). Everything else stays on this phone."
+} else {
+    "Your data stays on this phone" to "Attempts, scores and settings are stored only on this device. No account, no personal data."
+}
+
 fun volumeLabel(volume: Float): String = "${(volume.coerceIn(0f, 1f) * 100).toInt()}%"
 
 /** Screen-reader text for the music slider. */

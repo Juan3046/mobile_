@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -44,6 +45,7 @@ import com.rmgames.core.common.ui.rememberRemaining
 import com.rmgames.core.data.AttemptRepository
 import com.rmgames.core.data.DayClock
 import com.rmgames.core.data.ScoreRepository
+import com.rmgames.core.data.SeasonStatus
 import kotlinx.coroutines.delay
 
 /**
@@ -67,8 +69,12 @@ fun HomeRoute(
     thumbnails: Map<String, @Composable () -> Unit> = emptyMap(),
     onHistory: (() -> Unit)? = null,
     onSettings: (() -> Unit)? = null,
+    /** Why a game can't run on this phone (missing sensor), or null — Play is then disabled. */
+    unavailableReason: (gameId: String) -> String? = { null },
+    /** Reads my season points + today's standing from the online ranking (null result = unknown); null = offline build. */
+    seasonStatus: (suspend () -> SeasonStatus?)? = null,
 ) {
-    val vm = remember(games, attempts, scores, clock) { HomeViewModel(attempts, scores, clock, games) }
+    val vm = remember(games, attempts, scores, clock) { HomeViewModel(attempts, scores, clock, games, unavailableReason) }
     val feedback = LocalUiFeedback.current
     LaunchedEffect(Unit) { feedback.scene(AudioScene.Menu) }
     var version by remember { mutableIntStateOf(0) }
@@ -78,8 +84,13 @@ fun HomeRoute(
         delay((state.nextResetMillis - System.currentTimeMillis()).coerceAtLeast(0) + 500)
         version++ // new day: new game + fresh attempts
     }
+    // Season points arrive after the screen shows; refreshed on every resume / new day.
+    // Keyed by season: a failed refresh after the weekly rollover never shows last season's points.
+    var status by remember(state.season) { mutableStateOf<SeasonStatus?>(null) }
+    LaunchedEffect(version) { status = seasonStatus?.invoke() ?: status }
     HomeScreen(
-        state = state,
+        // Today's standing only belongs to today's game: a new day (version) drops it until re-read.
+        state = state.copy(seasonPoints = status?.points?.toLong(), todayStanding = status?.today.takeIf { state.bestToday != null }),
         thumbnail = thumbnails[state.gameId],
         onPlay = { onPlay(state.gameId) },
         onHistory = onHistory,
@@ -152,9 +163,19 @@ fun HomeScreen(
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 AttemptsPips(state.attemptsLeft, total = state.attemptsTotal)
                 val best = state.bestToday?.let { gameScoreText(state.gameId, it) }
-                Text("Best today: ${best?.let { "${it.value} ${it.unit}" } ?: "—"}", style = MaterialTheme.typography.bodySmall, color = c.onSurfaceVariant)
+                Column(horizontalAlignment = Alignment.End) {
+                    Text("Best today: ${best?.let { "${it.value} ${it.unit}" } ?: "—"}", style = MaterialTheme.typography.bodySmall, color = c.onSurfaceVariant)
+                    // Today's position with the season points it earns (online ranking, provisional).
+                    state.todayStanding?.let {
+                        Text(it.label(), style = MaterialTheme.typography.labelLarge, color = c.primaryInk)
+                    }
+                }
             }
-            if (state.locked) {
+            val unavailable = state.unavailableReason
+            if (unavailable != null) {
+                Text(unavailable, style = MaterialTheme.typography.bodyMedium, color = c.onSurface)
+                RmButton("Not playable on this phone", {}, Modifier.fillMaxWidth(), size = RmButtonSize.Xl, icon = RmIcons.Lock, enabled = false)
+            } else if (state.locked) {
                 RmButton("Back at 12:00", {}, Modifier.fillMaxWidth(), size = RmButtonSize.Xl, icon = RmIcons.Lock, enabled = false)
             } else {
                 RmButton("Play", onPlay, Modifier.fillMaxWidth(), size = RmButtonSize.Xl, icon = RmIcons.Play)

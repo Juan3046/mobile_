@@ -26,7 +26,12 @@ Kotlin 2.0.21 (`IllegalArgumentException: 25.0.3`) — point Gradle at a JDK 17:
 
 ```sh
 ./gradlew testDebugUnitTest   # full unit suite — run locally before every PR (no CI)
+./gradlew :app:assembleRelease # R8 release APK (signing: docs/04-tech-stack.md "Release build")
 ```
+
+**Online features (optional):** put your own `google-services.json` (Firebase project, Android app
+`com.rmgames`) at `app/google-services.json` — it is git-ignored. Without it the app builds and runs
+offline. See `docs/04-tech-stack.md` → Firebase.
 
 ## How to Collaborate (4 + AI agents)
 

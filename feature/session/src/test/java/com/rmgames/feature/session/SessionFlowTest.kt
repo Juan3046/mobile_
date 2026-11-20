@@ -77,6 +77,7 @@ class SessionFlowTest {
         assertEquals(27L, s.score)
         assertEquals(27L, s.dailyBest)
         assertTrue(s.isNewBest)
+        assertEquals(day, s.dayIndex)
         assertEquals(1, s.attemptsLeft)
         assertEquals(27L, scores.best(day, "03-blink-sniper"))
     }

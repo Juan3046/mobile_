@@ -33,6 +33,7 @@ import com.rmgames.core.common.theme.RmTheme
 import com.rmgames.core.common.ui.RmTransitions
 import android.content.pm.ApplicationInfo
 import com.rmgames.core.sensors.AndroidAccelerometerSensor
+import com.rmgames.core.sensors.AndroidSensorAvailability
 import com.rmgames.core.sensors.AndroidCompassSensor
 import com.rmgames.core.sensors.AndroidGyroscopeSensor
 import com.rmgames.core.vision.MlKitBlinkDetector
@@ -42,12 +43,14 @@ import com.rmgames.feature.game.compass.compassChaosEntry
 import com.rmgames.feature.game.casino.porubaCasinoEntry
 import com.rmgames.feature.game.onion.onionRollEntry
 import com.rmgames.feature.game.soda.sodaShakeEntry
+import com.rmgames.feature.game.rush.classRushEntry
 import com.rmgames.feature.home.HomeRoute
 import com.rmgames.feature.session.SessionRoute
 import com.rmgames.feature.settings.SettingsRoute
 import com.rmgames.feature.ranking.SeasonsHistoryRoute
 import com.rmgames.feature.onboarding.NickOnboardingRoute
 import com.rmgames.core.data.DailyGameSelector
+import com.rmgames.core.data.seasonPlayedDays
 import com.rmgames.core.common.ui.LocalUiFeedback
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -126,6 +129,7 @@ private fun rememberGameRegistry(): GameRegistry {
                 blinkSniperEntry(MlKitBlinkDetector(context, lifecycleOwner)),
                 compassChaosEntry(AndroidCompassSensor(context)),
                 sodaShakeEntry(AndroidAccelerometerSensor(context)),
+                classRushEntry(),
             ),
         )
     }
@@ -142,6 +146,9 @@ fun RMGamesNav(container: AppContainer) {
     val context = LocalContext.current
     val todaysGame: (Long) -> String = { day -> DailyGameSelector.select(day, dailyRotation(registry.all.map { it.game }).map { it.id }) }
     val debuggable = remember { (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0 }
+    // Missing hardware blocks a game with a message (docs/02); checked once per launch.
+    val sensors = remember { AndroidSensorAvailability(context) }
+    val unavailable: (String) -> String? = { id -> unavailableReason(id, registry.find(id)?.game?.title ?: id, sensors) }
     NavHost(
         navController = nav,
         // First launch: choose a nick before anything else (docs/03 §3.2).
@@ -168,6 +175,15 @@ fun RMGamesNav(container: AppContainer) {
                 debugTools = debuggable,
                 onSettings = { nav.navigate("settings") },
                 onHistory = { nav.navigate("history") },
+                unavailableReason = unavailable,
+                seasonStatus = if (container.ranking.isOnline) {
+                    {
+                        val today = clock.dayIndex()
+                        val rules = registry.all.associate { it.game.id to it.game.higherWins }
+                        val days = seasonPlayedDays(today, scores.history(), { d -> if (d == today) todaysGame(d) else null }) { rules[it] ?: true }
+                        container.ranking.seasonTotal(days, today)
+                    }
+                } else null,
             )
         }
         composable("history") {
@@ -179,6 +195,7 @@ fun RMGamesNav(container: AppContainer) {
                 // Today's game from the current rotation; past days use what was recorded
                 // (practice runs never record, so stored bests are always the daily game).
                 dailyGameId = { day -> if (day == clock.dayIndex()) todaysGame(day) else null },
+                ranking = container.ranking,
             )
         }
         composable("settings") {
@@ -187,16 +204,24 @@ fun RMGamesNav(container: AppContainer) {
                 repository = container.settings,
                 appVersion = remember { appVersion(context) },
                 nick = nick,
+                online = container.online,
                 onBack = { nav.popBackStack() },
                 onResetAttempts = if (debuggable) {
                     { attempts.reset(clock.dayIndex()) }
+                } else null,
+                onForgetNick = if (debuggable) {
+                    {
+                        container.players.forgetNickForDebug()
+                        nav.navigate("onboarding") { popUpTo(0) { inclusive = true } }
+                    }
                 } else null,
             )
         }
         composable("session/{gameId}") { backStack ->
             val gameId = backStack.arguments?.getString("gameId").orEmpty()
             val entry = registry.find(gameId)
-            PermissionGate(entry) {
+            val reason = remember(gameId) { unavailable(gameId) }
+            val session: @Composable () -> Unit = {
                 SessionRoute(
                     entry = entry,
                     attempts = attempts,
@@ -205,8 +230,12 @@ fun RMGamesNav(container: AppContainer) {
                     onExit = { nav.popBackStack("home", inclusive = false) },
                     // Only today's game counts; any other game (debug launcher) is a practice run.
                     practice = gameId != todaysGame(clock.dayIndex()),
+                    ranking = container.ranking,
+                    unavailableReason = reason,
                 )
             }
+            // Missing hardware: explain on the intro; never ask for a permission it can't use.
+            if (reason != null) session() else PermissionGate(entry) { session() }
         }
     }
 }

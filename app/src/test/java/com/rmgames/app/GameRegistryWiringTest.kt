@@ -12,6 +12,7 @@ import com.rmgames.feature.game.compass.compassChaosEntry
 import com.rmgames.feature.game.casino.porubaCasinoEntry
 import com.rmgames.feature.game.onion.onionRollEntry
 import com.rmgames.feature.game.soda.sodaShakeEntry
+import com.rmgames.feature.game.rush.classRushEntry
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -32,11 +33,12 @@ class GameRegistryWiringTest {
             blinkSniperEntry(FakeBlinkDetector()),
             compassChaosEntry(FakeCompassSensor()),
             sodaShakeEntry(FakeAccelerometerSensor()),
+            classRushEntry(),
         ),
     )
 
     @Test
-    fun `registry exposes the five daily games with their frozen ids`() {
+    fun `registry exposes the six daily games with their frozen ids`() {
         val registry = registry()
 
         assertEquals(
@@ -46,6 +48,7 @@ class GameRegistryWiringTest {
                 "03-blink-sniper",
                 "04-compass-chaos",
                 "05-soda-shake",
+                "06-class-rush",
             ),
             registry.all.map { it.game.id },
         )

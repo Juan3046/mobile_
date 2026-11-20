@@ -9,6 +9,7 @@ Games (one owner each — Phase 1b):
 :feature:game:blink         P3 — Game 03 (front camera → :core:vision)
 :feature:game:compass       P4 — Game 04 (magnetometer)
 :feature:game:soda          P4 — Game 05 (accelerometer)
+:feature:game:rush          P2 — Game 06 Class Rush (touch exception; added 2026-11-20)
 
 Shared (frozen in Phase 1a — built together, no cross-module edits afterwards):
 :app                        shell: MainActivity, NavHost, DI, navigation routes,
@@ -32,6 +33,8 @@ Shared (frozen in Phase 1a — built together, no cross-module edits afterwards)
                              lock + countdown, result screen
 :core:audio                 app music + UI sounds: synthesizer, SoundBook,
                              AudioDirector rules, Android AudioTrack backend — Phase 2
+:core:online                Firebase adapters (Anonymous Auth, Firestore nick
+                             directory; ranking next) — Phase 2 stream E
 :feature:onboarding         first-launch nick screen (NickClaim + NickRegistry) — Phase 2
 :feature:ranking            seasons history (Season / History tabs); online
                              standings later — Phase 2
