@@ -103,4 +103,15 @@ class NickClaimTest {
     fun `the local registry accepts any valid nick until Firebase is connected`() = runTest {
         assertEquals(Reservation.Reserved, LocalNickRegistry().reserve("monica_rc"))
     }
+
+    @Test
+    fun `debug forget clears the local nick so onboarding shows again`() = runTest {
+        val store = InMemorySnapshotStore<PlayerProfile>()
+        val players = PlayerRepository(store, backgroundScope).apply { load() }
+        NickClaim(FakeRegistry(), players).claim("monica_rc")
+        players.forgetNickForDebug()
+        runCurrent()
+        assertNull(players.nick.value)
+        assertNull(PlayerRepository(store, backgroundScope).apply { load() }.nick.value)
+    }
 }

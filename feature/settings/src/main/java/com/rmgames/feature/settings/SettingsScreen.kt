@@ -55,6 +55,7 @@ fun SettingsRoute(
     nick: String? = null,
     onBack: () -> Unit,
     onResetAttempts: (() -> Unit)? = null,
+    onForgetNick: (() -> Unit)? = null,
 ) {
     val settings by repository.settings.collectAsStateWithLifecycle()
     val feedback = LocalUiFeedback.current
@@ -66,6 +67,7 @@ fun SettingsRoute(
         onChange = { change -> repository.update(change) },
         onBack = onBack,
         onResetAttempts = onResetAttempts,
+        onForgetNick = onForgetNick,
     )
 }
 
@@ -78,6 +80,7 @@ fun SettingsScreen(
     onChange: ((Settings) -> Settings) -> Unit,
     onBack: () -> Unit,
     onResetAttempts: (() -> Unit)? = null,
+    onForgetNick: (() -> Unit)? = null,
 ) {
     val c = RmTheme.colors
     val d = RmTheme.dimens
@@ -129,6 +132,11 @@ fun SettingsScreen(
                 Group("Debug") {
                     RmListItem("Reset today's attempts", supporting = "Debug builds only. Scores and seasons are kept.",
                         icon = RmIcons.Bug, onClick = onResetAttempts, role = Role.Button)
+                    if (onForgetNick != null) {
+                        RmListDivider()
+                        RmListItem("Forget nick (debug)", supporting = "Shows the nick screen again. The online reservation stays yours.",
+                            icon = RmIcons.User, onClick = onForgetNick, role = Role.Button)
+                    }
                 }
             }
             Text(

@@ -60,7 +60,7 @@ class AppContainer(context: Context) {
      * configured, otherwise the local stand-in (any valid nick, this device only).
      */
     private val nickRegistry: NickRegistry = chooseNickRegistry(online) {
-        OnlineNickRegistry(FirebaseAnonymousAuth(), FirestoreNickDirectory())
+        OnlineNickRegistry(FirebaseAnonymousAuth(), FirestoreNickDirectory(), onError = { Log.w("RmOnline", "nick reservation failed", it) })
     }
     val nickClaim = NickClaim(nickRegistry, players)
 

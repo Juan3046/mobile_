@@ -28,6 +28,15 @@ class PlayerRepository(
         source.readOrNull(onError)?.let { state.value = it.nick }
     }
 
+    /**
+     * Debug builds only: forget the nick on this device so onboarding shows again. The online
+     * reservation stays with this player's UID, so re-claiming the same nick still works.
+     */
+    fun forgetNickForDebug() {
+        state.value = null
+        writer.schedule()
+    }
+
     /** Only [NickClaim] sets it, once (nicks are never editable). */
     internal fun setNick(nick: String) {
         state.value = nick

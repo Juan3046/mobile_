@@ -74,4 +74,11 @@ class OnlineNickRegistryTest {
         }
         OnlineNickRegistry(cancelling, FakeDirectory()).reserve("monica_rc")
     }
+
+    @Test
+    fun `failures are reported so they can be diagnosed`() = runTest {
+        val seen = mutableListOf<Throwable>()
+        OnlineNickRegistry(FakeAuth(fail = true), FakeDirectory(), onError = { seen += it }).reserve("monica_rc")
+        assertEquals("network down", seen.single().message)
+    }
 }

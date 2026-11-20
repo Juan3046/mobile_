@@ -191,6 +191,12 @@ fun RMGamesNav(container: AppContainer) {
                 onResetAttempts = if (debuggable) {
                     { attempts.reset(clock.dayIndex()) }
                 } else null,
+                onForgetNick = if (debuggable) {
+                    {
+                        container.players.forgetNickForDebug()
+                        nav.navigate("onboarding") { popUpTo(0) { inclusive = true } }
+                    }
+                } else null,
             )
         }
         composable("session/{gameId}") { backStack ->

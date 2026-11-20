@@ -34,6 +34,7 @@ class OnlineNickRegistry(
     private val auth: AnonymousAuth,
     private val directory: NickDirectory,
     private val timeoutMs: Long = 10_000,
+    private val onError: (Throwable) -> Unit = {},
 ) : NickRegistry {
     override suspend fun reserve(nick: String): Reservation = try {
         withTimeout(timeoutMs) {
@@ -44,10 +45,12 @@ class OnlineNickRegistry(
             }
         }
     } catch (e: TimeoutCancellationException) {
+        onError(e)
         Reservation.Offline
     } catch (e: CancellationException) {
         throw e
     } catch (e: Exception) {
+        onError(e)
         Reservation.Offline
     }
 }
