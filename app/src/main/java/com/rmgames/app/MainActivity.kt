@@ -182,10 +182,11 @@ fun RMGamesNav(container: AppContainer) {
             )
         }
         composable("settings") {
+            val nick by container.players.nick.collectAsStateWithLifecycle()
             SettingsRoute(
                 repository = container.settings,
                 appVersion = remember { appVersion(context) },
-                nick = container.players.nick.value,
+                nick = nick,
                 onBack = { nav.popBackStack() },
                 onResetAttempts = if (debuggable) {
                     { attempts.reset(clock.dayIndex()) }
