@@ -159,6 +159,12 @@
   `users/{uid}` are now one transaction, an account with a nick gets it back (`Reservation.AlreadyHas`),
   rules allow one nick per account. Setup gotchas: enable Authentication → Anonymous; create the
   `(default)` Firestore database; publish the rules.
+- **PR 16 — online ranking. Status (2026-11-20): code done** (branch `feature/firebase-online`):
+  `Ranking`/`Standing`/`RankingSync` contract + `OfflineRanking` (`:core:data`), `OnlineRanking` +
+  `FirestoreRankingStore` (`:core:online`), ranking rules in `firestore.rules`, Result card with
+  provisional "#p of N" + points, Seasons history with per-day positions, season points and today's
+  top 50. Decision: no all-player season leaderboard in the MVP (03 §3.4). Needs the updated rules
+  published in the Firebase console.
   Arcade/playful, high
   contrast, readable at a glance, portrait, dark-first with a light variant.
 - **Tokens**: colour scheme (brand + per-game accent colours), typography
@@ -226,7 +232,7 @@ paginated top-50 reads, security rules. Separate PRs after D.1–D.3 work offlin
 | 13 | Ranking / Seasons History (local data first) — **done** (bests from DataStore, 60 days) | `:feature:ranking` | 10 |
 | 14 | App icon, splash, edge-to-edge — **done** | `:app` | 3 |
 | 15 | Firebase: auth + nick onboarding — **UI + rules done**, Firebase adapter waits for the project | `:core:data`, `:feature:onboarding` | 8 |
-| 16 | Firebase: daily-best upload + ranking reads | `:core:data`, `:feature:ranking` | 13, 15 |
+| 16 | Firebase: daily-best upload + ranking reads — **done** (device check pending) | `:core:data`, `:core:online`, `:feature:session`, `:feature:ranking` | 13, 15 |
 | 17 | Thumbnails contract + fallback (Decision 5); owners add theirs — **done** (all 5 drawn) | `:core:common`, games | 4 |
 
 Exit of Phase 2 (`08`): full daily loop works offline with 2 attempts enforced,
