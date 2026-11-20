@@ -30,9 +30,18 @@ Shared (frozen in Phase 1a — built together, no cross-module edits afterwards)
                              Seasons History button, attempts indicator, debug reset)
 :feature:session            game host: timer, 1 run = 1 attempt, best-of-2,
                              lock + countdown, result screen
+:core:audio                 app music + UI sounds: synthesizer, SoundBook,
+                             AudioDirector rules, Android AudioTrack backend — Phase 2
+:feature:onboarding         first-launch nick screen (NickClaim + NickRegistry) — Phase 2
+:feature:ranking            seasons history (Season / History tabs); online
+                             standings later — Phase 2
+:feature:settings           settings screen (sound, vibration, nick, privacy,
+                             credits & licences, debug) — Phase 2
 ```
 
-Ownership: **P1 Poruba Casino · P2 Onion · P3 Blink · P4 Compass + Soda.** Shared modules
+Ownership: **P1 Poruba Casino · P2 Onion · P3 Blink · P4 Compass + Soda.** Phase 2 shell
+(`:app`, `:feature:home|session|settings|ranking`, `:core:common` theme/UI kit, `:core:data`,
+`:core:audio`): **P2** (docs/09 Decision 4). Shared modules
 are frozen after Phase 1a (built together); Phase 2 integration owners are assigned
 when Phase 2 starts. Games 06–07 (still undefined) go to whoever finishes first.
 One reviewer per PR.
@@ -77,6 +86,7 @@ class GameEntry(                    // Adapter: logic + UI behind one stable typ
   val screen: @Composable () -> Unit, // renders the game's state — no params by design
   val requiredPermissions: List<String> = emptyList(), // CAMERA for blink/casino when hardware exists
   val drawsOwnHud: Boolean = false, // true = host hides its placeholder score/finish texts
+  val thumbnail: (@Composable () -> Unit)? = null, // Phase 2 (Decision 5): game art for Main/intro
 )
 class GameRegistry(entries: List<GameEntry>) {  // Registry, built once in :app
   val all: List<GameEntry>

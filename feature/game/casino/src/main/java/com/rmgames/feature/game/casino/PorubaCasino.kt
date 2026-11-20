@@ -252,5 +252,5 @@ fun PorubaCasinoScreen(game: PorubaCasinoGame) {
 fun porubaCasinoEntry(detector: HeadGestureDetector, cameraAvailable: Boolean = true): GameEntry {
     val game = PorubaCasinoGame(detector, soundPlayerFactory = ::ToneCasinoSoundPlayer)
     val permissions = if (cameraAvailable) listOf(Manifest.permission.CAMERA) else emptyList()
-    return GameEntry(game, permissions) { PorubaCasinoScreen(game) }
+    return GameEntry(game, permissions, thumbnail = { PorubaCasinoThumbnail() }) { PorubaCasinoScreen(game) }
 }

@@ -83,3 +83,10 @@ internal class AsyncCuePlayer(
         }
     }
 }
+
+/** What a cue actually does once the user's Settings are applied. */
+internal data class CueOutput(val playSound: Boolean, val hapticMs: Long?)
+
+/** Applies the app's Sound effects / Vibration switches (plan 09 §2B) to a cue. */
+internal fun cueOutput(cue: Cue, sfxEnabled: Boolean, hapticsEnabled: Boolean) =
+    CueOutput(playSound = sfxEnabled, hapticMs = if (hapticsEnabled) hapticMs(cue) else null)

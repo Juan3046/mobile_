@@ -7,7 +7,17 @@
 - **Language of project**: English for code, comments, branches, and docs.
 - **Storage (MVP)**: local-first (Room/DataStore cache, offline by default) + **Firebase Spark plan (free, no billing)** for the shared scoreboard.
 - **Backend (free only)**: Firestore (50K reads / 20K writes per day quota) + Anonymous Auth. No Cloud Functions, no phone auth (both require Blaze) — seasons and daily game are resolved deterministically on-device.
+- **UI**: Jetpack Compose + Material 3, themed by `RmTheme` in `:core:common` (`com.rmgames.core.common.theme`) — Direction A "Chunky Cabinet", dark-first with a light variant; spec in `design-system/`. Screens use `RmTheme.colors / dimens / motion` and `MaterialTheme` roles, never raw colour or size literals, and build from the UI kit in `com.rmgames.core.common.ui` (`RmButton`, `GameCard`, `AttemptsPips`, …).
+- **App chrome** (`:app`): adaptive launcher icon (vector layers + monochrome), AndroidX SplashScreen (`androidx.core:core-splashscreen`) kept until saved data loads, edge-to-edge (`enableEdgeToEdge` + safe-drawing insets on the root surface).
+- **Fonts**: Bungee, Rubik and JetBrains Mono, bundled in `:core:common` `res/font` under the SIL OFL 1.1 (see `CREDITS.md`).
 - **Testing (TDD mandatory)**: JUnit + MockK for unit tests, Espresso for UI tests. No CI — tests run locally (`:module:testDebugUnitTest`) and must be green before opening a PR.
+
+## Data layer (local now, cloud-ready)
+- Repositories (`:core:data`): `AttemptRepository`, `ScoreRepository`, `SettingsRepository`. Screens call them synchronously; the state lives in memory (instant, offline-first) and every change is written through in the background.
+- **Where data lives is one seam: `SnapshotStore<T>`** (`read()` / `write()` of the whole snapshot). Today each repository uses `DataStoreSnapshotStore` (one entry in the app's Preferences DataStore, `rm_games.preferences_pb`), encoded by a versioned `SnapshotCodec` (`v1|…`; unreadable data → defaults, never a crash).
+- **Moving something to the cloud** = implement `SnapshotStore<T>` on the remote API (e.g. a Firestore document per player), or a store that writes local + remote and reads the newest, and pass it to the repository in `AppContainer` (`:app`). Screens, rules and tests stay the same; the codecs can be reused for the remote payload.
+- Attempts stay local by product rule (docs/02); daily bests (→ shared ranking, stream E) and settings are the cloud candidates. Daily bests keep the full history in the same DataStore entry (no Room — plan 09 PR 10 decision), and personal bests are computed from it.
+- Storage failures are logged and never block play: the in-memory state stays authoritative and the next write retries.
 
 ## Constraints
 - Native Android only (no cross-platform in MVP).

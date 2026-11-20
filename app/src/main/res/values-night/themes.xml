@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark (default) variant: bars match RmPalette.Dark.background. -->
+    <style name="Theme.RmGames" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/rm_background</item>
+        <item name="android:statusBarColor">@color/rm_background</item>
+        <item name="android:navigationBarColor">@color/rm_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+
+    <!-- Launch theme, dark variant (rm_background resolves to deep plum here). -->
+    <style name="Theme.RmGames.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/rm_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.RmGames</item>
+    </style>
+</resources>

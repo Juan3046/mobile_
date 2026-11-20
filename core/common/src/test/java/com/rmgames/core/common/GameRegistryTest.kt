@@ -67,4 +67,15 @@ class GameRegistryTest {
 
         assertEquals(true, entry.drawsOwnHud)
     }
+
+    @Test
+    fun `thumbnail is optional and defaults to none (backward compatible)`() {
+        assertNull(GameEntry(fakeGame("g")) { }.thumbnail)
+    }
+
+    @Test
+    fun `a provided thumbnail is kept on the entry`() {
+        val art: @androidx.compose.runtime.Composable () -> Unit = { }
+        assertSame(art, GameEntry(fakeGame("g"), thumbnail = art) { }.thumbnail)
+    }
 }

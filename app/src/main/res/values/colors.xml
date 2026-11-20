@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- RmPalette.Light.background -->
+    <color name="rm_background">#FFFBF7FF</color>
+</resources>

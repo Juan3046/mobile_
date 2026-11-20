@@ -143,5 +143,5 @@ internal fun tiltRate(sample: Vector3): Float = sample.z - sample.y
 fun onionRollEntry(gyroscope: GyroscopeSensor): GameEntry {
     val game = OnionRollGame(gyroscope)
     // Draws its own seconds counter and "YOU LOST!" banner (docs/08 — own-HUD opt-out).
-    return GameEntry(game, drawsOwnHud = true) { OnionRollScreen(game.state, game::setDebugSteer, game.practice, game::restart) }
+    return GameEntry(game, drawsOwnHud = true, thumbnail = { OnionRollThumbnail() }) { OnionRollScreen(game.state, game::setDebugSteer, game.practice, game::restart) }
 }

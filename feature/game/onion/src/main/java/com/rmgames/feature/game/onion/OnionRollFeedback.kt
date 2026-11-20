@@ -20,6 +20,10 @@ import java.util.concurrent.Executors
  * the screen leaves.
  */
 internal class OnionRollFeedback(context: Context) {
+    /** The app's Sound effects / Vibration switches; set by the screen, read on the audio thread. */
+    @Volatile var sfxEnabled: Boolean = true
+    @Volatile var hapticsEnabled: Boolean = true
+
     private val executor: ExecutorService = Executors.newSingleThreadExecutor { task ->
         Thread(task, "onion-roll-audio").apply { isDaemon = true }
     }
@@ -53,14 +57,15 @@ internal class OnionRollFeedback(context: Context) {
     }
 
     private fun playNow(cue: Cue) {
-        tracks[cue]?.let { track ->
+        val out = cueOutput(cue, sfxEnabled, hapticsEnabled)
+        if (out.playSound) tracks[cue]?.let { track ->
             runCatching {
                 track.stop()
                 track.reloadStaticData()
                 track.play()
             }
         }
-        hapticMs(cue)?.let { ms ->
+        out.hapticMs?.let { ms ->
             // VIBRATE is declared in the module manifest; never crash the game over haptics.
             runCatching { vibrator?.vibrate(VibrationEffect.createOneShot(ms, VibrationEffect.DEFAULT_AMPLITUDE)) }
         }

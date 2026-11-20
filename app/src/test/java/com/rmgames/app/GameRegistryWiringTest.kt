@@ -81,4 +81,11 @@ class GameRegistryWiringTest {
                 )
             }
     }
+
+    @Test
+    fun `every registered game ships its own thumbnail art (Decision 5)`() {
+        registry().all.forEach { entry ->
+            assertNotNull("${entry.game.id} has no thumbnail", entry.thumbnail)
+        }
+    }
 }

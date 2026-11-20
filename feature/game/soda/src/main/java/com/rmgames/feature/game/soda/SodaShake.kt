@@ -104,5 +104,5 @@ class SodaShakeGame(
  */
 fun sodaShakeEntry(accelerometer: AccelerometerSensor): GameEntry {
     val game = SodaShakeGame(accelerometer)
-    return GameEntry(game) { SodaShakeScreen(game.state, game::requestDebugShake) }
+    return GameEntry(game, thumbnail = { SodaShakeThumbnail() }) { SodaShakeScreen(game.state, game::requestDebugShake) }
 }
