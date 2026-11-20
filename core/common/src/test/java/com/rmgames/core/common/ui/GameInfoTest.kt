@@ -23,7 +23,7 @@ class GameInfoTest {
     fun `duration label follows the documented exceptions`() {
         assertEquals("60 seconds", gameDurationLabel("03-blink-sniper", 60_000))
         assertEquals("20 seconds", gameDurationLabel("04-compass-chaos", 20_000))
-        assertEquals("No time limit", gameDurationLabel("01-poruba-casino", Long.MAX_VALUE))
+        assertEquals("5 hands", gameDurationLabel("01-poruba-casino", Long.MAX_VALUE))
         assertEquals("Endless", gameDurationLabel("02-onion-roll", Long.MAX_VALUE))
         assertEquals("20 shakes", gameDurationLabel("05-soda-shake", 10_000))
     }

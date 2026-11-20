@@ -18,6 +18,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalView
+import android.view.HapticFeedbackConstants
+import com.rmgames.core.common.ui.LocalUiFeedback
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,6 +45,19 @@ fun PorubaCasinoScene(
 ) {
     val screen by state.collectAsState()
     val game = screen.game
+    // Light feedback when a hand settles (honours Settings → Vibration); sounds play in the game.
+    val view = LocalView.current
+    val hapticsEnabled = LocalUiFeedback.current.hapticsEnabled
+    LaunchedEffect(game.hand, game.lastResult) {
+        val haptic = resultHaptic(game.lastResult) ?: return@LaunchedEffect
+        if (hapticsEnabled) view.performHapticFeedback(
+            when (haptic) {
+                ResultHaptic.Good -> HapticFeedbackConstants.CONFIRM
+                ResultHaptic.Bad -> HapticFeedbackConstants.REJECT
+                ResultHaptic.Neutral -> HapticFeedbackConstants.CLOCK_TICK
+            },
+        )
+    }
     Column(
         modifier = Modifier.fillMaxSize().background(CasinoGreen).padding(horizontal = 18.dp, vertical = 14.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -48,7 +65,7 @@ fun PorubaCasinoScene(
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Text("PORUBA CASINO", color = CasinoGold, fontWeight = FontWeight.Black, fontSize = 20.sp)
             Surface(color = Color.White.copy(alpha = 0.1f), shape = RoundedCornerShape(50)) {
-                Text("♾  NO TIME LIMIT", modifier = Modifier.padding(horizontal = 11.dp, vertical = 7.dp), color = CasinoCream, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Text(handChip(game), modifier = Modifier.padding(horizontal = 11.dp, vertical = 7.dp), color = CasinoCream, fontSize = 11.sp, fontWeight = FontWeight.Bold)
             }
         }
         Spacer(Modifier.height(8.dp))
@@ -195,4 +212,21 @@ private fun cameraLabel(status: CameraStatus): String = when (status) {
     CameraStatus.WAITING_FOR_FACE -> "Center your face"
     CameraStatus.READY -> "Camera ready"
     CameraStatus.TOUCH_FALLBACK -> "Touch controls active"
+}
+
+/** Top-right chip: which of the five hands is being played. */
+internal fun handChip(game: CasinoState): String = when {
+    game.phase == CasinoPhase.FINISHED -> "FINAL"
+    game.hand == 0 -> "${BlackjackEngine.HANDS_PER_RUN} HANDS"
+    game.hand >= BlackjackEngine.HANDS_PER_RUN -> "LAST HAND"
+    else -> "HAND ${game.hand} / ${BlackjackEngine.HANDS_PER_RUN}"
+}
+
+internal enum class ResultHaptic { Good, Bad, Neutral }
+
+internal fun resultHaptic(result: HandResult?): ResultHaptic? = when (result) {
+    HandResult.WIN, HandResult.BLACKJACK -> ResultHaptic.Good
+    HandResult.LOSS -> ResultHaptic.Bad
+    HandResult.PUSH -> ResultHaptic.Neutral
+    null -> null
 }

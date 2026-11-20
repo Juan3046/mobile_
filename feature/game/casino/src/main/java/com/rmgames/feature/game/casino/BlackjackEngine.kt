@@ -54,12 +54,18 @@ data class CasinoState(
     val phase: CasinoPhase = CasinoPhase.WAITING,
     val lastResult: HandResult? = null,
     val message: String = "Get ready",
+    /** Current hand, 1..[BlackjackEngine.HANDS_PER_RUN]; 0 before the first deal. */
+    val hand: Int = 0,
 ) {
     val dealerCardsVisible: Boolean
         get() = phase in setOf(CasinoPhase.DEALER_TURN, CasinoPhase.BETWEEN_HANDS, CasinoPhase.FINISHED)
 }
 
-/** Pure blackjack/run rules. A deck factory supplies a fresh shuffled deck per hand. */
+/**
+ * Pure blackjack/run rules. A deck factory supplies a fresh shuffled deck per hand.
+ * A run is exactly [HANDS_PER_RUN] hands (playtest 2026-11-20: an endless run was a problem);
+ * it ends earlier only if the bananas run out.
+ */
 class BlackjackEngine(
     private val initialBalance: Int = STARTING_BALANCE,
     private val deckFactory: () -> MutableList<Card> = ::shuffledDeck,
@@ -163,6 +169,8 @@ class BlackjackEngine(
         if (current.phase != CasinoPhase.BETWEEN_HANDS) return
         if (current.balance < WAGER) {
             finishRun("Out of bananas")
+        } else if (current.hand >= HANDS_PER_RUN) {
+            finishRun("$HANDS_PER_RUN hands played · you finish with ${current.balance} bananas")
         } else {
             beginHand()
         }
@@ -176,12 +184,14 @@ class BlackjackEngine(
         deck = deckFactory()
         require(deck.size >= 4) { "A blackjack deck must contain at least four cards" }
         initialDealIndex = 0
+        val hand = _state.value.hand + 1
         _state.value = _state.value.copy(
             player = BlackjackHand(emptyList()),
             dealer = BlackjackHand(emptyList()),
             phase = CasinoPhase.DEALING,
             lastResult = null,
-            message = "Shuffling the deck…",
+            hand = hand,
+            message = if (hand == HANDS_PER_RUN) "Last hand! Shuffling the deck…" else "Hand $hand of $HANDS_PER_RUN · shuffling the deck…",
         )
     }
 
@@ -230,6 +240,7 @@ class BlackjackEngine(
     companion object {
         const val STARTING_BALANCE = 100
         const val WAGER = 10
+        const val HANDS_PER_RUN = 5
         private const val INITIAL_CARDS = 4
         private const val DEALER_STAND_TOTAL = 17
 

@@ -24,7 +24,7 @@ fun gameSensor(gameId: String): GameSensor? = when (gameId.split('-').getOrNull(
  */
 fun gameDurationLabel(gameId: String, durationMs: Long): String = when (gameId.split('-').getOrNull(1)) {
     "onion" -> "Endless"
-    "poruba" -> "No time limit"
+    "poruba" -> "5 hands"
     "soda" -> "20 shakes"
     else -> "${durationMs / 1000} seconds"
 }

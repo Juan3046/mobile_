@@ -7,14 +7,14 @@ head gestures detected by the front-facing camera.
 
 - **Nod = HIT** (request one more card).
 - **Shake head left/right = STAND** (finish the hand and let the dealer play).
-- The run has **no time limit** (approved duration exception) and can include as many
-  hands as the player's banana balance allows.
+- A run is **exactly 5 hands** (playtest 2026-11-20: the endless run was a problem). There
+  is no time limit per decision (approved duration exception); a run takes roughly 1–2 minutes.
 - The in-game currency is fictional **bananas**. It has no real-world value and cannot
   be purchased, redeemed, or transferred.
 
 ## Format
-- Portrait orientation; unlimited run duration, ending only when the player has less than
-  10 bananas after a hand settles.
+- Portrait orientation; the run ends after the **5th hand** is settled and shown (or earlier
+  only if the balance drops below 10 bananas, which 5 hands from 100 cannot do).
 - One player hand against one dealer hand at a time.
 - A fresh, shuffled standard 52-card deck is used for each hand.
 - The run starts with **100 bananas**. Each hand has a fixed **10-banana wager**.
@@ -40,14 +40,19 @@ head gestures detected by the front-facing camera.
 - Wagers and all balances are fictional game state only.
 
 ## Run Flow
+- Each hand announces itself ("Hand 2 of 5 · shuffling the deck…", "Last hand!"); a HUD
+  chip shows `HAND n / 5`. After the 5th hand's result has been on screen, the run ends:
+  "5 hands played · you finish with N bananas"; the final balance is the score (a win when
+  it is at least the starting 100).
 - If the balance is below 10 bananas after a hand is settled, the run ends immediately
   as a loss; report the remaining balance as the score.
 - There is no countdown or automatic stand. The player may take as long as needed to
   choose HIT or STAND.
-- Present play as visible, paced steps: pause about **650 ms** between initial cards,
-  show the selected gesture/action for **700 ms** before applying it, wait **1 second**
-  before the dealer's first action, pause **1.1 seconds** between dealer draws, and keep
-  each resolved hand on screen for **2.5 seconds** before the next deal. These are brief
+- Present play as calm, visible steps (slowed after the 2026-11-20 playtest, "too fast"):
+  pause **900 ms** between initial cards, show the selected gesture/action for **900 ms**
+  before applying it, wait **1.4 seconds** before the dealer's first action, pause
+  **1.3 seconds** between dealer draws, and keep each resolved hand on screen for
+  **3.2 seconds** before the next deal. These are brief
   presentation pauses only; they never expire a hand or run.
 
 ## Camera Gestures & Permission
@@ -77,7 +82,9 @@ head gestures detected by the front-facing camera.
   hand outcomes. Generate the tones on-device; do not download, save, or upload audio.
 - When camera fallback is active, show accessible **HIT** and **STAND** buttons below
   the gesture area; only enable them during the player's turn.
-- Make bust, win, natural blackjack, push, and loss immediately distinguishable.
+- Make bust, win, natural blackjack, push, and loss immediately distinguishable; each
+  settled hand also gives one light haptic (confirm / reject / tick), honouring Settings →
+  Vibration — nothing louder.
 - Procedural Compose/Canvas card and casino graphics; no external assets required.
 - Poruba flavor through restrained local references/signage and playful casino styling;
   maintain readable cards and gesture feedback as the priority.
