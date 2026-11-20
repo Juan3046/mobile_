@@ -60,3 +60,8 @@ Thumbs.db
 
 # Obsidian notes (local editor)
 .obsidian/
+
+# Release signing (upload key + passwords stay on the developer machine)
+keystore.properties
+*.jks
+*.keystore

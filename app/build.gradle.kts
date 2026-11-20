@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -16,9 +18,31 @@ android {
         versionName = "0.1.0-phase0"
     }
 
+    // Release signing (docs/04 "Release build"): the upload key lives OUTSIDE git, described by a
+    // git-ignored `keystore.properties` (storeFile, storePassword, keyAlias, keyPassword). Without
+    // it, release is signed with the local debug key so it can still be installed for testing —
+    // never publish that APK.
+    val keystoreFile = rootProject.file("keystore.properties")
+    val releaseKey = if (keystoreFile.exists()) Properties().apply { keystoreFile.inputStream().use(::load) } else null
+    signingConfigs {
+        if (releaseKey != null) {
+            create("release") {
+                storeFile = rootProject.file(releaseKey.getProperty("storeFile"))
+                storePassword = releaseKey.getProperty("storePassword")
+                keyAlias = releaseKey.getProperty("keyAlias")
+                keyPassword = releaseKey.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // R8: shrink + obfuscate. Libraries (CameraX, ML Kit, Firebase, DataStore) ship their
+            // own consumer rules; ours only covers what R8 can't see (proguard-rules.pro).
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
     }
     compileOptions {

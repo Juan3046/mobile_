@@ -19,6 +19,12 @@
 - Attempts stay local by product rule (docs/02); daily bests (→ shared ranking, stream E) and settings are the cloud candidates. Daily bests keep the full history in the same DataStore entry (no Room — plan 09 PR 10 decision), and personal bests are computed from it.
 - Storage failures are logged and never block play: the in-memory state stays authoritative and the next write retries.
 
+## Release build
+- `./gradlew :app:assembleRelease` → `app/build/outputs/apk/release/app-release.apk`. **R8** shrinks and obfuscates code and resources (`isMinifyEnabled`, `isShrinkResources`); first build 2026-11-20: 41.6 MB vs 70.7 MB debug (ML Kit models are most of what is left). Libraries ship their own keep rules; `app/proguard-rules.pro` only keeps line numbers for crash traces.
+- **Signing**: the upload key is never in git. Create it once (`keytool -genkeypair -v -keystore rm-upload.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload`) and describe it in a git-ignored `keystore.properties` at the repo root (`storeFile`, `storePassword`, `keyAlias`, `keyPassword`). Without that file the release APK is signed with the local **debug** key: installable for testing, never publishable. `*.jks`, `*.keystore` and `keystore.properties` are git-ignored.
+- **Debug-only tools are off in release**: reset attempts, the debug game launcher and "Forget nick" are gated on `FLAG_DEBUGGABLE`; per-game debug keys (Soda/Compass/Onion) on `BuildConfig.DEBUG`. No code removal needed.
+- Before shipping a release: smoke-test the R8 build on a device (every game, Settings, history, restart keeps data), because shrinking bugs only show at runtime.
+
 ## Constraints
 - Native Android only (no cross-platform in MVP).
 - Portrait orientation locked.
