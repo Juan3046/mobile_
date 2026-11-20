@@ -49,6 +49,7 @@ import com.rmgames.feature.settings.SettingsRoute
 import com.rmgames.feature.ranking.SeasonsHistoryRoute
 import com.rmgames.feature.onboarding.NickOnboardingRoute
 import com.rmgames.core.data.DailyGameSelector
+import com.rmgames.core.data.seasonPlayedDays
 import com.rmgames.core.common.ui.LocalUiFeedback
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -173,6 +174,14 @@ fun RMGamesNav(container: AppContainer) {
                 onSettings = { nav.navigate("settings") },
                 onHistory = { nav.navigate("history") },
                 unavailableReason = unavailable,
+                seasonPoints = if (container.ranking.isOnline) {
+                    {
+                        val today = clock.dayIndex()
+                        val rules = registry.all.associate { it.game.id to it.game.higherWins }
+                        val days = seasonPlayedDays(today, scores.history(), { d -> if (d == today) todaysGame(d) else null }) { rules[it] ?: true }
+                        container.ranking.seasonTotal(days, today)
+                    }
+                } else null,
             )
         }
         composable("history") {

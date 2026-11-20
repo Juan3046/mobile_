@@ -23,7 +23,7 @@ data class HomeUiState(
     val nextResetMillis: Long,
     val season: Int,
     val seasonDayIndex: Int,
-    /** Season points; null until the online ranking computes them (plan 09 stream E). */
+    /** My season points so far; null when unknown (offline build, no connection, still loading). */
     val seasonPoints: Long?,
     /** This phone lacks the game's sensor: Play disabled with this text (docs/02). */
     val unavailableReason: String? = null,

@@ -18,7 +18,7 @@ Also visible (per global rules):
 
 Implementation (Phase 2, Direction A — `HomeRoute`/`HomeScreen` in `:feature:home`):
 - Top bar with the "RM GAMES" wordmark and the settings gear (→ §3.6).
-- Season strip (season N, day d of 7, the player's season points).
+- Season strip (season N, day d of 7, the player's season points). Points come from the online ranking (`RankingSync.seasonTotal` over this season's played daily-game bests, today's and yesterday's re-uploaded first) and appear once loaded; refreshed on every return to Main and at 12:00. Hidden on builds without Firebase or when no day could be read (no connection); "0" before the first scored day.
 - "Today's game" header with a countdown chip ("Ends in HH:MM:SS"; "Next game in" when locked).
 - `GameCard`: thumbnail (generated fallback until each game ships art), sensor chip, duration, title, how-to (the game's `description`).
 - Fixed bottom area, always reachable: attempts pips + text, best of today, the big **Play** button; **Seasons history** button once the Ranking screen exists (plan 09 PR 13).

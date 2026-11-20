@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -69,6 +70,8 @@ fun HomeRoute(
     onSettings: (() -> Unit)? = null,
     /** Why a game can't run on this phone (missing sensor), or null — Play is then disabled. */
     unavailableReason: (gameId: String) -> String? = { null },
+    /** Reads my season points from the online ranking (null result = unknown); null = offline build. */
+    seasonPoints: (suspend () -> Int?)? = null,
 ) {
     val vm = remember(games, attempts, scores, clock) { HomeViewModel(attempts, scores, clock, games, unavailableReason) }
     val feedback = LocalUiFeedback.current
@@ -80,8 +83,11 @@ fun HomeRoute(
         delay((state.nextResetMillis - System.currentTimeMillis()).coerceAtLeast(0) + 500)
         version++ // new day: new game + fresh attempts
     }
+    // Season points arrive after the screen shows; refreshed on every resume / new day.
+    var points by remember { mutableStateOf<Long?>(null) }
+    LaunchedEffect(version) { points = seasonPoints?.invoke()?.toLong() ?: points }
     HomeScreen(
-        state = state,
+        state = state.copy(seasonPoints = points),
         thumbnail = thumbnails[state.gameId],
         onPlay = { onPlay(state.gameId) },
         onHistory = onHistory,
