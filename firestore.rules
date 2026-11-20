@@ -8,8 +8,11 @@ service cloud.firestore {
 
     function signedIn() { return request.auth != null; }
 
+    function userDoc(uid) { return /databases/$(database)/documents/users/$(uid); }
+
     // Nick reservations: one document per lowercase nick, created once by its owner,
-    // never updated or deleted (nicks are permanent — docs/03 §3.2).
+    // never updated or deleted (nicks are permanent — docs/03 §3.2). One nick per player:
+    // an account whose profile already names another nick cannot reserve a second one.
     match /nicks/{key} {
       allow read: if signedIn();
       allow create: if signedIn()
@@ -18,17 +21,18 @@ service cloud.firestore {
         && request.resource.data.nick is string
         && request.resource.data.nick.matches('^[A-Za-z0-9_]{3,12}$')
         && key == request.resource.data.nick.lower()
-        && request.resource.data.createdAt == request.time;
+        && request.resource.data.createdAt == request.time
+        && (!exists(userDoc(request.auth.uid)) || get(userDoc(request.auth.uid)).data.nick.lower() == key);
       allow update, delete: if false;
     }
 
-    // Player profile: only the owner writes it, only with a nick they reserved, and the
-    // nick never changes afterwards.
+    // Player profile: only the owner writes it, only with a nick they own (getAfter: the nick
+    // may be created in the same transaction), and the nick never changes afterwards.
     match /users/{uid} {
       allow read: if signedIn();
       allow create: if signedIn() && request.auth.uid == uid
         && request.resource.data.keys().hasOnly(['nick'])
-        && get(/databases/$(database)/documents/nicks/$(request.resource.data.nick.lower())).data.uid == uid;
+        && getAfter(/databases/$(database)/documents/nicks/$(request.resource.data.nick.lower())).data.uid == uid;
       allow update: if signedIn() && request.auth.uid == uid
         && request.resource.data.nick == resource.data.nick;
       allow delete: if false;

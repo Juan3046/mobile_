@@ -35,7 +35,8 @@ Implementation (`NickOnboardingRoute` in `:feature:onboarding`, rules in `NickCl
 - Start destination is `onboarding` while `PlayerRepository.nick` is null; Continue → Main, and the screen never shows again.
 - Live counter (n/12) and rule hint; errors in plain words: "3–12 characters", "Only letters, numbers and _", "That nick is taken — try another", "No connection. Choosing a nick needs internet once." Uniqueness ignores case (`nickKey`).
 - Uniqueness goes through the `NickRegistry` seam. **Until Firebase is connected it is `LocalNickRegistry`** (accepts any valid nick on this device); the Firebase registry replaces it in `AppContainer` only.
-- Settings → Player shows the nick (read-only).
+- **One nick per player, forever**: if this account (Anonymous Auth UID) already owns a nick — after reinstalling or the debug "Forget nick" — whatever is typed, the app restores the owned nick.
+- Settings → Player shows the nick (read-only); Settings → Debug has "Forget nick (debug)" to re-run onboarding.
 
 ## 3.3 Result Screen (after each run)
 - Run score, daily best, remaining attempts.

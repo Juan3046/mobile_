@@ -45,7 +45,13 @@ class PlayerRepository(
 }
 
 /** Outcome of asking the shared registry for a nick. */
-enum class Reservation { Reserved, Taken, Offline }
+sealed interface Reservation {
+    data object Reserved : Reservation
+    data object Taken : Reservation
+    data object Offline : Reservation
+    /** This player's account already owns [nick] (nicks are permanent): restore it. */
+    data class AlreadyHas(val nick: String) : Reservation
+}
 
 /**
  * Reserves a unique nick for this player — **the seam to swap for Firebase** (plan 09 PR 15).
@@ -92,8 +98,9 @@ class NickClaim(private val registry: NickRegistry, private val players: PlayerR
         players.nick.value?.let { return ClaimResult.AlreadySet(it) }
         val nick = input.trim()
         nickProblem(nick)?.let { return ClaimResult.Invalid(it) }
-        return when (runCatching { registry.reserve(nick) }.getOrDefault(Reservation.Offline)) {
+        return when (val r = runCatching { registry.reserve(nick) }.getOrDefault(Reservation.Offline)) {
             Reservation.Reserved -> { players.setNick(nick); ClaimResult.Claimed(nick) }
+            is Reservation.AlreadyHas -> { players.setNick(r.nick); ClaimResult.Claimed(r.nick) }
             Reservation.Taken -> ClaimResult.Taken
             Reservation.Offline -> ClaimResult.Offline
         }

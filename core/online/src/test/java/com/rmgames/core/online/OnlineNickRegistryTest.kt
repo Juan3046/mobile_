@@ -81,4 +81,12 @@ class OnlineNickRegistryTest {
         OnlineNickRegistry(FakeAuth(fail = true), FakeDirectory(), onError = { seen += it }).reserve("monica_rc")
         assertEquals("network down", seen.single().message)
     }
+
+    @Test
+    fun `an account that already has another nick keeps it`() = runTest {
+        val dir = object : NickDirectory {
+            override suspend fun reserve(key: String, nick: String, uid: String) = DirectoryOutcome.HasOtherNick("Acido101")
+        }
+        assertEquals(Reservation.AlreadyHas("Acido101"), OnlineNickRegistry(FakeAuth(), dir).reserve("Akex"))
+    }
 }

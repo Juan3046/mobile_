@@ -22,7 +22,7 @@
 ## Firebase (online features)
 - Project on the **Spark plan** with **Anonymous Auth** and **Firestore**. Adapters live in `:core:online` (`OnlineNickRegistry` over `AnonymousAuth` + `NickDirectory`, tested with fakes; thin Firebase classes).
 - **Config is per developer**: download `google-services.json` for the Android app `com.rmgames` and put it at `app/google-services.json` (git-ignored). With it, the build applies the google-services plugin and `AppContainer` uses Firebase; without it the app builds and runs offline with the local stand-ins.
-- **Security rules** are versioned in `firestore.rules` (deploy: console → Firestore → Rules, or `firebase deploy --only firestore:rules` with `firebase.json`). Nicks: created once by their owner under the lowercase key, never updated or deleted; everything else denied by default.
+- **Security rules** are versioned in `firestore.rules` (deploy: console → Firestore → Rules, or `firebase deploy --only firestore:rules` with `firebase.json`). Nicks: created once by their owner under the lowercase key, never updated or deleted, at most one per account (`users/{uid}` names it; written in the same transaction, checked with `getAfter`); everything else denied by default.
 
 ## Constraints
 - Native Android only (no cross-platform in MVP).

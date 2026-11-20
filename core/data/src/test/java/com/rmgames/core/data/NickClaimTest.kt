@@ -114,4 +114,15 @@ class NickClaimTest {
         assertNull(players.nick.value)
         assertNull(PlayerRepository(store, backgroundScope).apply { load() }.nick.value)
     }
+
+    /** Regression (device, 20 Nov): after "Forget nick", a new nick was refused as "No connection". */
+    @Test
+    fun `a player who already owns a nick gets it back instead of a new one`() = runTest {
+        val players = PlayerRepository(InMemorySnapshotStore(), backgroundScope).apply { load() }
+        val owns = object : NickRegistry {
+            override suspend fun reserve(nick: String) = Reservation.AlreadyHas("Acido101")
+        }
+        assertEquals(ClaimResult.Claimed("Acido101"), NickClaim(owns, players).claim("Akex"))
+        assertEquals("Acido101", players.nick.value)
+    }
 }

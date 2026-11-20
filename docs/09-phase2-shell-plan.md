@@ -153,6 +153,12 @@
   `FirestoreNickDirectory` (+ `users/{uid}`), `firestore.rules`, google-services plugin applied only
   when `app/google-services.json` exists, `AppContainer` picks Firebase vs local at runtime. Waiting on
   the user's Firebase project to verify on a device.
+  **Verified on device (2026-11-20)** with project `rm-games-10698` (Anonymous Auth + Firestore in
+  production mode + `firestore.rules`). Found on the way: errors were silently "Offline" → now logged
+  (`RmOnline`); changing the nick after "Forget nick" left an orphan reservation → reservation and
+  `users/{uid}` are now one transaction, an account with a nick gets it back (`Reservation.AlreadyHas`),
+  rules allow one nick per account. Setup gotchas: enable Authentication → Anonymous; create the
+  `(default)` Firestore database; publish the rules.
   Arcade/playful, high
   contrast, readable at a glance, portrait, dark-first with a light variant.
 - **Tokens**: colour scheme (brand + per-game accent colours), typography
