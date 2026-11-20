@@ -11,6 +11,8 @@ import com.rmgames.core.data.Standing
 import com.rmgames.core.data.standingOf
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withTimeout
 
@@ -46,7 +48,12 @@ class OnlineRanking(
     override suspend fun standing(dayIndex: Long, gameId: String, myBest: Long, higherWins: Boolean): Standing? =
         safely(null) {
             auth.uid()
-            standingOf(store.countBetter(dayIndex, gameId, myBest, higherWins), store.countPlayers(dayIndex, gameId))
+            coroutineScope {
+                // Independent count queries: run them together (one round trip of latency).
+                val better = async { store.countBetter(dayIndex, gameId, myBest, higherWins) }
+                val players = async { store.countPlayers(dayIndex, gameId) }
+                standingOf(better.await(), players.await())
+            }
         }
 
     override suspend fun top(dayIndex: Long, gameId: String, higherWins: Boolean, limit: Int): List<RankRow> =

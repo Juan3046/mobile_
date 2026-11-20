@@ -1,7 +1,6 @@
 package com.rmgames.feature.ranking
 
 import com.rmgames.core.data.DailyBest
-import com.rmgames.core.data.PlayedDay
 import com.rmgames.core.data.Standing
 import com.rmgames.core.data.seasonPoints
 import com.rmgames.core.data.SeasonCalendar
@@ -112,10 +111,6 @@ data class SeasonHistory(
         }
     }
 }
-
-/** The season's days with a best, ready for the online ranking (plan 09 PR 16). */
-fun SeasonSummary.playedDays(higherWins: (gameId: String) -> Boolean): List<PlayedDay> =
-    days.mapNotNull { d -> if (d.gameId != null && d.best != null) PlayedDay(d.dayIndex, d.gameId, d.best, higherWins(d.gameId)) else null }
 
 /**
  * Season points tile (value to caption). [standings] null = still loading; a map where every

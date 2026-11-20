@@ -17,14 +17,6 @@ class SeasonStandingsTest {
     ) { it != "05-soda-shake" }
 
     @Test
-    fun `played days of the season feed the ranking with each game's rule`() {
-        assertEquals(
-            listOf(PlayedDay(wednesday - 1, "03-blink-sniper", 27, true), PlayedDay(wednesday, "05-soda-shake", 400, false)),
-            history.current.playedDays { it != "05-soda-shake" },
-        )
-    }
-
-    @Test
     fun `season points tile reads offline, checking, unknown or the total`() {
         assertEquals("—" to "online ranking off", seasonPointsTile(online = false, standings = null))
         assertEquals("…" to "checking", seasonPointsTile(online = true, standings = null))

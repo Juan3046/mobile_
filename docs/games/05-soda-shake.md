@@ -24,6 +24,9 @@ A physical speed test. The player shakes the phone as fast as possible to build 
   (≈ 0.7 g), calm down below `4 m/s²` before the next peak counts (hysteresis — one
   jolt counts once), and counted shakes are at least `90 ms` apart. Every sensor reading
   is checked (not one per frame), so fast shakes are not missed.
+  If the movement stays at shake level for 400 ms without a pause (impossible for a real
+  back-and-forth shake), the gravity reference is re-seeded: a run that starts mid-shake
+  recovers in under half a second instead of missing its first shakes.
 - **Feedback**: every counted shake gives a short, light vibration; the pop a longer
   one. Honours Settings → Vibration. The buzz is far below the shake threshold, so it
   never counts as a shake.

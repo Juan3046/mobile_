@@ -137,6 +137,18 @@ class SodaShakeEngineTest {
     }
 
     @Test
+    fun `a run that starts mid-shake recovers its gravity reference quickly`() {
+        val e = SodaShakeEngine() // no rest reading first: the very first sample is a peak
+        e.tick(16, peak(+1f))
+        repeat(30) { e.tick(16, rest) } // ~0.5 s held still: the bad reference is dropped
+        val before = e.state.value.shakes
+
+        repeat(3) { i -> e.shakeCycle(if (i % 2 == 0) +1f else -1f) }
+
+        assertEquals(before + 3, e.state.value.shakes)
+    }
+
+    @Test
     fun `every sensor reading is checked, not only the frame ticks`() {
         val e = engine()
 

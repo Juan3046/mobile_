@@ -39,6 +39,7 @@ import com.rmgames.core.data.DayClock
 import com.rmgames.core.data.RankRow
 import com.rmgames.core.data.RankingSync
 import com.rmgames.core.data.ScoreRepository
+import com.rmgames.core.data.seasonPlayedDays
 import com.rmgames.core.data.Standing
 
 /**
@@ -69,7 +70,8 @@ fun SeasonsHistoryRoute(
     LaunchedEffect(history) {
         if (ranking == null || !ranking.isOnline) return@LaunchedEffect
         // Today's best is (re)uploaded first, so it shows in the top list below.
-        val standings = ranking.season(history.current.playedDays { rules[it] ?: true }, today)
+        // Same played days as the Main screen's season points (one definition, in core:data).
+        val standings = ranking.season(seasonPlayedDays(today, scores.history(), dailyGameId) { rules[it] ?: true }, today)
         online = online.copy(standings = standings)
         if (todaysGame != null) online = online.copy(todayTop = ranking.top(today, todaysGame, rules[todaysGame] ?: true))
     }

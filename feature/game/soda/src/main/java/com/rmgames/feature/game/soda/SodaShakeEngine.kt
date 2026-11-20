@@ -70,6 +70,8 @@ class SodaShakeEngine(
     private var popStartedAtMs = 0L
     /** Low-pass gravity estimate; null until the first reading. */
     private var gravity: Vector3? = null
+    /** Since when the movement has stayed at shake level without a pause (null = it paused). */
+    private var unsettledSinceMs: Long? = null
 
     /**
      * Advances the run by [rawDtMs] (no spatial simulation, so a stalled frame
@@ -109,6 +111,19 @@ class SodaShakeEngine(
         gravity = Vector3(g.x + k * (sample.x - g.x), g.y + k * (sample.y - g.y), g.z + k * (sample.z - g.z))
         val current = _state.value
         if (current.phase != SodaPhase.RUNNING) return
+        // A real shake swings back through calm many times a second. "Moving" without pause
+        // for this long means the reference is wrong (the run began mid-shake): re-seed it.
+        if (movement >= threshold) {
+            val since = unsettledSinceMs ?: current.elapsedMs.also { unsettledSinceMs = it }
+            if (current.elapsedMs - since >= RESEED_AFTER_MS) {
+                gravity = sample
+                armed = false
+                unsettledSinceMs = null
+                return
+            }
+        } else {
+            unsettledSinceMs = null
+        }
         if (!armed && movement >= threshold) {
             armed = true // a crossing counts at most once, accepted or not
             val spacedOut = lastShakeAtMs?.let { current.elapsedMs - it >= deadTimeMs } ?: true
@@ -143,6 +158,7 @@ class SodaShakeEngine(
         lastShakeAtMs = null
         popStartedAtMs = 0L
         gravity = null
+        unsettledSinceMs = null
     }
 
     private fun registerShake(elapsedMs: Long, current: SodaShakeState) {
@@ -171,5 +187,7 @@ class SodaShakeEngine(
         /** Per-reading weight of the gravity low-pass (~0.2 s at SENSOR_DELAY_GAME). */
         private const val GRAVITY_FILTER = 0.1f
         private const val GRAVITY_FILTER_SHAKING = 0.02f
+        /** Continuous "movement" longer than this re-seeds the gravity reference. */
+        private const val RESEED_AFTER_MS = 400L
     }
 }

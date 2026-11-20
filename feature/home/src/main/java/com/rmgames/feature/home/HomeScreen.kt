@@ -84,7 +84,8 @@ fun HomeRoute(
         version++ // new day: new game + fresh attempts
     }
     // Season points arrive after the screen shows; refreshed on every resume / new day.
-    var points by remember { mutableStateOf<Long?>(null) }
+    // Keyed by season: a failed refresh after the weekly rollover never shows last season's points.
+    var points by remember(state.season) { mutableStateOf<Long?>(null) }
     LaunchedEffect(version) { points = seasonPoints?.invoke()?.toLong() ?: points }
     HomeScreen(
         state = state.copy(seasonPoints = points),
