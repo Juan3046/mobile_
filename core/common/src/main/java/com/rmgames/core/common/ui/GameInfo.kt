@@ -80,7 +80,7 @@ fun gameHowTo(gameId: String): HowTo? = when (gameId.split('-').getOrNull(1)) {
     )
     "sound" -> HowTo(
         listOf(
-            "Make noise (hum, talk, clap) to rise. Go quiet to drop.",
+            "Make a loud sound (hum, shout, clap) to rise past the line. Go quiet to drop.",
             "Fly through each gap: every barrier you clear is +1 point.",
             "Bars push you back. Pushed off the left edge, the run ends.",
         ),

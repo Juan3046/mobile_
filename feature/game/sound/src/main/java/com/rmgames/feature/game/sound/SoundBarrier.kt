@@ -56,6 +56,7 @@ class SoundBarrierGame(
         reportedScore = 0
         soundLevel = 0f
         debugSoundHeld = false
+        micLoud = false
         _state.value = SoundBarrierUiState()
 
         scope.hostScope.launch {
@@ -91,9 +92,13 @@ class SoundBarrierGame(
         debugSoundHeld = held
     }
 
-    /** Loud is the input over the configured threshold, or the held debug key. */
-    private fun soundDetected(): Boolean =
-        debugSoundHeld || soundLevel >= config.loudThreshold
+    private var micLoud = false
+
+    /** Loud is the input over the threshold (with hysteresis, see [isLoud]), or the held debug key. */
+    private fun soundDetected(): Boolean {
+        micLoud = isLoud(micLoud, soundLevel, config)
+        return debugSoundHeld || micLoud
+    }
 
     /** Pushes the score to the host only when it actually moved. */
     private fun reportScore(engine: SoundBarrierEngine, scope: GameScope) {

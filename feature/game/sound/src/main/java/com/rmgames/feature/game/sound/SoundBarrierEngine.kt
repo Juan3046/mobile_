@@ -68,14 +68,18 @@ data class SoundBarrierConfig(
      * Share of the vertical speed the ball keeps when it rebounds off the floor or
      * the ceiling: 1.0 = a perfect bounce, 0.0 = it stops dead on contact.
      */
-    val bounceRestitution: Double = 0.8,
-    /** Downward acceleration while silent, in screen-heights / s². */
-    val gravity: Double = 2.2,
+    val bounceRestitution: Double = 0.3,
+    /**
+     * Downward acceleration while silent, in screen-heights / s². Playtest 2026-11-21:
+     * 2.2 / 3.4 with 1.6 / 1.4 terminal speeds threw the ball across the screen; halved
+     * so it drifts and can be steered.
+     */
+    val gravity: Double = 1.0,
     /** Upward acceleration while sound is detected, in screen-heights / s². */
-    val thrust: Double = 3.4,
+    val thrust: Double = 1.5,
     /** Terminal speeds, in screen-heights per second. */
-    val maxFallSpeed: Double = 1.6,
-    val maxRiseSpeed: Double = 1.4,
+    val maxFallSpeed: Double = 0.55,
+    val maxRiseSpeed: Double = 0.5,
     /**
      * Track scroll speed at the start / end of the run, in widths per second.
      * Paced so the first barrier reaches the ball at ~3.3s — slow enough to hear
@@ -95,8 +99,14 @@ data class SoundBarrierConfig(
     /** Vertical band a gap centre is drawn from. */
     val gapCenterMin: Double = 0.22,
     val gapCenterMax: Double = 0.78,
-    /** Microphone level at or above which the input counts as loud (0..1). */
-    val loudThreshold: Float = 0.05f,
+    /**
+     * Microphone level (RMS, 0..1) at or above which the input starts to count as loud.
+     * Playtest 2026-11-21: 0.05 fired on quiet talk and room noise; 0.15 needs a clear
+     * voice, hum or clap close to the phone.
+     */
+    val loudThreshold: Float = 0.15f,
+    /** Once loud, the input stays loud until it drops below this (hysteresis, no flicker). */
+    val quietThreshold: Float = 0.09f,
 )
 
 /** One barrier while it is alive. Its position is derived from the track scroll. */
@@ -342,3 +352,11 @@ class SoundBarrierEngine(
         endReason = reason
     }
 }
+
+/**
+ * Loud or quiet for this reading, with hysteresis: it turns loud at
+ * [SoundBarrierConfig.loudThreshold] and only turns quiet again under
+ * [SoundBarrierConfig.quietThreshold], so a voice hovering at the edge does not flicker.
+ */
+fun isLoud(wasLoud: Boolean, level: Float, config: SoundBarrierConfig): Boolean =
+    if (wasLoud) level >= config.quietThreshold else level >= config.loudThreshold

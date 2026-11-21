@@ -229,7 +229,7 @@ private fun DrawScope.drawCorridor(
     // tests on both axes (the hitbox is `ballRadius` in normalized units).
     val center = Offset((ballX * width).toFloat(), screenY(ballY, height))
     val radius = (ballRadius * height).toFloat()
-    val loudness = soundMeterFill(soundLevel)
+    val loudness = soundMeterFill(soundLevel, LOUD_LEVEL)
     drawCircle(
         color = BallFill.copy(alpha = 0.12f + 0.18f * loudness),
         radius = radius * (1.6f + 0.8f * loudness),
@@ -247,13 +247,14 @@ private fun DrawScope.drawCorridor(
     drawCircle(color = BallRim, radius = radius, center = center, style = Stroke(width = 6f))
     drawCircle(color = BallCore, radius = radius * 0.35f, center = center)
 
-    // Sound meter: how much input the microphone is hearing right now.
+    // Sound meter: how much input the microphone is hearing right now. The loud threshold
+    // sits at the middle mark, so "past the line" means the ball rises.
     val meterWidth = width * 0.6f
     val meterLeft = (width - meterWidth) / 2f
     val meterTop = height - 46f
     val meterHeight = 16f
     val pill = CornerRadius(meterHeight / 2f)
-    val fill = soundMeterFill(soundLevel)
+    val fill = soundMeterFill(soundLevel, LOUD_LEVEL)
 
     drawRoundRect(
         color = MeterTrack,
@@ -278,6 +279,12 @@ private fun DrawScope.drawCorridor(
             cornerRadius = pill,
         )
     }
+    drawLine(
+        color = Color.White,
+        start = Offset(meterLeft + meterWidth / 2f, meterTop - 6f),
+        end = Offset(meterLeft + meterWidth / 2f, meterTop + meterHeight + 6f),
+        strokeWidth = 3f,
+    )
 }
 
 /** A neon boundary: a wide soft halo with a crisp line sitting on top of it. */
@@ -333,7 +340,11 @@ internal fun endBanner(endReason: EndReason?): String = when (endReason) {
  * 0..1 fill of the sound meter, so a screaming microphone can never draw past its
  * track. Internal rather than private purely so tests can pin it down (AGENTS.md §5).
  */
-internal fun soundMeterFill(level: Float): Float = level.coerceIn(0f, 1f)
+internal fun soundMeterFill(level: Float, loudThreshold: Float = 0.5f): Float =
+    (level / (2f * loudThreshold)).coerceIn(0f, 1f)
+
+/** The default loud threshold, drawn as the meter's middle mark. */
+private val LOUD_LEVEL = SoundBarrierConfig().loudThreshold
 
 /**
  * Corner radius for a bar, in pixels: enough to read as rounded, but capped at

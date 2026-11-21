@@ -33,7 +33,7 @@ player literally shouts or claps to climb and goes quiet to drop.
   - Below the threshold → gravity pulls the ball **downward**.
 - **Boundaries**: the floor and the ceiling make the ball **bounce back** instead
   of pinning it. On contact the vertical speed is reversed and scaled by the
-  restitution factor (`bounceRestitution`, **0.8** by default: the ball keeps 80 %
+  restitution factor (`bounceRestitution`, **0.3** by default since the 2026-11-21 playtest; was 0.8: the ball keeps 30 %
   of its speed, so a fall settles after a couple of rebounds). Running out of sound
   never kills on its own; the ball only loses when a bar pushes it off the screen.
 - **Permission**: requires runtime `android.permission.RECORD_AUDIO`.
@@ -108,7 +108,18 @@ Continuous time-based ramp over the 60-second run:
 - **No audio ever leaves memory**: only the live loud/quiet flag feeds the physics;
   nothing is recorded to disk and nothing is uploaded.
 
+## Tuning (device playtest 2026-11-21: "extremely bad")
+- The first defaults reacted to quiet talk and room noise (loud at RMS ≥ 0.05) and threw the
+  ball across the screen (gravity 2.2, thrust 3.4, terminal speeds 1.6 / 1.4 screen-heights/s,
+  bounce 0.8).
+- Now: **loud at RMS ≥ 0.15** (a clear voice, hum or clap near the phone) and, once loud, it
+  stays loud until the level drops under **0.09** (hysteresis: no flicker at the edge).
+  Gravity **1.0**, thrust **1.5**, terminal speeds **0.55 / 0.5**, bounce **0.3**: one second
+  of steady sound or silence moves the ball well under half the screen.
+- The sound meter is scaled so the loud threshold sits at its **middle mark**: past the line
+  = the ball rises.
+- Tests: `SoundTuningTest`.
+
 ## Open Questions
-- [ ] Noise threshold calibration (ambient noise, mic sensitivity, hysteresis so a
-      single sample does not flicker the ball) during playtests.
+- [x] Noise threshold calibration — see "Tuning" below (playtest 2026-11-21).
 - [ ] Whether a barrier that is *never* reached before `TIME'S UP!` should score.
