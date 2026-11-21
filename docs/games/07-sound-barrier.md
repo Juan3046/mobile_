@@ -33,7 +33,7 @@ player literally shouts or claps to climb and goes quiet to drop.
   - Below the threshold → gravity pulls the ball **downward**.
 - **Boundaries**: the floor and the ceiling make the ball **bounce back** instead
   of pinning it. On contact the vertical speed is reversed and scaled by the
-  restitution factor (`bounceRestitution`, **0.8** by default: the ball keeps 80 %
+  restitution factor (`bounceRestitution`, **0.3** by default since the 2026-11-21 playtest; was 0.8: the ball keeps 30 %
   of its speed, so a fall settles after a couple of rebounds). Running out of sound
   never kills on its own; the ball only loses when a bar pushes it off the screen.
 - **Permission**: requires runtime `android.permission.RECORD_AUDIO`.
@@ -91,8 +91,12 @@ Continuous time-based ramp over the 60-second run:
 - **Retry**: respects remaining daily attempts (lock + countdown if 0 remain).
 
 ## Art Direction
-- **Theme**: neon sound corridor / waveform tunnel.
-- **Color Palette**: deep background, cyan ball, magenta barriers, amber sound bar.
+- **Theme** (since 2026-11-21): a corridor flying into a **sunset** — warm gradient sky
+  (dusk purple → pink → orange → golden horizon), a striped setting sun, clouds drifting
+  slowly left (slower than the corridor, so they read as far away) and two hill silhouettes
+  (`SunsetDecor.kt`, decoration only).
+- **Color Palette**: dark silhouette walls with a golden rim facing the gap, cyan ball,
+  amber sound bar. (First version: neon corridor with magenta walls on a near-black backdrop.)
 - **Provisional Graphics**: procedural vector / Canvas shapes (circle ball, rounded
   rectangle bars, level meter) so the code compiles and runs without external asset
   files.
@@ -108,7 +112,23 @@ Continuous time-based ramp over the 60-second run:
 - **No audio ever leaves memory**: only the live loud/quiet flag feeds the physics;
   nothing is recorded to disk and nothing is uploaded.
 
+## Tuning (device playtest 2026-11-21: "extremely bad")
+- The first defaults reacted to quiet talk and room noise (loud at RMS ≥ 0.05) and threw the
+  ball across the screen (gravity 2.2, thrust 3.4, terminal speeds 1.6 / 1.4 screen-heights/s,
+  bounce 0.8).
+- Now: **loud at RMS ≥ 0.15** (a clear voice, hum or clap near the phone) and, once loud, it
+  stays loud until the level drops under **0.09** (hysteresis: no flicker at the edge).
+  Gravity 1.0, thrust 1.5, terminal speeds 0.55 / 0.5, bounce **0.3** (speeds raised again
+  in the second playtest, below).
+- The sound meter is scaled so the loud threshold sits at its **middle mark**: past the line
+  = the ball rises.
+- Second playtest (same day, "much better"): the ball a bit quicker than the screen —
+  gravity **1.4**, thrust **2.0**, terminal speeds **0.75 / 0.7** screen-heights/s (above the
+  0.37 widths/s top scroll). Walls collide **0.012 inside what is drawn** on every side
+  (`barHitInset`: narrower bar, taller gap); the drawing is unchanged. `touchesBar` is the
+  single hit-box rule, also used for scoring the gap.
+- Tests: `SoundTuningTest`.
+
 ## Open Questions
-- [ ] Noise threshold calibration (ambient noise, mic sensitivity, hysteresis so a
-      single sample does not flicker the ball) during playtests.
+- [x] Noise threshold calibration — see "Tuning" below (playtest 2026-11-21).
 - [ ] Whether a barrier that is *never* reached before `TIME'S UP!` should score.
