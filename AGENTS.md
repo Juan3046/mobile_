@@ -4,7 +4,8 @@
 
 **RM Games** is a mobile app (Android native) offering **one short daily game at a time**.
 Games are short (30–90s; documented exceptions in `docs/02-gameplay-rules.md`), portrait-only, with intuitive rules, controlled mainly via
-mobile sensors: **camera, gyroscope, accelerometer**.
+mobile sensors: **camera, gyroscope, accelerometer, magnetometer, microphone** (touch only as a
+documented exception).
 
 Key product rules:
 - 2 attempts per day per player, with visible remaining-attempts feedback.
@@ -29,21 +30,27 @@ See `docs/04-tech-stack.md`.
 - Work in **independent modules** to avoid merge conflicts; the parallel development
   plan lives in `docs/08-implementation-plan.md` (module map, ownership P1–P4, phases).
 - GitHub flow: small PRs per module, English names, no direct pushes to `main` once the repo exists.
-- **Current phase: Phase 2 (app shell) alongside Phase 1b games.** The shell — Main,
-  session/result, Settings, Seasons history, theme + UI kit (`RmTheme`, `:core:common/ui`),
-  persistence (`:core:data`), audio (`:core:audio`), app chrome — is owned by **P2** and
-  tracked in `docs/09-phase2-shell-plan.md` (Status notes). Visual spec: `design-system/`
-  (Direction A "Chunky Cabinet"). Game developers keep working only in their own module and
-  build their screens with `RmTheme` + the UI kit.
-- **Phase 1b (parallel game build)** — Phase 0 (frozen `Game`/`GameScope`)
-  and Phase 1a (shared hardware in `:core:sensors` + `:core:vision`) are merged, plus the
-  hosting scaffolding: `GameEntry`/`GameRegistry` contracts in `:core:common`, the
-  `SessionGameScope` host in `:feature:session`, and registry-driven nav in `:app`
-  (see "Game Hosting Contract" in `docs/08-implementation-plan.md`). Each developer
-  owns one game module (ownership map in `docs/08-implementation-plan.md`), tests first
-  (§5), placeholders until real gameplay lands. Game work happens **only inside your own
-  module** — never edit `:app`, `:feature:session` or shared navigation. Re-read the
-  plan before coding.
+- **Current phase: Phase 3 — Polish** (since 2026-11-21). Phases 0–2 are merged: the
+  frozen `Game`/`GameScope` contracts, shared hardware (`:core:sensors`, `:core:vision`),
+  the hosting scaffolding (`GameEntry`/`GameRegistry`, `SessionGameScope`, registry-driven
+  nav), the Phase 2 app shell (Main, session/result, Settings, Seasons history, nick
+  onboarding, `RmTheme` + UI kit, `:core:data`, `:core:audio`, app chrome — tracked in
+  `docs/09-phase2-shell-plan.md`) and the online layer (`:core:online`: Firebase nicks +
+  daily ranking).
+- **Seven playable games** (01 Poruba Casino, 02 Onion Roll, 03 Blink Sniper, 04 Compass
+  Chaos, 05 Soda Shake, 06 Class Rush, 07 Sound Barrier) — one per day, each played once per
+  7-day season. Specs in `docs/games/`; ownership in `docs/08-implementation-plan.md`.
+- **Phase 3 work**: device playtesting and tuning, performance (camera games), release APK
+  (R8, one stable signing key — no Google Play, APKs are shared directly; see
+  `docs/04-tech-stack.md`), and small polish from UI/code reviews. New features stay small
+  and must not break the daily loop or the shared ranking.
+- **Ownership still applies**: game work happens only inside your own game module; the shell
+  (`:app`, `:feature:home|session|settings|ranking|onboarding`, `:core:common` theme/UI kit,
+  `:core:data`, `:core:audio`, `:core:online`) is owned by **P2**. Build screens with
+  `RmTheme` + the UI kit (visual spec: `design-system/`, Direction A "Chunky Cabinet").
+  Touch controls are allowed only as a documented exception (`docs/02-gameplay-rules.md`).
+- **Adding or removing a game reshuffles the current season's daily order**: ship it to
+  everyone at the same time, ideally when a new season starts (Monday 12:00).
 
 ## 4. Mandatory Rule: Keep Docs in Sync
 **In every development phase, constantly align any change with the app documentation:**
