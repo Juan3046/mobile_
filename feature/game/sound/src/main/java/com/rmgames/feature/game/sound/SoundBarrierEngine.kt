@@ -74,12 +74,16 @@ data class SoundBarrierConfig(
      * 2.2 / 3.4 with 1.6 / 1.4 terminal speeds threw the ball across the screen; halved
      * so it drifts and can be steered.
      */
-    val gravity: Double = 1.0,
-    /** Upward acceleration while sound is detected, in screen-heights / s². */
-    val thrust: Double = 1.5,
+    val gravity: Double = 1.4,
+    /**
+     * Upward acceleration while sound is detected, in screen-heights / s². Second
+     * playtest (same day): "much better, but a bit faster" — terminal speeds now beat the
+     * corridor's top scroll speed so the ball can always line up with the next gap.
+     */
+    val thrust: Double = 2.0,
     /** Terminal speeds, in screen-heights per second. */
-    val maxFallSpeed: Double = 0.55,
-    val maxRiseSpeed: Double = 0.5,
+    val maxFallSpeed: Double = 0.75,
+    val maxRiseSpeed: Double = 0.7,
     /**
      * Track scroll speed at the start / end of the run, in widths per second.
      * Paced so the first barrier reaches the ball at ~3.3s — slow enough to hear
@@ -91,6 +95,12 @@ data class SoundBarrierConfig(
     val spacing: Double = 0.55,
     /** Horizontal width of each bar, in widths. */
     val barWidth: Double = 0.10,
+    /**
+     * The walls collide a little inside what is drawn, on every side (playtest
+     * 2026-11-21: grazing a wall's edge felt unfair). Only the hit box shrinks; the screen
+     * still draws the full bar.
+     */
+    val barHitInset: Double = 0.012,
     /** Where a barrier is born, just off the right edge. */
     val spawnX: Double = 1.15,
     /** Half of the gap height at the start / end of the run. */
@@ -285,8 +295,8 @@ class SoundBarrierEngine(
             val barrier = barriers[index]
             if (xOf(barrier, worldX) + config.barWidth > ballX) break
 
-            val insideGap = ballY >= barrier.gapCenter - barrier.gapHalf &&
-                ballY <= barrier.gapCenter + barrier.gapHalf
+            val insideGap = ballY >= barrier.gapCenter - barrier.gapHalf - config.barHitInset &&
+                ballY <= barrier.gapCenter + barrier.gapHalf + config.barHitInset
             if (insideGap) score++
             index++
         }
@@ -305,20 +315,15 @@ class SoundBarrierEngine(
     private fun checkBarrierContact() {
         if (barriers.isEmpty()) return
         val worldX = worldXAt(elapsedMs)
-        val ballLeft = ballX - config.playerRadius
-        val ballRight = ballX + config.playerRadius
-        val ballTop = ballY + config.playerRadius
-        val ballBottom = ballY - config.playerRadius
-
         for (barrier in barriers) {
             val left = xOf(barrier, worldX)
-            if (left + config.barWidth < ballLeft || left > ballRight) continue
-
-            val gapTop = barrier.gapCenter + barrier.gapHalf
-            val gapBottom = barrier.gapCenter - barrier.gapHalf
-            if (ballTop > gapTop || ballBottom < gapBottom) {
-                // The face carries the ball: park it exactly on the leading edge.
-                ballX = minOf(ballX, left - config.playerRadius)
+            val touching = touchesBar(
+                ballX, ballY, config.playerRadius, left, config.barWidth,
+                barrier.gapCenter, barrier.gapHalf, config.barHitInset,
+            )
+            if (touching) {
+                // The face carries the ball: park it on the (inset) leading edge.
+                ballX = minOf(ballX, left + config.barHitInset - config.playerRadius)
             }
         }
     }
@@ -360,3 +365,26 @@ class SoundBarrierEngine(
  */
 fun isLoud(wasLoud: Boolean, level: Float, config: SoundBarrierConfig): Boolean =
     if (wasLoud) level >= config.quietThreshold else level >= config.loudThreshold
+
+/**
+ * Whether a ball of half-size [radius] at ([ballX], [ballY]) touches the bar pair whose left
+ * edge is [barLeft]: everything of that column except its gap, shrunk by [inset] on every
+ * side (narrower bar, taller gap). Pure so tests can pin the hit box (AGENTS.md §5).
+ */
+fun touchesBar(
+    ballX: Double,
+    ballY: Double,
+    radius: Double,
+    barLeft: Double,
+    barWidth: Double,
+    gapCenter: Double,
+    gapHalf: Double,
+    inset: Double,
+): Boolean {
+    val left = barLeft + inset
+    val right = barLeft + barWidth - inset
+    if (ballX + radius <= left || ballX - radius >= right) return false
+    val gapTop = gapCenter + gapHalf + inset
+    val gapBottom = gapCenter - gapHalf - inset
+    return ballY + radius > gapTop || ballY - radius < gapBottom
+}

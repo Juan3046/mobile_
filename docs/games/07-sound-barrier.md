@@ -91,8 +91,12 @@ Continuous time-based ramp over the 60-second run:
 - **Retry**: respects remaining daily attempts (lock + countdown if 0 remain).
 
 ## Art Direction
-- **Theme**: neon sound corridor / waveform tunnel.
-- **Color Palette**: deep background, cyan ball, magenta barriers, amber sound bar.
+- **Theme** (since 2026-11-21): a corridor flying into a **sunset** — warm gradient sky
+  (dusk purple → pink → orange → golden horizon), a striped setting sun, clouds drifting
+  slowly left (slower than the corridor, so they read as far away) and two hill silhouettes
+  (`SunsetDecor.kt`, decoration only).
+- **Color Palette**: dark silhouette walls with a golden rim facing the gap, cyan ball,
+  amber sound bar. (First version: neon corridor with magenta walls on a near-black backdrop.)
 - **Provisional Graphics**: procedural vector / Canvas shapes (circle ball, rounded
   rectangle bars, level meter) so the code compiles and runs without external asset
   files.
@@ -114,10 +118,15 @@ Continuous time-based ramp over the 60-second run:
   bounce 0.8).
 - Now: **loud at RMS ≥ 0.15** (a clear voice, hum or clap near the phone) and, once loud, it
   stays loud until the level drops under **0.09** (hysteresis: no flicker at the edge).
-  Gravity **1.0**, thrust **1.5**, terminal speeds **0.55 / 0.5**, bounce **0.3**: one second
-  of steady sound or silence moves the ball well under half the screen.
+  Gravity 1.0, thrust 1.5, terminal speeds 0.55 / 0.5, bounce **0.3** (speeds raised again
+  in the second playtest, below).
 - The sound meter is scaled so the loud threshold sits at its **middle mark**: past the line
   = the ball rises.
+- Second playtest (same day, "much better"): the ball a bit quicker than the screen —
+  gravity **1.4**, thrust **2.0**, terminal speeds **0.75 / 0.7** screen-heights/s (above the
+  0.37 widths/s top scroll). Walls collide **0.012 inside what is drawn** on every side
+  (`barHitInset`: narrower bar, taller gap); the drawing is unchanged. `touchesBar` is the
+  single hit-box rule, also used for scoring the gap.
 - Tests: `SoundTuningTest`.
 
 ## Open Questions

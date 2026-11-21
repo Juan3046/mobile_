@@ -15,7 +15,6 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.StrokeCap
@@ -31,13 +30,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Neon sound corridor palette (docs/games/07-sound-barrier.md — Art Direction).
-private val CorridorBackground = Color(0xFF0E0E1F)
-private val BackdropTop = Color(0xFF161634)
-private val BackdropBottom = Color(0xFF06060E)
-private val FloorLine = Color(0xFF2A2A44)
-private val BarrierFill = Color(0xFFD63384)
-private val BarrierRim = Color(0xFFF7B2D9)
+// Sunset corridor palette (docs/games/07-sound-barrier.md — Art Direction): the sky is
+// drawn by drawSunset; walls are dark silhouettes with a golden rim so they stay readable.
+private val FloorLine = Color(0xFFFFE3B3)
+private val BarrierFill = Color(0xFF2B1840)
+private val BarrierRim = Color(0xFFFFC872)
 private val BallFill = Color(0xFF22D3EE)
 private val BallRim = Color(0xFF0E7490)
 private val BallCore = Color(0xFF082F49)
@@ -100,6 +97,7 @@ fun SoundBarrierScreen(game: SoundBarrierGame) {
                 // corners round; without the clip that halo would bleed out.
                 .clipToBounds()
                 .drawBehind {
+                    drawSunset(state.elapsedMs)
                     drawCorridor(barriers, ballX, ballY, ballRadius, soundLevel, soundDetected)
                 },
         )
@@ -153,11 +151,6 @@ private fun DrawScope.drawCorridor(
 ) {
     val width = size.width
     val height = size.height
-
-    // Depth instead of a flat fill: lifted at the top, almost black at the floor.
-    drawRect(
-        brush = Brush.verticalGradient(listOf(BackdropTop, CorridorBackground, BackdropBottom)),
-    )
 
     drawBoundary(y = 1f, width = width)
     drawBoundary(y = height - 2f, width = width)
