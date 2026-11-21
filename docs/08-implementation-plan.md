@@ -197,8 +197,11 @@ days, always live, no locks) — raw game scores (cs vs points) are never mixed 
 - **Phase 2 — Integration.** Wire daily selector → session → results → seasons
   rollover → history. Playtest tuning (ramps, thresholds, fairness check for 01).
   Exit: full daily loop works offline, 2 attempts enforced.
-- **Phase 3 — Polish.** Debug reset removal plan, missing-sensor messages,
-  performance, release build.
+- **Phase 3 — Polish (current, since 2026-11-21).** Missing-sensor messages — done
+  (`SensorGate`); release build — done (R8, optional local signing; no Google Play);
+  debug tools are gated off in release (no removal needed). Remaining: device playtests
+  and tuning (Class Rush and Sound Barrier are new), performance of the camera games, one
+  shared signing key, and polish from reviews.
 
 ## Branch & PR Rules (no stepping on each other)
 
