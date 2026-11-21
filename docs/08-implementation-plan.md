@@ -10,6 +10,7 @@ Games (one owner each — Phase 1b):
 :feature:game:compass       P4 — Game 04 (magnetometer)
 :feature:game:soda          P4 — Game 05 (accelerometer)
 :feature:game:rush          P2 — Game 06 Class Rush (touch exception; added 2026-11-20)
+:feature:game:sound         P3 — Game 07 Sound Barrier (microphone; renumbered from 06 on merge)
 
 Shared (frozen in Phase 1a — built together, no cross-module edits afterwards):
 :app                        shell: MainActivity, NavHost, DI, navigation routes,
@@ -42,11 +43,11 @@ Shared (frozen in Phase 1a — built together, no cross-module edits afterwards)
                              credits & licences, debug) — Phase 2
 ```
 
-Ownership: **P1 Poruba Casino · P2 Onion · P3 Blink · P4 Compass + Soda.** Phase 2 shell
+Ownership: **P1 Poruba Casino · P2 Onion + Class Rush · P3 Blink + Sound Barrier · P4 Compass + Soda.** Phase 2 shell
 (`:app`, `:feature:home|session|settings|ranking`, `:core:common` theme/UI kit, `:core:data`,
 `:core:audio`): **P2** (docs/09 Decision 4). Shared modules
 are frozen after Phase 1a (built together); Phase 2 integration owners are assigned
-when Phase 2 starts. Games 06–07 (still undefined) go to whoever finishes first.
+when Phase 2 starts.
 One reviewer per PR.
 
 **Coordinated replacement:** Game 01 replaces Escape Poruba before its feature branch is
@@ -98,7 +99,7 @@ class GameRegistry(entries: List<GameEntry>) {  // Registry, built once in :app
 }
 ```
 
-- `:app` builds the `GameRegistry` from the five entries and the NavHost resolves
+- `:app` builds the `GameRegistry` from the six entries and the NavHost resolves
   `session/{gameId}` through `find(...)` — **no route hardcoded per game**.
 - The per-game entry factories are **frozen** (each module owns its own):
 

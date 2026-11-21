@@ -13,7 +13,9 @@ and always take precedence unless a game doc explicitly documents an approved ex
 | 05 | `05-soda-shake.md` | Soda Shake (accelerometer, shake to 20) | Defined — duration exception |
 | 06 | `06-class-rush.md` | Class Rush (tap & swipe — touch exception, lane crossing, 60 s) | Implemented and playtested on device 2026-11-20 |
 
-Season 1 needs 7 defined games: **5 / 7 defined**. Games 06–07 are intentionally deferred.
+| 07 | `07-sound-barrier.md` | Sound Barrier (microphone, sound to rise) | Defined |
+
+Season 1 needs 7 defined games: **7 / 7 defined**.
 
 ## Conventions
 

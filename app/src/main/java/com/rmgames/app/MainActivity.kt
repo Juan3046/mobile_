@@ -55,6 +55,8 @@ import com.rmgames.core.common.ui.LocalUiFeedback
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import android.content.Context
+import com.rmgames.feature.game.sound.AndroidSoundSensor
+import com.rmgames.feature.game.sound.soundBarrierEntry
 
 /** App shell: loads the persisted state, then the registry-driven nav (Main → session → Result). */
 class MainActivity : ComponentActivity() {
@@ -110,7 +112,7 @@ class MainActivity : ComponentActivity() {
 }
 
 /**
- * Composition root: the single place the five games are wired into the
+ * Composition root: the single place the six games are wired into the
  * [GameRegistry]. Game authors never edit this file — each module owns its frozen
  * `<game>Entry(...)` factory (docs/08-implementation-plan.md — Game Hosting Contract).
  */
@@ -130,6 +132,7 @@ private fun rememberGameRegistry(): GameRegistry {
                 compassChaosEntry(AndroidCompassSensor(context)),
                 sodaShakeEntry(AndroidAccelerometerSensor(context)),
                 classRushEntry(),
+                soundBarrierEntry(AndroidSoundSensor()),
             ),
         )
     }

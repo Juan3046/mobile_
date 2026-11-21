@@ -139,6 +139,7 @@ class GameVisualsTest {
         assertEquals(c.gameCompass, gameAccent("04-compass-chaos", c))
         assertEquals(c.gameSoda, gameAccent("05-soda-shake", c))
         assertEquals(c.gameRush, gameAccent("06-class-rush", c))
+        assertEquals(c.gameSound, gameAccent("07-sound-barrier", c))
     }
 
     @Test

@@ -13,6 +13,8 @@ import com.rmgames.feature.game.casino.porubaCasinoEntry
 import com.rmgames.feature.game.onion.onionRollEntry
 import com.rmgames.feature.game.soda.sodaShakeEntry
 import com.rmgames.feature.game.rush.classRushEntry
+import com.rmgames.feature.game.sound.FakeSoundSensor
+import com.rmgames.feature.game.sound.soundBarrierEntry
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -20,7 +22,7 @@ import org.junit.Test
 
 /**
  * Guards the Phase 1b wiring contract: the composition root in MainActivity wires
- * exactly the five daily games with their frozen entry factories. If any game
+ * exactly the six daily games with their frozen entry factories. If any game
  * renames its id or factory, this fails before the shared `:app` breaks at runtime.
  */
 class GameRegistryWiringTest {
@@ -34,11 +36,12 @@ class GameRegistryWiringTest {
             compassChaosEntry(FakeCompassSensor()),
             sodaShakeEntry(FakeAccelerometerSensor()),
             classRushEntry(),
+            soundBarrierEntry(FakeSoundSensor()),
         ),
     )
 
     @Test
-    fun `registry exposes the six daily games with their frozen ids`() {
+    fun `registry exposes the seven daily games with their frozen ids`() {
         val registry = registry()
 
         assertEquals(
@@ -49,6 +52,7 @@ class GameRegistryWiringTest {
                 "04-compass-chaos",
                 "05-soda-shake",
                 "06-class-rush",
+                "07-sound-barrier",
             ),
             registry.all.map { it.game.id },
         )
@@ -76,11 +80,29 @@ class GameRegistryWiringTest {
         assertEquals(listOf(Manifest.permission.CAMERA), casino!!.requiredPermissions)
 
         registry.all
-            .filter { it.game.id !in setOf("01-poruba-casino", "03-blink-sniper") }
+            .filter { it.game.id !in setOf("01-poruba-casino", "03-blink-sniper", "07-sound-barrier") }
             .forEach { entry ->
                 assertTrue(
-                    "${entry.game.id} needs no runtime permission, got ${entry.requiredPermissions}",
-                    entry.requiredPermissions.isEmpty(),
+                    "${entry.game.id} must not need the camera, got ${entry.requiredPermissions}",
+                    Manifest.permission.CAMERA !in entry.requiredPermissions,
+                )
+            }
+    }
+
+    @Test
+    fun `only sound barrier declares the microphone runtime permission`() {
+        val registry = registry()
+
+        val sound = registry.find("07-sound-barrier")
+        assertNotNull(sound)
+        assertEquals(listOf(Manifest.permission.RECORD_AUDIO), sound!!.requiredPermissions)
+
+        registry.all
+            .filter { it.game.id != "07-sound-barrier" }
+            .forEach { entry ->
+                assertTrue(
+                    "${entry.game.id} must not need the microphone, got ${entry.requiredPermissions}",
+                    Manifest.permission.RECORD_AUDIO !in entry.requiredPermissions,
                 )
             }
     }
