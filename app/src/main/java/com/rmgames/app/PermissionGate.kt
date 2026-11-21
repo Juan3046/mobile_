@@ -76,7 +76,7 @@ class PermissionGateModel(
  * Grant → content; denial → fallback with an "open settings" hint (covers "don't ask
  * again"); returning from Settings re-checks on ON_RESUME (and a mid-run revocation
  * closes the run). Hardware fallback copy (front camera missing) and home-level
- * Play disabling land in Phase 2.
+ * Play disabling live in `SensorGate.kt` (missing hardware skips this gate entirely).
  *
  * @param entry resolved from the registry; null = unknown game, content shows anyway.
  */

@@ -12,7 +12,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 /**
- * Game 06 — Sound Barrier (docs/games/06-sound-barrier.md).
+ * Game 07 — Sound Barrier (docs/games/07-sound-barrier.md).
  *
  * Owns two loops inside [GameScope.hostScope] — the host cancels that scope when
  * the run ends, so nothing here can leak:
@@ -37,7 +37,7 @@ class SoundBarrierGame(
     private val engineFactory: (SoundBarrierConfig) -> SoundBarrierEngine = { SoundBarrierEngine(it) },
 ) : Game {
 
-    override val id = "06-sound-barrier"
+    override val id = "07-sound-barrier"
     override val title = "Sound Barrier"
     override val description = "Make noise to rise, stay quiet to drop. Pass every gap. 60 seconds."
     override val durationMs: Long get() = config.durationMs
@@ -85,7 +85,7 @@ class SoundBarrierGame(
 
     /**
      * Emulator / desktop debug input: holding Space reads as sound while the
-     * microphone stays quiet (docs/games/06-sound-barrier.md — Controls).
+     * microphone stays quiet (docs/games/07-sound-barrier.md — Controls).
      */
     fun setDebugSound(held: Boolean) {
         debugSoundHeld = held
@@ -141,5 +141,6 @@ fun soundBarrierEntry(sensor: SoundSensor): GameEntry {
         // must not overlay its placeholder readouts on top of them.
         drawsOwnHud = true,
         requiredPermissions = listOf(Manifest.permission.RECORD_AUDIO),
+        thumbnail = { SoundBarrierThumbnail() },
     ) { SoundBarrierScreen(game) }
 }

@@ -68,6 +68,7 @@ class SodaShakeGameTest {
 
         game.start(host)
         advanceTimeBy(1) // let the collector subscribe
+        accelerometer.emit(rest) // held still: the gravity reference
         repeat(20) { i ->
             accelerometer.emit(if (i % 2 == 0) peak(+1f) else peak(-1f))
             advanceTimeBy(48) // at least one loop tick sees the peak

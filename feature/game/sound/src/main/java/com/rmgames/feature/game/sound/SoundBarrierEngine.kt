@@ -42,7 +42,7 @@ data class SoundBarrierUiState(
 )
 
 /**
- * Tunables for one run. Defaults follow docs/games/06-sound-barrier.md:
+ * Tunables for one run. Defaults follow docs/games/07-sound-barrier.md:
  * a fixed 60s timer, the track advancing on its own, sound thrusting the ball up
  * and silence letting gravity pull it down, and gaps that tighten over the run.
  *
@@ -113,7 +113,7 @@ private data class LiveBarrier(
  * coroutines, so it runs on plain JUnit with an injected clock ([tick] takes the
  * elapsed ms and the current sound state explicitly).
  *
- * Rules: docs/games/06-sound-barrier.md — the ball's hitbox touching a bar carries
+ * Rules: docs/games/07-sound-barrier.md — the ball's hitbox touching a bar carries
  * the ball backwards (left) instead of ending the run, +1 when the ball is inside
  * the gap at the instant a barrier finishes passing it, the run ends when a bar
  * pushes the ball off the screen, and it is a win when the 60s timer expires.
@@ -199,7 +199,7 @@ class SoundBarrierEngine(
     /**
      * Integrates one vertical step. The floor and the ceiling **bounce** the ball:
      * contact reverses its speed instead of pinning it, so a fall rebounds upward
-     * and a shout rebounds downward (docs/games/06-sound-barrier.md — Boundaries).
+     * and a shout rebounds downward (docs/games/07-sound-barrier.md — Boundaries).
      */
     private fun stepBall(nowMs: Long, soundDetected: Boolean) {
         val dt = (nowMs - lastStepMs) / 1000.0
@@ -289,7 +289,7 @@ class SoundBarrierEngine(
      * and the ceiling use — and a bar pair occupies everything except its gap, so
      * any overlap means the ball is touching a bar. A touched bar never ends the
      * run: its leading face carries the ball backwards (left) for as long as they
-     * touch, and slipping into the gap is the only way out (docs/games/06-sound-
+     * touch, and slipping into the gap is the only way out (docs/games/07-sound-
      * barrier.md — Contact).
      */
     private fun checkBarrierContact() {
@@ -316,7 +316,7 @@ class SoundBarrierEngine(
     /**
      * The only contact-driven way to lose: bars push the ball backwards (left), so
      * the run ends once the whole ball has left the screen through that edge and
-     * the points earned so far are kept (docs/games/06-sound-barrier.md — Fail).
+     * the points earned so far are kept (docs/games/07-sound-barrier.md — Fail).
      */
     private fun checkBallOnScreen() {
         if (ballX + config.playerRadius <= 0.0) end(EndReason.LEFT_BEHIND)

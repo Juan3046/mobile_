@@ -32,7 +32,7 @@ interface SoundSensor {
  * [SoundSensor] backed by `AudioRecord`.
  *
  * Reads the raw input **level** only: nothing is encoded, written to disk or
- * uploaded (docs/games/06-sound-barrier.md — Persistence). The read blocks on the
+ * uploaded (docs/games/07-sound-barrier.md — Persistence). The read blocks on the
  * audio driver, so the loop runs on [Dispatchers.IO] and stops as soon as the
  * collector cancels — which is what [com.rmgames.core.common.GameScope.hostScope]
  * does when the run ends.

@@ -4,12 +4,13 @@
 
 ```text
 Games (one owner each — Phase 1b):
-:feature:game:escape        P1 — Game 01 (touch drag, no sensors)
+:feature:game:casino        P1 — replacement Game 01 (front camera, head gestures)
 :feature:game:onion         P2 — Game 02 (gyroscope)
 :feature:game:blink         P3 — Game 03 (front camera → :core:vision)
 :feature:game:compass       P4 — Game 04 (magnetometer)
 :feature:game:soda          P4 — Game 05 (accelerometer)
-:feature:game:sound         P3 — Game 06 (microphone, added in Phase 1b)
+:feature:game:rush          P2 — Game 06 Class Rush (touch exception; added 2026-11-20)
+:feature:game:sound         P3 — Game 07 Sound Barrier (microphone; renumbered from 06 on merge)
 
 Shared (frozen in Phase 1a — built together, no cross-module edits afterwards):
 :app                        shell: MainActivity, NavHost, DI, navigation routes,
@@ -26,24 +27,42 @@ Shared (frozen in Phase 1a — built together, no cross-module edits afterwards)
 :core:sensors               sensor interfaces (gyro, accelerometer, compass),
                              Android adapters, fakes, pure logic (shake detection,
                              heading filter), SensorAvailability
-:core:vision                blink contract (EyeState/BlinkDetector) + fakes +
-                             ML Kit adapter (CameraX + ML Kit face detection)
+:core:vision                blink + head-gesture contracts + fakes + ML Kit adapters
 :feature:home               main screen (title, thumbnail, how-to, Play,
                              Seasons History button, attempts indicator, debug reset)
 :feature:session            game host: timer, 1 run = 1 attempt, best-of-2,
                              lock + countdown, result screen
+:core:audio                 app music + UI sounds: synthesizer, SoundBook,
+                             AudioDirector rules, Android AudioTrack backend — Phase 2
+:core:online                Firebase adapters (Anonymous Auth, Firestore nick
+                             directory; ranking next) — Phase 2 stream E
+:feature:onboarding         first-launch nick screen (NickClaim + NickRegistry) — Phase 2
+:feature:ranking            seasons history (Season / History tabs); online
+                             standings later — Phase 2
+:feature:settings           settings screen (sound, vibration, nick, privacy,
+                             credits & licences, debug) — Phase 2
 ```
 
-Ownership: **P1 Escape · P2 Onion · P3 Blink + Sound Barrier · P4 Compass + Soda.**
-Shared modules are frozen after Phase 1a (built together); Phase 2 integration
-owners are assigned when Phase 2 starts. Game 07 (still undefined) goes to whoever
-finishes first. One reviewer per PR.
+Ownership: **P1 Poruba Casino · P2 Onion + Class Rush · P3 Blink + Sound Barrier · P4 Compass + Soda.** Phase 2 shell
+(`:app`, `:feature:home|session|settings|ranking`, `:core:common` theme/UI kit, `:core:data`,
+`:core:audio`): **P2** (docs/09 Decision 4). Shared modules
+are frozen after Phase 1a (built together); Phase 2 integration owners are assigned
+when Phase 2 starts.
+One reviewer per PR.
+
+**Coordinated replacement:** Game 01 replaces Escape Poruba before its feature branch is
+merged. The `feature/game-poruba-casino` branch adds a `HeadGestureDetector` contract/ML Kit adapter in
+`:core:vision`, renames the module to `:feature:game:casino`, and updates `:app` registry,
+permission wiring, Gradle dependency, and registry tests in the same reviewed change.
+Do not merge the unmerged Escape Poruba branch. The shared-file changes require review
+from the `:core:vision` and `:app` owners; future Casino gameplay changes stay within
+`:feature:game:casino` and its GDD.
 
 ## Contract (frozen in Phase 0, lives in `:core:common`)
 
 ```kotlin
 interface Game {
-  val id: String          // "01-escape-poruba"
+  val id: String          // "01-poruba-casino"
   val title: String
   val description: String // how-to-play
   val durationMs: Long    // standard 30_000–90_000 (documented exceptions only)
@@ -69,8 +88,9 @@ of them once:
 class GameEntry(                    // Adapter: logic + UI behind one stable type
   val game: Game,
   val screen: @Composable () -> Unit, // renders the game's state — no params by design
-  val requiredPermissions: List<String> = emptyList(), // CAMERA for blink; empty otherwise
+  val requiredPermissions: List<String> = emptyList(), // CAMERA for blink/casino when hardware exists
   val drawsOwnHud: Boolean = false, // true = host hides its placeholder score/finish texts
+  val thumbnail: (@Composable () -> Unit)? = null, // Phase 2 (Decision 5): game art for Main/intro
 )
 class GameRegistry(entries: List<GameEntry>) {  // Registry, built once in :app
   val all: List<GameEntry>
@@ -84,7 +104,7 @@ class GameRegistry(entries: List<GameEntry>) {  // Registry, built once in :app
 - The per-game entry factories are **frozen** (each module owns its own):
 
 ```kotlin
-fun escapePorubaEntry(): GameEntry                                  // touch-only
+fun porubaCasinoEntry(detector: HeadGestureDetector, cameraAvailable: Boolean = true): GameEntry
 fun onionRollEntry(gyroscope: GyroscopeSensor): GameEntry
 fun blinkSniperEntry(detector: BlinkDetector): GameEntry
 fun compassChaosEntry(compass: CompassSensor): GameEntry
@@ -105,9 +125,10 @@ fun sodaShakeEntry(accelerometer: AccelerometerSensor): GameEntry
 - Permission gate (in `:app`, by contract): an entry may declare `requiredPermissions`;
   while they are not held the `session/{gameId}` route shows the explanation/fallback
   instead of running (grant → play; denial → "open settings" hint; re-checked on
-  ON_RESUME) — a denied permission never records a fake score. Only Blink (CAMERA)
-  needs it today; front-camera hardware fallback copy + home-level Play disabling
-  land in Phase 2.
+  ON_RESUME) — a denied permission never records a fake score. Blink needs CAMERA;
+  Poruba Casino requests CAMERA only on devices with a front camera. Without that
+  hardware, it uses touch controls without requesting permission. Casino also reports
+  face-tracking readiness from the vision flow.
 - **Own-HUD opt-out** (backward-compatible addition, 2026-11-10): an entry with
   `drawsOwnHud = true` draws its own score and end-of-run feedback, so the host
   hides its Phase 1b placeholder texts (`score: N` and `Run finished (win=…) ·
@@ -130,12 +151,22 @@ interface CompassSensor       { fun headings(): Flow<Float> }    // degrees 0–
 // Fakes in the module for game tests; Android adapters via callbackFlow + awaitClose
 ```
 
-`:core:vision` — camera pipeline behind one interface; ML Kit never leaks out:
+`:core:vision` — camera pipelines behind small interfaces; ML Kit never leaks out:
 
 ```kotlin
 enum class EyeState { OPEN, CLOSED }
 interface BlinkDetector { fun eyeState(): Flow<EyeState> }
+enum class HeadGesture { NOD, SHAKE }
+sealed interface HeadGestureObservation {
+  data class FaceTracked(val pitchDegrees: Float, val yawDegrees: Float) : HeadGestureObservation
+  data object FaceLost : HeadGestureObservation
+  data object TrackingError : HeadGestureObservation
+  data class Gesture(val value: HeadGesture) : HeadGestureObservation
+}
+interface HeadGestureDetector { fun observations(): Flow<HeadGestureObservation> }
 // MlKitBlinkDetector (CameraX + ML Kit face detection) is the only ML Kit consumer.
+// MlKitHeadGestureDetector emits thresholded, neutral-rearmed head gesture events;
+// pure classifier + fake live in :core:vision and are JVM-tested.
 // Camera permission UX lives in :app, not here.
 // CameraX bind/unbind MUST run on Dispatchers.Main: any other dispatcher throws
 // "IllegalStateException: Not in application's main thread" (issue #22).

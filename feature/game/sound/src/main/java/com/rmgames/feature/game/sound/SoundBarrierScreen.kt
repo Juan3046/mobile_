@@ -31,7 +31,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Neon sound corridor palette (docs/games/06-sound-barrier.md — Art Direction).
+// Neon sound corridor palette (docs/games/07-sound-barrier.md — Art Direction).
 private val CorridorBackground = Color(0xFF0E0E1F)
 private val BackdropTop = Color(0xFF161634)
 private val BackdropBottom = Color(0xFF06060E)
@@ -62,7 +62,7 @@ internal const val MAX_BAR_RADIUS = 10f
 private const val BAR_GLOW = 7f
 
 /**
- * Game 06 screen: the corridor, the ball, the minimal HUD and the sound meter.
+ * Game 07 screen: the corridor, the ball, the minimal HUD and the sound meter.
  *
  * Rendering only — the [SoundBarrierGame] owns every rule through its
  * [SoundBarrierEngine], so this file never scores, never counts down on its own and
@@ -349,7 +349,7 @@ internal fun barCornerRadius(barWidth: Float): Float =
  * physics runs 0 = floor -> 1 = ceiling, pixels run 0 = top -> height = bottom —
  * so every vertical draw (the ball and both bars of a barrier) must go through
  * this single inversion, or gravity would pull the ball up and the bars would
- * overlap and hide their gap (docs/games/06-sound-barrier.md).
+ * overlap and hide their gap (docs/games/07-sound-barrier.md).
  *
  * Internal rather than private purely so tests can pin it down (AGENTS.md §5).
  */

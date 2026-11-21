@@ -1,0 +1,263 @@
+# 09 — Phase 2 Plan: App Shell, Look & Feel, Audio
+
+> Status: **proposal** (2026-11-18). Owner: P2 (Onion Roll is done). Covers the
+> screens around the games (main, onboarding, result, ranking, settings), the
+> daily game rotation, the visual identity and the app-wide audio. Games keep
+> being built in parallel by P1/P3/P4 — this plan only touches shared modules.
+> Items marked **DECISION** need the team's OK and a doc update before code.
+
+## 0. Starting point (what `main` has today)
+
+| Area | State |
+|---|---|
+| Games | 4 of 5 playable (Onion, Blink, Compass, Soda); Escape is still the Phase 0 skeleton. |
+| `:app` | `MaterialTheme` default, `home` + `session/{gameId}` routes, permission gate. No `res/` (no app icon, no splash, no theme XML). *(Phase 2 since: RmTheme, icon, splash, edge-to-edge, persisted repos — see Status notes.)* |
+| `:feature:home` | Phase 1b launcher: a plain list of all games with PLAY buttons. |
+| `:feature:session` | Host for one run + placeholder `score: N` / `Run finished` texts. No timer, attempts or result screen. |
+| `:core:data` | Pure stubs: `DayClock` (noon boundary), `DailyGameSelector` (`day % count`), in-memory attempts, score/season interfaces. No Room, DataStore or Firebase yet. |
+| `:core:common` | Contracts only — no theme, no reusable UI. |
+| Audio | Only Onion Roll's own synthesized SFX (in its module). |
+
+## 1. Decisions to take first (docs before code — AGENTS.md §4)
+
+1. **DECIDED (2026-11-18): app-level music, synthesized in code.** Original proposal: **DECISION — Music in the MVP.** `06-out-of-scope-roadmap.md` excludes
+   *per-minigame* soundtracks. Proposal: allow **app-level music** — one menu
+   theme + one shared in-game loop + short stingers (new best, lock) — and keep
+   dedicated per-game soundtracks post-MVP. Update `06` and `02` (Audio rules).
+2. **DECIDED (2026-11-19): seeded shuffle per season** (implemented in `DailyGameSelector`, PR 5). Original proposal: **DECISION — "Random" daily game.** `01-product-overview.md` fixes
+   `index = daysSinceEpoch % gameCount` (a visible fixed cycle). Proposal:
+   **seeded shuffle per season** — each 7-day season shuffles the game list with
+   the season index as seed, so the daily game *looks* random, is still the same
+   on every device and offline, and no game repeats inside a season while
+   `gameCount ≥ 7`. Update `01` + `DailyGameSelector` docs.
+3. **DECIDED (2026-11-18): Settings screen as proposed** (built in PR 11; the debug "force daily game" was dropped — the Main debug launcher opens any game). Original proposal: **DECISION — Settings screen** (new `03-screens.md` §3.6): music volume,
+   SFX on/off, vibration on/off, nick (read-only), credits & licences, privacy
+   note; debug section (reset attempts, force daily game) in debug builds only.
+4. **DECIDED (2026-11-18): P2 owns the Phase 2 shell** (the user, with Claude, in one session; game modules stay with their owners except the agreed thumbnails). Original proposal: **DECISION — Ownership.** P2 owns the Phase 2 shell: `:app` nav, `:feature:home`,
+   `:feature:session` (timer, attempts, result), `:core:common` theme/UI kit,
+   `:core:data`, and a new `:core:audio`. Update `08-implementation-plan.md`
+   (ownership + "Phase 2 starts for the shell while 1b continues") and the
+   "Current phase" line in `AGENTS.md`.
+5. **DECIDED (2026-11-18): optional `thumbnail` on `GameEntry`, each game draws its own (Canvas, no image files).** Original proposal: **DECISION — Game thumbnails.** `GameEntry` has no thumbnail. Proposal: add a
+   backward-compatible `thumbnail: @Composable () -> Unit = {}` (same pattern as
+   `drawsOwnHud`); each game owner fills theirs later; the shell shows a
+   generated fallback (title + colour + icon) until then.
+6. **DECIDED (2026-11-18): fonts = Google Fonts OFL bundled; all app audio synthesized in code** (no third-party audio; `CREDITS.md` + Settings credits, kept in sync by a test). Original proposal: **DECISION — Asset sources & licences.** Fonts: Google Fonts under OFL,
+   bundled in `res/font`. Music/SFX: CC0 or royalty-free with a written licence,
+   or generated with a tool whose terms grant commercial use; every file listed
+   in a `CREDITS.md` + the Settings credits page. No copyrighted material.
+
+## 2. Workstreams
+
+### A. Visual identity & design system (`:core:common`, `:app` resources)
+- **Direction first, code second**: mood board → 2–3 visual directions as
+  mockups (main + result screens) → team picks one.
+  **DECIDED (2026-11-18): Direction A · Chunky Cabinet** — deep plum ground, hot-pink
+  primary, sun-yellow reserved for “new best”; Bungee (display, scores) + Rubik (UI);
+  medium radii with a 2px dark outline sitting on a 4px hard “ledge” that compresses on
+  press; dark-first with a light variant. Spec, tokens and component catalogue live in
+  [`design-system/`](../design-system/README.md) (`concept.html` = Main + Result screens).
+  Directions B (Soft Tonal Pop) and C (Scoreboard Grid) were explored and discarded.
+  PR 3 ports these tokens to `RmTheme`.
+  **Status (2026-11-18): PR 3 done** — `RmTheme` (`:core:common` `theme/`: `RmColors` +
+  `RmPalette`, `rmTypography`, `RmShapes`, `RmDimens`, `RmMotion`, WCAG `Contrast` checks in
+  unit tests) wraps `MaterialTheme` in `:app`; fonts bundled and listed in `CREDITS.md`.
+  **Status (2026-11-18): PR 4 done** — UI kit in `:core:common` `ui/`: `LedgeSurface` (the hard
+  ledge), `RmButton` (filled/tonal/outlined/text, default/xl), `RmIconButton`, `RmCard`,
+  `GameCard` + `GameThumbnail` fallback + `GameChip`, `AttemptsPips`, `CountdownChip` +
+  `rememberRemaining`, `ScoreCounter`, `NewBestStamp`, `Confetti`, `StatTile`, `SeasonStrip`,
+  `SectionHeader`, `RmTopBar`, `RmTransitions`, `RmIcons` (ported from the sprite). Click
+  feedback goes through `LocalUiFeedback` (silent until `:core:audio` provides it). Logic is
+  JVM-tested; `UiKitPreviews.kt` renders Main + Result in Android Studio.
+  Checked on a real device (2026-11-18): `:app` now has a `Theme.RmGames` window theme
+  (no action bar, bar colours = RmTheme background, light + night); big scores use a
+  glyph-height box because Bungee's line box is ~1.3× the font size.
+  **Status (2026-11-18): PR 8 done** — Main screen per 03 §3.1/§3.5 (`HomeRoute` + `HomeScreen` +
+  `HomeViewModel.state()`), `SeasonCalendar` (Season 1 = Mon 16 Nov 2026 12:00), debug
+  `AttemptRepository.reset`, unplayable games kept out of the rotation, `RmTransitions` on the
+  NavHost. Checked on device. Still in-memory attempts/scores (PR 6/10); Play does not consume
+  an attempt yet (PR 9, session); Settings gear and Seasons history are hidden until PR 11/13.
+  **Status (2026-11-18): PR 9 done** — `SessionFlow` (Intro → 3-2-1 → Playing → Finished, Play
+  again, lock, abandon) replaces `SessionViewModel`; `SessionRoute` draws intro, countdown, host
+  score chip and the Result screen (03 §3.3). Play now spends the attempt (on Start). Fixed after
+  device testing: a wide score ("4.27" s) wrapped onto two lines and overlapped the New-best
+  stamp — `ScoreCounter` now stays on one line and shrinks to fit (`fitScoreFontSize`).
+  **Status (2026-11-18): PR 6 done** — attempts, daily bests (60 days) and settings persist on device
+  through `SnapshotStore` → `DataStoreSnapshotStore` (+ versioned codecs), loaded at startup by
+  `AppContainer`/`RmApplication` in `:app`. Built to swap in a cloud store without touching screens
+  (docs/04 "Data layer"). Verified on device: attempts and best survive a force-stop.
+  **Status (2026-11-18): PR 11 done** — new `:feature:settings` (03 §3.6): music volume, SFX, vibration
+  (live: drives `LocalUiFeedback` haptics), nick placeholder, privacy note, credits (synced with
+  `CREDITS.md` by a test), debug reset, version. Gear on Main. Kit gained `RmListItem`,
+  `RmListDivider`, `RmSwitch`, `RmSlider`. Music/SFX values take effect when `:core:audio` lands (PR 7).
+  Not built: "force daily game" debug (the Main debug launcher already opens any game).
+  **Status (2026-11-18): PR 7 done** — new `:core:audio`: `Synth` + `SoundBook` (menu loop + click,
+  tick, go, new-best; no files, no licences), `AudioDirector` (scene/volume/SFX/foreground/focus
+  rules, unit-tested) and `AndroidAudioBackend` (static AudioTracks on an "rm-audio" thread, volume
+  fades). Screens reach it through `UiFeedback.cue/scene` (no dependency on the module); `:app`
+  wires Settings and foreground. Checked on device (focus + playing track via adb; listened by the
+  user). Games' own feedback (2026-11-19): `UiFeedback.sfxEnabled` joins `hapticsEnabled` (filled from
+  Settings in `:app`) instead of a separate `FeedbackSettings` flow; Onion Roll — the only game with
+  its own sounds/vibration — applies both through `cueOutput` (JVM-tested).
+  **Status (2026-11-18): PR 13 done (local)** — new `:feature:ranking`: Seasons history with Season
+  (day by day: game + best) and History (past seasons, all-time days/seasons) tabs, built by the
+  pure `SeasonHistory.build` from `ScoreRepository.history()`. Uses the 60-day DataStore bests
+  instead of Room (PR 10 still pending for longer history). Points/standings wait for stream E; the
+  Main season strip now hides points until then. Kit gained `RmTabs` and a calendar icon. Verified by
+  unit tests, build and previews — not yet seen on a device (user away).
+  **Status (2026-11-18): PR 14 done** — `:app` chrome: adaptive launcher icon (`mipmap-anydpi-v26`,
+  vector layers: deep-plum background, hot-pink arcade button with dark outline + hard ledge and a
+  light play triangle inside the 66dp safe zone, single-colour monochrome layer for Android 13
+  themed icons); AndroidX SplashScreen (`core-splashscreen` 1.0.1, `Theme.RmGames.Starting` →
+  `Theme.RmGames`, icon on `rm_background`, kept until `AppContainer.isLoaded`); edge-to-edge via
+  `enableEdgeToEdge` with bars painted in the RmTheme background (light/dark icons per theme) and
+  `safeDrawingPadding()` on the root `Surface`, so no feature screen changed. Rules live in
+  `AppChrome` (JVM-tested); a resource test checks the icon layers, palette, safe zone, manifest
+  and starting theme. Verified: unit tests + `:app:assembleDebug`. Not checked on a device yet.
+  **Status (2026-11-18): PR 17 done** — `GameEntry.thumbnail: (@Composable () -> Unit)? = null`
+  (backward compatible; null keeps the generated fallback). Main (2:1) and the session intro (16:9)
+  show it inside the accent-coloured, outlined box. With the user's OK (they and Claude build Phase 2
+  together), Claude drew all five in their own modules: one `<Game>Thumbnail.kt` (Canvas, flat shapes
+  with the ink outline) + one line in each entry factory — Escape: road between Poruba panel blocks;
+  Onion: onion on the belt with fruit; Blink: target + crosshair + bomb; Compass: spinning dial;
+  Soda: shaking can with fizz. (2026-11-20: Escape was replaced on `main` by **Poruba Casino**; its
+  thumbnail is a fanned blackjack hand + a banana, and the shell maps it to "Head gestures",
+  "No time limit" and a score in bananas.) A wiring test requires every registered game to ship one. Verified by
+  unit tests + build only — no device/emulator available (SDK system images are incomplete).
+  **Device check (2026-11-18, evening)** — splash, Main, Seasons history and all intros seen on the
+  phone. Fixed: (1) history showed a debug-launched game's score as "today" — `SeasonHistory.build`
+  now only counts the day's daily game (`dailyGameId`, regression-tested); (2) the history repeated
+  "Season N · day d of 7" — `SeasonStrip(showLabels = false)`; (3) Onion and Compass thumbnails were
+  clipped at the box edge; (4) the launcher/splash mark (rounded rectangle + play) read like a
+  video-player logo — redrawn as a round arcade push-button on its ledge.
+  **Status (2026-11-19): PR 5 done** — `DailyGameSelector` is a seeded shuffle per season
+  (Decision 2): sorted ids, `Random(seed + season)`, no repeat inside a season until all played,
+  no same game across a season boundary. Changing the rotation used to rewrite the history's past
+  days, so debug-launched runs of a non-daily game are now **practice runs** (`SessionFlow
+  practice = true`: no attempt, nothing recorded) and the history only uses the rotation for today.
+  **Status (2026-11-19): PR 10 done without Room** (user decision): the DataStore daily bests keep
+  the full history (no 60-day pruning; ~25 bytes/day) and `ScoreRepository.personalBest` gives the
+  all-time best per game. Result shows a "Personal best" stamp when a run beats every earlier day
+  (else the record under the score); the History tab lists personal bests per game. One storage
+  technology and one cloud seam (`SnapshotStore`) instead of adding Room + KSP.
+  **Status (2026-11-19): PR 15 part 1 done** — nick onboarding (03 §3.2) built offline-first:
+  `PlayerRepository` (DataStore, `PlayerCodec`), `NickClaim` (validation, case-insensitive key, set
+  once), `NickRegistry` seam with `LocalNickRegistry` for now, `:feature:onboarding` screen as the
+  start destination until a nick exists, nick shown in Settings. **Part 2 (needs the user's Firebase
+  project + `google-services.json`)**: Firebase BoM + google-services plugin, `FirebaseNickRegistry`
+  (Anonymous Auth, Firestore transaction on `nicks/{nickKey}` = { uid }), security rules, swap in
+  `AppContainer`.
+  **Status (2026-11-20): PR 15 part 2 code ready** (branch `feature/firebase-online`) — new
+  `:core:online`: `OnlineNickRegistry` (anonymous sign-in, then `nicks/{key}` transaction; "already
+  mine" = reserved so retries are safe; failures/10 s timeout = Offline), `FirebaseAnonymousAuth`,
+  `FirestoreNickDirectory` (+ `users/{uid}`), `firestore.rules`, google-services plugin applied only
+  when `app/google-services.json` exists, `AppContainer` picks Firebase vs local at runtime. Waiting on
+  the user's Firebase project to verify on a device.
+  **Verified on device (2026-11-20)** with project `rm-games-10698` (Anonymous Auth + Firestore in
+  production mode + `firestore.rules`). Found on the way: errors were silently "Offline" → now logged
+  (`RmOnline`); changing the nick after "Forget nick" left an orphan reservation → reservation and
+  `users/{uid}` are now one transaction, an account with a nick gets it back (`Reservation.AlreadyHas`),
+  rules allow one nick per account. Setup gotchas: enable Authentication → Anonymous; create the
+  `(default)` Firestore database; publish the rules.
+- **PR 16 — online ranking. Status (2026-11-20): code done** (branch `feature/firebase-online`):
+  `Ranking`/`Standing`/`RankingSync` contract + `OfflineRanking` (`:core:data`), `OnlineRanking` +
+  `FirestoreRankingStore` (`:core:online`), ranking rules in `firestore.rules`, Result card with
+  provisional "#p of N" + points, Seasons history with per-day positions, season points and today's
+  top 50. Decision: no all-player season leaderboard in the MVP (03 §3.4). Needs the updated rules
+  published in the Firebase console.
+  **Verified on device (2026-11-20)** with two phones (two anonymous players): uploads, provisional
+  positions, season points and today's top 50 behave as specified with the published rules.
+  Arcade/playful, high
+  contrast, readable at a glance, portrait, dark-first with a light variant.
+- **Tokens**: colour scheme (brand + per-game accent colours), typography
+  (one display font for titles/scores + one UI font), shapes, spacing, elevation,
+  motion durations/easings. Implemented as `RmTheme` in `:core:common`.
+- **UI kit** (`:core:common/ui`): `RmButton` (press scale + haptic + click SFX),
+  `GameCard`, `AttemptsPips`, `CountdownChip`, `ScoreCounter` (count-up),
+  `SectionHeader`, `RmTopBar`, `Confetti`, screen transition specs.
+- **App chrome**: adaptive app icon, Android 12 SplashScreen API, status/nav bar
+  colours, edge-to-edge, portrait lock (already).
+
+### B. Audio system (new module `:core:audio`)
+- `AudioDirector` facade: menu music, in-game loop, stingers, UI SFX.
+  Music via `ExoPlayer`/`MediaPlayer` with fade/cross-fade; SFX via `SoundPool`.
+- Rules: respects Settings (volume/mutes) and **audio focus**; pauses on
+  background (lifecycle); ducks music while a game runs; **never blocks the
+  main thread** (lesson from Onion Roll: AudioTrack calls froze the game loop).
+- Games keep their own SFX; they read the user's SFX/vibration settings through
+  a small `FeedbackSettings` flow exposed by `:core:audio` (opt-in, no change to
+  the frozen `Game`/`GameScope` contracts).
+
+### C. Data & daily loop (`:core:data`)
+- `DailyGameSelector` → seeded season shuffle (Decision 2), TDD.
+- `AttemptRepository` on DataStore (2/day, noon reset via `DayClock`).
+- `ScoreRepository` on Room: attempts history, daily best, local best per game.
+- `SettingsRepository` on DataStore (Decision 3).
+- `SeasonRepository`: 7-day windows, points `(N−p+1)×25` (pure logic exists in
+  `SeasonPoints`), auto-archive.
+- Firebase (Anonymous Auth, nick reservation, daily-best upload, top-50
+  ranking) as its own later stream (E), behind interfaces so screens work offline
+  with fakes first.
+
+### D. Screens (`:feature:home`, `:feature:session`, new `:feature:ranking`, `:feature:settings`, `:feature:onboarding`)
+1. **Main** (`03` §3.1): today's game hero card (thumbnail, title, how-to),
+   big Play, attempts pips, lock state with countdown to 12:00 + best of the day,
+   Seasons History button, settings gear, season progress strip, debug reset.
+2. **Pre-run**: how-to card + 3-2-1 countdown (sound + haptic), then the game.
+3. **Result** (§3.3): score count-up, "new best" celebration, daily best,
+   attempts left, provisional position/points, Play again or lock.
+4. **Ranking / Seasons History** (§3.4): Season / History tabs.
+5. **Settings** (§3.6, Decision 3).
+6. **Nick onboarding** (§3.2) — UI first with a fake uniqueness check; real
+   check lands with Firebase (stream E).
+
+### E. Backend (Firebase, Spark plan)
+Anonymous Auth, `nicks/{nick}` reservation, daily-best write (1/day/UID),
+paginated top-50 reads, security rules. Separate PRs after D.1–D.3 work offline.
+
+## 3. Order of work (small PRs, one module each, TDD)
+
+| # | PR | Module(s) | Depends on |
+|---|---|---|---|
+| 1 | Docs: decisions 1–6 + ownership + this plan — **done** | `docs/`, `AGENTS.md` | team OK |
+| 2 | Visual direction mockups (not code) — `design-system/` — **done** | — | 1 |
+| 3 | `RmTheme` tokens + fonts — **done** | `:core:common`, `:app` | 2 |
+| 4 | UI kit components (+ screenshot-free unit tests for logic) — **done** | `:core:common` | 3 |
+| 5 | Seeded season shuffle selector — **done** | `:core:data` | 1 |
+| 6 | DataStore attempts + settings repos — **done** (+ daily bests) | `:core:data` | 1 |
+| 7 | `:core:audio` (director, settings flow, focus, no main-thread work) — **done** | `:core:audio` | 6 |
+| 8 | Main screen (daily game, attempts, lock + countdown) — **done** (in-memory repos until 6) | `:feature:home`, `:app` nav | 4, 5, 6 |
+| 9 | Session: pre-run countdown, attempt consumption, result screen — **done** (in-memory repos until 6) | `:feature:session` | 4, 6 |
+| 10 | ~~Room~~ full score history + personal bests — **done on DataStore** (decided 2026-11-19) | `:core:data` | 6 |
+| 11 | Settings screen — **done** (sound applies with 7) | `:feature:settings`, `:app` nav | 4, 6, 7 |
+| 12 | Music & UI SFX wiring across screens — **done** in PR 7 (games' own SFX/haptics: see Status) | `:app`, features | 7, 8, 9 |
+| 13 | Ranking / Seasons History (local data first) — **done** (bests from DataStore, 60 days) | `:feature:ranking` | 10 |
+| 14 | App icon, splash, edge-to-edge — **done** | `:app` | 3 |
+| 15 | Firebase: auth + nick onboarding — **UI + rules done**, Firebase adapter waits for the project | `:core:data`, `:feature:onboarding` | 8 |
+| 16 | Firebase: daily-best upload + ranking reads — **done** (verified on 2 devices) | `:core:data`, `:core:online`, `:feature:session`, `:feature:ranking` | 13, 15 |
+| 17 | Thumbnails contract + fallback (Decision 5); owners add theirs — **done** (all 5 drawn) | `:core:common`, games | 4 |
+
+Exit of Phase 2 (`08`): full daily loop works offline with 2 attempts enforced,
+plus the screens above styled with `RmTheme` and app-wide audio honouring Settings.
+
+## 4. Tooling
+
+- Claude plugins: **Design** (design-system, critique, UX copy, accessibility
+  review), **Mobile Design System** (Material 3 token + component catalogue and
+  screen concepts as HTML — fast visual direction before Compose), **UI Design
+  Review** (senior-designer review of rendered screens/screenshots),
+  **kotlin-lsp** (Kotlin diagnostics), **firebase** (stream E).
+- Music/SFX generation (e.g. Creative Claw) only with a licence that allows
+  commercial use; otherwise curated CC0 libraries. Record every asset in credits.
+- Every screen is checked on a real device (screenshots via `adb`) before review.
+
+## 5. Risks
+
+- **Shared-module churn while games are in flight**: contract changes stay
+  backward-compatible with defaults (as `drawsOwnHud`); announce in the PR.
+- **Scope creep from "life" features** (music, particles, animations): every
+  effect is opt-out in Settings and must keep 60 fps on the test device.
+- **Audio licensing**: no asset merges without its licence recorded.
+- *(Resolved 2026-11-20: Poruba Casino replaced the Escape skeleton and joined the rotation.)*
+  **Escape Poruba** was still a skeleton — the daily rotation must tolerate a game
+  that is not ready (skip unready games until it lands).

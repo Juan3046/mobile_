@@ -1,19 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Blink Sniper: runtime-permission gated in-app by PermissionGate (:app);
-         see docs/games/03-blink-sniper.md. Devices without a front camera still
-         install; the in-app fallback explains why the game cannot run. -->
+    <!-- Camera games use the in-app PermissionGate. Devices without a front camera
+         still install; the in-app fallback explains why the game cannot run. -->
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- CAMERA implies these features; keep them optional so devices without a
          camera still install (fallback explained in-app, see PermissionGate). -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.camera.front" android:required="false" />
     <application
+        android:name=".RmApplication"
         android:label="RM Games"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:theme="@style/Theme.RmGames"
         android:supportsRtl="true">
+        <!-- Starts on the splash theme; MainActivity swaps to Theme.RmGames (plan 09 PR 14). -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:theme="@style/Theme.RmGames.Starting"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

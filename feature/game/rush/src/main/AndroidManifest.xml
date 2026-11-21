@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- A light buzz on every hop, a longer one when the run ends early (docs/games/06). -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+</manifest>

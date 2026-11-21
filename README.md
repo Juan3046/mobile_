@@ -4,7 +4,7 @@ Short daily sensor-driven mobile games (Android native, Kotlin, portrait only).
 
 - 1 daily game, 30–90s (documented exceptions, e.g. endless Onion Roll), 2 attempts/day (best counts).
 - 7-day seasons + historical leaderboard + Seasons History.
-- Minigames 01–02: Escape Poruba, Onion Roll (see `docs/games/`).
+- Minigames 01–05: Poruba Casino, Onion Roll, Blink Sniper, Compass Chaos, Soda Shake (see `docs/games/`).
 
 ## Docs (source of truth)
 
@@ -26,7 +26,12 @@ Kotlin 2.0.21 (`IllegalArgumentException: 25.0.3`) — point Gradle at a JDK 17:
 
 ```sh
 ./gradlew testDebugUnitTest   # full unit suite — run locally before every PR (no CI)
+./gradlew :app:assembleRelease # R8 release APK (signing: docs/04-tech-stack.md "Release build")
 ```
+
+**Online features (optional):** put your own `google-services.json` (Firebase project, Android app
+`com.rmgames`) at `app/google-services.json` — it is git-ignored. Without it the app builds and runs
+offline. See `docs/04-tech-stack.md` → Firebase.
 
 ## How to Collaborate (4 + AI agents)
 

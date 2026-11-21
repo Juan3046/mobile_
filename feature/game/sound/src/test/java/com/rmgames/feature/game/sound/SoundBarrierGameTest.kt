@@ -64,7 +64,7 @@ class SoundBarrierGameTest {
     fun `the game exposes the identity the host expects`() {
         val game = SoundBarrierGame(FakeSoundSensor())
 
-        assertEquals("06-sound-barrier", game.id)
+        assertEquals("07-sound-barrier", game.id)
         assertEquals("Sound Barrier", game.title)
         assertEquals(60_000L, game.durationMs)
         assertTrue(game.higherWins)

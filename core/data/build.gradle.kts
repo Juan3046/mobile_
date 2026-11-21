@@ -23,7 +23,10 @@ dependencies {
     implementation(project(":core:common"))
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    implementation(libs.androidx.datastore.preferences)
+    // api: DataStoreSnapshotStore exposes DataStore in its constructor (built in :app).
+    api(libs.androidx.datastore.preferences)
+    api(libs.kotlinx.coroutines.android)
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
 }

@@ -9,7 +9,7 @@ import org.junit.Test
  *
  * The corridor itself is drawn procedurally, so what can be pinned down here is the
  * small amount of logic behind it: the countdown formatting, the end-of-run copy and
- * the sound meter fill (docs/games/06-sound-barrier.md).
+ * the sound meter fill (docs/games/07-sound-barrier.md).
  */
 class SoundBarrierScreenTest {
 

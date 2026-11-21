@@ -29,7 +29,13 @@ See `docs/04-tech-stack.md`.
 - Work in **independent modules** to avoid merge conflicts; the parallel development
   plan lives in `docs/08-implementation-plan.md` (module map, ownership P1–P4, phases).
 - GitHub flow: small PRs per module, English names, no direct pushes to `main` once the repo exists.
-- **Current phase: Phase 1b (parallel game build)** — Phase 0 (frozen `Game`/`GameScope`)
+- **Current phase: Phase 2 (app shell) alongside Phase 1b games.** The shell — Main,
+  session/result, Settings, Seasons history, theme + UI kit (`RmTheme`, `:core:common/ui`),
+  persistence (`:core:data`), audio (`:core:audio`), app chrome — is owned by **P2** and
+  tracked in `docs/09-phase2-shell-plan.md` (Status notes). Visual spec: `design-system/`
+  (Direction A "Chunky Cabinet"). Game developers keep working only in their own module and
+  build their screens with `RmTheme` + the UI kit.
+- **Phase 1b (parallel game build)** — Phase 0 (frozen `Game`/`GameScope`)
   and Phase 1a (shared hardware in `:core:sensors` + `:core:vision`) are merged, plus the
   hosting scaffolding: `GameEntry`/`GameRegistry` contracts in `:core:common`, the
   `SessionGameScope` host in `:feature:session`, and registry-driven nav in `:app`

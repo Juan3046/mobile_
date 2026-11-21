@@ -115,5 +115,5 @@ class CompassChaosGame(
  */
 fun compassChaosEntry(compass: CompassSensor): GameEntry {
     val game = CompassChaosGame(compass)
-    return GameEntry(game) { CompassChaosScreen(game.state, game::setDebugRotate) }
+    return GameEntry(game, thumbnail = { CompassChaosThumbnail() }) { CompassChaosScreen(game.state, game::setDebugRotate) }
 }

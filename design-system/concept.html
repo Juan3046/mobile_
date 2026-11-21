@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RM Games · Concept</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=JetBrains+Mono:wght@500;700&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="theme.js"></script>
+<style>
+/* concept-page chrome + layout glue only — the SCREENS use styles.css component classes */
+body{font-family:var(--font-body);color:var(--on-background);background:var(--surface-container-lowest);padding:72px 24px 96px}
+.head{max-width:760px;margin:0 auto 40px;text-align:center}
+.head h1{font:800 28px/1.2 system-ui,'Segoe UI',sans-serif;color:var(--on-background)}
+.head p{color:var(--on-surface-variant);font:400 14px/1.6 system-ui,'Segoe UI',sans-serif;margin-top:8px}
+.dirrow{max-width:1240px;margin:0 auto 64px;display:grid;grid-template-columns:300px 1fr;gap:32px;align-items:start;
+  background:var(--background);color:var(--on-background);border:1px solid var(--outline-variant);padding:28px}
+.dirinfo .code{font:700 12px var(--font-mono);color:var(--primary-ink);letter-spacing:.1em}
+.dirinfo h2{font-family:var(--font-display);font-weight:var(--display-weight);letter-spacing:var(--display-tracking);font-size:30px;line-height:1.15;margin:6px 0 12px;color:var(--on-background)}
+.dirinfo .prop{font:400 15px/1.55 var(--font-body);color:var(--on-surface);margin-bottom:16px}
+.dirinfo dl{display:grid;grid-template-columns:86px 1fr;gap:8px 12px;font:400 13px/1.45 var(--font-body)}
+.dirinfo dt{color:var(--on-surface-variant);font-weight:600}
+.dirinfo dd{color:var(--on-surface)}
+.dirinfo .sw{display:flex;gap:6px;margin:16px 0 4px}
+.dirinfo .sw i{width:28px;height:28px;border-radius:var(--r-sm);border:1px solid var(--outline-variant)}
+.dirinfo .trade{margin-top:16px;padding-top:12px;border-top:1px solid var(--outline-variant);font:400 13px/1.5 var(--font-body);color:var(--on-surface-variant)}
+.screens{display:flex;gap:28px;flex-wrap:wrap}
+.col{display:flex;flex-direction:column;gap:10px}
+.col .lbl{font:600 11px var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--on-surface-variant)}
+/* presentation frame: no bezel, no device shadow */
+.device{position:relative;width:360px;height:800px;background:var(--background);color:var(--on-surface);border:1px solid var(--outline-variant);overflow:hidden;display:flex;flex-direction:column;font-family:var(--font-body)}
+.sb{height:28px;flex:0 0 28px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;font:600 12px var(--font-body);color:var(--on-surface)}
+.body{flex:1;display:flex;flex-direction:column;padding:0 var(--layout-gutter) var(--sp-16);gap:var(--gap-section)}
+.main-hero{display:flex;flex-direction:column;gap:var(--sp-12)}
+.cta{display:flex;flex-direction:column;gap:var(--sp-8);margin-top:auto}
+.debug{align-self:center;min-height:32px;font-size:12px;color:var(--on-surface-variant)}
+.res-top{display:flex;flex-direction:column;align-items:center;gap:var(--sp-12);padding-top:var(--sp-8);position:relative}
+.res-break{font:400 14px/20px var(--font-body);color:var(--on-surface-variant);text-align:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-8)}
+.prov{padding:0;overflow:hidden}
+.prov .ph{display:flex;justify-content:space-between;align-items:center;padding:var(--sp-12) var(--sp-16) 0}
+.prov .list-item{padding-left:var(--sp-16);background:transparent}
+.thumb .ring.r1{width:132px;height:132px}.thumb .ring.r2{width:196px;height:196px}
+.burst{position:absolute;top:0;left:0;right:0;height:120px;pointer-events:none}
+.legend{max-width:1240px;margin:0 auto;font:13px/1.7 system-ui,'Segoe UI',sans-serif;color:var(--on-surface-variant)}
+.legend b{color:var(--on-background)}
+.backlink{position:fixed;top:16px;left:16px;z-index:50;display:inline-flex;align-items:center;gap:6px;font:600 13px system-ui,'Segoe UI',sans-serif;text-decoration:none;
+  color:var(--on-surface);background:var(--surface-container-high);border:1px solid var(--outline-variant);border-radius:999px;padding:8px 14px}
+#ctl{position:fixed;top:16px;right:16px;z-index:50;display:flex;gap:8px}
+#ctl select{font:600 12px system-ui,'Segoe UI',sans-serif;border:1px solid var(--outline-variant);border-radius:8px;padding:8px 10px;background:var(--surface-container-high);color:var(--on-surface)}
+@media (max-width:1000px){.dirrow{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<!--SPRITE (generated from icons.html — keep in sync)-->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
+  <symbol id="i-more-v" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.6" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15a1 1 0 0 0 1.5.9l12-7.5a1 1 0 0 0 0-1.8l-12-7.5A1 1 0 0 0 7 4.5z"/></symbol>
+  <symbol id="i-replay" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></symbol>
+  <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></symbol>
+  <symbol id="i-podium" viewBox="0 0 24 24"><path d="M9 21V9h6v12M3 21v-7h6M15 21v-5h6v5M2 21h20"/><path d="M12 3l.9 1.8 2 .3-1.4 1.4.3 2-1.8-1-1.8 1 .3-2-1.4-1.4 2-.3z"/></symbol>
+  <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 2.6-6.4L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+  <symbol id="i-timer" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6M12 2v3"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-crosshair" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/><circle cx="12" cy="12" r="1" fill="currentColor"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M22 18a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3l2-3h6l2 3h3a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></symbol>
+  <symbol id="i-tilt" viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2" transform="rotate(-15 12 12)"/><path d="M3 8a10 10 0 0 0 0 8M21 8a10 10 0 0 1 0 8"/></symbol>
+  <symbol id="i-shake" viewBox="0 0 24 24"><rect x="8" y="3" width="8" height="18" rx="2"/><path d="M4 8v8M20 8v8M2 10v4M22 10v4"/></symbol>
+  <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></symbol>
+  <symbol id="i-run" viewBox="0 0 24 24"><circle cx="14" cy="4" r="2"/><path d="M6 21l3-6 3 2v5M8 10l3-3 4 2 3 3M11 7l-1 6"/></symbol>
+  <symbol id="i-onion" viewBox="0 0 24 24"><path d="M12 3c0 3-6 6-6 11a6 6 0 0 0 12 0c0-5-6-8-6-11z"/><path d="M12 3c-1 4-2 7-2 11s1 6 2 6M12 3c1 4 2 7 2 11s-1 6-2 6"/></symbol>
+  <symbol id="i-can" viewBox="0 0 24 24"><path d="M7 5h10l1 3v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8z"/><path d="M6 8h12M9 3h6"/></symbol>
+  <symbol id="i-volume" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></symbol>
+  <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
+  <symbol id="i-vibrate" viewBox="0 0 24 24"><rect x="8" y="4" width="8" height="16" rx="1.5"/><path d="M4 9l-2 3 2 3M20 9l2 3-2 3"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></symbol>
+  <symbol id="i-bug" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="13" rx="5"/><path d="M12 11v9M7 13H3M21 13h-4M7 17l-3 2M17 17l3 2M7 9L4 7M17 9l3-2M9 5l1.5 2M15 5l-1.5 2"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 15h10l1-15M10 11v6M14 11v6"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 22a7 7 0 0 0 7-7c0-4-3-6-4-10-2 2-3 4-3 6-1-1-2-2-2-4-2 2-5 5-5 8a7 7 0 0 0 7 7z"/></symbol>
+</svg>
+<!--/SPRITE-->
+<a class="backlink" href="index.html"><svg class="ico ico--sm"><use href="#i-back"/></svg> Back to style guide</a>
+
+<div class="head">
+  <h1>RM Games — Direction A · Chunky Cabinet</h1>
+  <p>Chosen visual direction for the Phase 2 shell (<code>docs/09-phase2-shell-plan.md</code> §2A), applied to the
+     <b>Main screen</b> (03 §3.1) and the <b>Result screen</b> (03 §3.3) in its dark (default) and light themes,
+     built only from the design-system components.</p>
+</div>
+
+<div id="rows"></div>
+
+<p class="legend">
+  <b>Content is illustrative</b>: Blink Sniper as today's game, scores and positions follow <code>02-gameplay-rules.md</code>
+  (points = (N − p + 1) × 25 → #14 of 212 = 4,975). The thumbnail is the <b>generated fallback</b> from Decision 5
+  (game colour + glyph), not final art. Static mockups — not a prototype.
+</p>
+
+<template id="screens">
+  <div class="screens">
+    <!-- ======================= MAIN SCREEN ======================= -->
+    <div class="col"><div class="lbl">Main screen · 03 §3.1</div>
+      <div class="device">
+        <div class="sb"><span>9:41</span><span>●●●</span></div>
+        <div class="appbar appbar-brand">
+          <div class="ttl">RM GAMES</div>
+          <button class="iconbtn iconbtn-standard" aria-label="Settings"><svg class="ico"><use href="#i-settings"/></svg></button>
+        </div>
+        <div class="body">
+          <div class="seasonstrip">
+            <div class="row"><span><b>Season 12</b> · day 4 of 7</span><span>You: <b class="t-num">3,150</b> pts</span></div>
+            <div class="days"><i class="is-done"></i><i class="is-done"></i><i class="is-done"></i><i class="is-today"></i><i></i><i></i><i></i></div>
+          </div>
+
+          <div class="main-hero">
+            <div class="sechead" style="min-height:auto"><span class="st">Today's game</span>
+              <span class="countdown"><svg class="ico ico--sm"><use href="#i-timer"/></svg>Ends in <span class="t-num">21:14:08</span></span></div>
+            <div class="gamecard g-blink">
+              <div class="thumb"><span class="ring r1"></span><span class="ring r2"></span><svg class="ico glyph"><use href="#i-eye"/></svg><span class="ph">Thumbnail fallback</span></div>
+              <div class="gc-body">
+                <div class="gc-kicker"><span class="gamechip"><svg class="ico ico--sm"><use href="#i-camera"/></svg>Front camera</span><span class="t-label-m">60 seconds</span></div>
+                <div class="gc-title">Blink Sniper</div>
+                <div class="gc-how">Targets slide through the crosshair. Blink to fire — bullseye scores +2. Never shoot a bomb.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cta">
+            <div class="row" style="justify-content:space-between;margin-bottom:var(--sp-4)">
+              <span class="pips"><i class="pip"></i><i class="pip"></i><span class="pl"><b>2 of 2</b> attempts left</span></span>
+              <span class="t-body-s">Best today: —</span>
+            </div>
+            <button class="btn btn-filled btn-xl btn-block"><svg class="ico ico--filled"><use href="#i-play"/></svg>Play</button>
+            <button class="btn btn-tonal btn-block" style="min-height:48px"><svg class="ico ico--sm"><use href="#i-podium"/></svg>Seasons history</button>
+            <button class="btn btn-text debug"><svg class="ico ico--sm"><use href="#i-bug"/></svg>Reset attempts (debug)</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================= RESULT SCREEN ======================= -->
+    <div class="col"><div class="lbl">Result screen · 03 §3.3</div>
+      <div class="device">
+        <div class="sb"><span>9:43</span><span>●●●</span></div>
+        <div class="appbar appbar-center">
+          <button class="iconbtn iconbtn-standard" aria-label="Close"><svg class="ico"><use href="#i-close"/></svg></button>
+          <div class="ttl" style="font-size:16px">Blink Sniper · run 1 of 2</div>
+          <span style="width:48px"></span>
+        </div>
+        <div class="body" style="gap:var(--sp-20)">
+          <div class="res-top">
+            <div class="burst"><i style="left:14%;top:18px;transform:rotate(20deg)"></i><i style="left:26%;top:64px"></i><i style="left:80%;top:12px;transform:rotate(-30deg)"></i><i style="left:88%;top:70px"></i><i style="left:8%;top:96px"></i><i style="left:70%;top:104px;transform:rotate(45deg)"></i><i style="left:34%;top:4px"></i><i style="left:62%;top:40px"></i></div>
+            <span class="newbest"><svg class="ico ico--sm"><use href="#i-star"/></svg>New best</span>
+            <div class="score is-best"><div class="val">27</div><div class="unit">points</div></div>
+            <div class="res-break">21 hits · 3 bullseyes · ended on time</div>
+          </div>
+
+          <div class="grid2">
+            <div class="stat"><span class="k">Daily best</span><span class="v">27</span><span class="s">this run</span></div>
+            <div class="stat"><span class="k">Attempts</span><span class="v">1 <span style="font-size:15px" class="muted">/ 2</span></span><span class="pips"><i class="pip"></i><i class="pip is-used"></i></span></div>
+          </div>
+
+          <div class="card prov">
+            <div class="ph"><span class="t-label-m">Provisional · today</span><span class="t-body-s">final at 12:00</span></div>
+            <div class="list-item two-line">
+              <div class="lead"><svg class="ico ico--sm"><use href="#i-trophy"/></svg></div>
+              <div class="txt"><div class="hl"><b class="t-num">#14</b> of 212 players</div><div class="sup">Your best of 2 counts for the day</div></div>
+              <div class="trail"><span class="t-num" style="font-size:15px;color:var(--primary-ink)">+4,975</span></div>
+            </div>
+          </div>
+
+          <div class="cta">
+            <button class="btn btn-filled btn-xl btn-block"><svg class="ico"><use href="#i-replay"/></svg>Play again</button>
+            <button class="btn btn-text btn-block" style="min-height:48px">Back to home</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+const DIRS = [
+  { k:'dark', name:'Dark (default)', prop:'For a 60-second daily ritual, chunky outlined shapes standing on a hard ledge make every tap feel like pressing a real arcade button.',
+    dl:[['Palette','Deep plum ground, hot-pink primary, sun-yellow only for “new best”.'],['Type','Bungee (display, scores) + Rubik (UI).'],['Shape','Medium radii, 2px dark outline, 4px hard ledge that compresses on press.'],['Depth','Hard offset ledge, no blur.'],['Icons','Rounded, heavier stroke.']],
+    trade:'Keep the outline + ledge on primary actions and cards only — small chrome (chips, list rows, app bar) stays flat so screens don’t get busy.' },
+  { k:'light', name:'Light', prop:'Same shapes and ledge on a pale lilac ground; the primary deepens to raspberry so white labels keep 4.5:1.',
+    dl:[['Palette','Lilac-white ground, raspberry primary #D61F5F, same sun-yellow celebration.'],['Ledge','Near-black plum #1C1524.'],['Use','Follows the system setting; dark is the default.']],
+    trade:'The yellow “new best” stamp relies on its dark outline for contrast against the light ground.' },
+];
+const tpl = document.getElementById('screens');
+const rows = document.getElementById('rows');
+for (const d of DIRS) {
+  const row = document.createElement('section'); row.className='dirrow'; row.dataset.theme=d.k;
+  row.innerHTML = `<div class="dirinfo"><div class="code">DIRECTION A · ${d.k.toUpperCase()}</div><h2>${d.name}</h2><p class="prop">${d.prop}</p>
+    <dl>${d.dl.map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('')}</dl>
+    <div class="sw"><i style="background:var(--background)"></i><i style="background:var(--surface-container-high)"></i><i style="background:var(--primary)"></i><i style="background:var(--secondary-container)"></i><i style="background:var(--tertiary)"></i><i style="background:var(--on-surface)"></i></div>
+    <p class="trade"><b>Tradeoff:</b> ${d.trade}</p></div>`;
+  row.appendChild(tpl.content.cloneNode(true));
+  rows.appendChild(row);
+}
+</script>
+</body>
+</html>

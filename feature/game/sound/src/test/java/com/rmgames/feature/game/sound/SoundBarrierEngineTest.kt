@@ -11,7 +11,7 @@ import kotlin.random.Random
  * Pure JVM tests for the Sound Barrier run logic (AGENTS.md §5 — TDD).
  * Everything here is time-injected and seeded, so the suite is deterministic.
  *
- * Spec: docs/games/06-sound-barrier.md — the track advances on its own, the ball
+ * Spec: docs/games/07-sound-barrier.md — the track advances on its own, the ball
  * rises while sound is detected and falls while silent, a barrier scores +1 only
  * when the ball is inside the gap at the instant the barrier finishes passing it,
  * a bar that touches the ball carries it backwards (left) and the run ends only
@@ -235,7 +235,7 @@ class SoundBarrierEngineTest {
     fun `touching a bar pushes the ball backwards instead of ending the run`() {
         // Gap down at 0.20, ball parked at 0.50 -> the bar sweeps straight across
         // the ball's hitbox. Contact must carry the ball backwards (left), never
-        // kill it on the spot (docs/games/06-sound-barrier.md — Contact).
+        // kill it on the spot (docs/games/07-sound-barrier.md — Contact).
         val engine = engine(testConfig(gapCenterMin = 0.20, gapCenterMax = 0.20))
         engine.tick(0, soundDetected = false)
 

@@ -4,10 +4,8 @@ import com.rmgames.core.common.Game
 import com.rmgames.core.common.GameEntry
 import com.rmgames.core.common.GameScope
 import com.rmgames.core.sensors.AccelerometerSensor
-import com.rmgames.core.sensors.Vector3
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.isActive
@@ -18,7 +16,7 @@ import kotlinx.coroutines.launch
  * can pops at 20 valid shakes; the fastest time-to-pop wins.
  *
  * [start] drives [SodaShakeEngine] on a fixed 16 ms tick over [GameScope.hostScope],
- * feeds it the accelerometer's latest sample, reports the stopwatch in centiseconds
+ * feeds it every accelerometer reading, reports the stopwatch in centiseconds
  * and ends the run with `onFinished(true)` once the pop animation completes. A
  * missing sensor blocks the run instead ([SodaShakeEngine.block]): nothing is
  * reported and nothing is recorded — never a fake score (docs/02-gameplay-rules.md).
@@ -40,8 +38,6 @@ class SodaShakeGame(
     /** Frame state for [SodaShakeScreen]; stable across runs (reset in [start]). */
     val state: StateFlow<SodaShakeState> = engine.state
 
-    /** Latest accelerometer sample; rests at zero until the sensor delivers one. */
-    private val sample = MutableStateFlow(Vector3(0f, 0f, 0f))
     private var loopJob: Job? = null
 
     /** Debug-only shake (emulator/desktop playtesting); [SodaShakeScreen] gates it too. */
@@ -53,18 +49,17 @@ class SodaShakeGame(
     override fun start(scope: GameScope) {
         loopJob?.cancel()
         engine.reset()
-        sample.value = Vector3(0f, 0f, 0f)
         loopJob = scope.hostScope.launch {
             val collector = launch {
                 accelerometer.readings()
                     .catch { engine.block() } // missing/broken sensor: void run, no score
-                    .collect { sample.value = it }
+                    .collect { engine.onSample(it) } // every reading, not just one per frame
             }
             try {
                 var lastReported = -1L
                 while (isActive) {
                     delay(TICK_MS)
-                    engine.tick(TICK_MS, sample.value)
+                    engine.tick(TICK_MS)
                     val snapshot = engine.state.value
                     // Blocked runs end silently: reporting would leave a score behind.
                     if (snapshot.phase == SodaPhase.BLOCKED) break
@@ -104,5 +99,5 @@ class SodaShakeGame(
  */
 fun sodaShakeEntry(accelerometer: AccelerometerSensor): GameEntry {
     val game = SodaShakeGame(accelerometer)
-    return GameEntry(game) { SodaShakeScreen(game.state, game::requestDebugShake) }
+    return GameEntry(game, thumbnail = { SodaShakeThumbnail() }) { SodaShakeScreen(game.state, game::requestDebugShake) }
 }
