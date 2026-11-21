@@ -16,6 +16,7 @@ fun gameSensor(gameId: String): GameSensor? = when (gameId.split('-').getOrNull(
     "compass" -> GameSensor("Compass", RmIcons.Compass)
     "soda" -> GameSensor("Shake", RmIcons.Shake)
     "class" -> GameSensor("Tap & swipe", RmIcons.Run)
+    "sound" -> GameSensor("Microphone", RmIcons.Volume)
     else -> null
 }
 
@@ -76,6 +77,14 @@ fun gameHowTo(gameId: String): HowTo? = when (gameId.split('-').getOrNull(1)) {
             "Don't stand still: 8 seconds without progress ends the run.",
         ),
         goal = "Cross as many rows as you can in 60 seconds.",
+    )
+    "sound" -> HowTo(
+        listOf(
+            "Make noise (hum, talk, clap) to rise. Go quiet to drop.",
+            "Fly through each gap: every barrier you clear is +1 point.",
+            "Bars push you back. Pushed off the left edge, the run ends.",
+        ),
+        goal = "Pass as many barriers as you can in 60 seconds.",
     )
     else -> null
 }

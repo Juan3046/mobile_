@@ -24,4 +24,4 @@ Mobile app called **RM Games** that offers a short daily game.
 
 ## Open Questions
 - [x] Decided: daily rotation (deterministic by date, same-for-all); scoring (daily best ranks the day, season = sum of position points `(N−p+1)×25`, ties share, noon-to-noon days, no locks); identity (Anonymous Auth UID + chosen nick); backend (Firebase Spark free + local-first cache).
-- [ ] Minigame library: Games 01–05 defined (see `games/`); 06–07 intentionally deferred.
+- [x] Minigame library: 7 games (01–07, see `games/`) — 06 Class Rush and 07 Sound Barrier joined on 2026-11-20/21, so a season plays each game exactly once.

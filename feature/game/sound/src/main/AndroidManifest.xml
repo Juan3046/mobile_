@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sound Barrier: the microphone gate is runtime-checked in-app by PermissionGate
+     (:app) through GameEntry.requiredPermissions; declared here so the game module
+     owns its own permission. Devices without a microphone still install; the
+     in-app fallback explains why the game cannot run (docs/games/07-sound-barrier.md). -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-feature android:name="android.hardware.microphone" android:required="false" />
+</manifest>

@@ -13,6 +13,7 @@ class GameInfoTest {
         assertEquals(GameSensor("Compass", RmIcons.Compass), gameSensor("04-compass-chaos"))
         assertEquals(GameSensor("Shake", RmIcons.Shake), gameSensor("05-soda-shake"))
         assertEquals(GameSensor("Tap & swipe", RmIcons.Run), gameSensor("06-class-rush"))
+        assertEquals(GameSensor("Microphone", RmIcons.Volume), gameSensor("07-sound-barrier"))
     }
 
     @Test
@@ -28,11 +29,12 @@ class GameInfoTest {
         assertEquals("Endless", gameDurationLabel("02-onion-roll", Long.MAX_VALUE))
         assertEquals("20 shakes", gameDurationLabel("05-soda-shake", 10_000))
         assertEquals("60 seconds", gameDurationLabel("06-class-rush", 60_000))
+        assertEquals("60 seconds", gameDurationLabel("07-sound-barrier", 60_000))
     }
 
     @Test
     fun `every game has short how-to steps and a goal`() {
-        listOf("01-poruba-casino", "02-onion-roll", "03-blink-sniper", "04-compass-chaos", "05-soda-shake", "06-class-rush").forEach { id ->
+        listOf("01-poruba-casino", "02-onion-roll", "03-blink-sniper", "04-compass-chaos", "05-soda-shake", "06-class-rush", "07-sound-barrier").forEach { id ->
             val h = requireNotNull(gameHowTo(id)) { id }
             assert(h.steps.size in 2..4) { "$id: ${h.steps}" }
             assert(h.steps.all { it.length <= 90 } && h.goal.length <= 90) { "$id: keep it short" }

@@ -48,6 +48,7 @@ data class RmColors(
     val gameCompass: Color = GameAccents.Compass,
     val gameSoda: Color = GameAccents.Soda,
     val gameRush: Color = GameAccents.Rush,
+    val gameSound: Color = GameAccents.Sound,
     val onGame: Color = GameAccents.OnGame,
 ) {
     /** A foreground/background pair and the WCAG minimum it must meet. */
@@ -89,6 +90,7 @@ data class RmColors(
             text("onGame/gameCompass", onGame, gameCompass),
             text("onGame/gameSoda", onGame, gameSoda),
             text("onGame/gameRush", onGame, gameRush),
+            text("onGame/gameSound", onGame, gameSound),
         )
     }
 
@@ -131,6 +133,7 @@ object GameAccents {
     val Compass = Color(0xFFB5E36F)
     val Soda = Color(0xFFFFA06B)
     val Rush = Color(0xFFFFB3C7)
+    val Sound = Color(0xFFA8C5FF)
     val OnGame = Color(0xFF10131A)
 }
 

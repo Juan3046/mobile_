@@ -77,6 +77,7 @@ dependencies {
     implementation(project(":feature:game:compass"))
     implementation(project(":feature:game:soda"))
     implementation(project(":feature:game:rush"))
+    implementation(project(":feature:game:sound"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.activity.compose)

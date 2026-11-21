@@ -38,6 +38,7 @@ fun gameAccent(gameId: String, colors: RmColors): Color = when (gameKey(gameId))
     "compass" -> colors.gameCompass
     "soda" -> colors.gameSoda
     "class" -> colors.gameRush
+    "sound" -> colors.gameSound
     else -> colors.surfaceContainerHighest
 }
 
@@ -49,6 +50,7 @@ fun gameGlyph(gameId: String): ImageVector = when (gameKey(gameId)) {
     "compass" -> RmIcons.Compass
     "soda" -> RmIcons.Can
     "class" -> RmIcons.Run
+    "sound" -> RmIcons.Volume
     else -> RmIcons.Play
 }
 
